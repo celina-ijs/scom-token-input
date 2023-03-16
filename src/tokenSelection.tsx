@@ -133,7 +133,8 @@ export class TokenSelection extends Module {
 
   set tokenDataListProp(value: Array<ITokenObject>) {
     this._tokenDataListProp = value
-    this.onRefresh()
+    this.renderTokenList();
+    this.updateTokenButton();
   }
 
   get isCommonShown(): boolean {
@@ -251,8 +252,8 @@ export class TokenSelection extends Module {
       if (!token) this.token = undefined
     }
     this.renderTokenList()
-    this.updateTokenButton(this.token)
-    if (this.token) this.onSelectToken(this.token)
+    this.updateTokenButton();
+    this.onSelectToken(this.token)
   }
 
   private async renderButton() {
@@ -349,6 +350,7 @@ export class TokenSelection extends Module {
         {this.gridTokenList}
       </i-panel>
     )
+    this.btnToken.width = "auto"
   }
 
   private async renderCombobox() {
@@ -371,6 +373,7 @@ export class TokenSelection extends Module {
         {this.gridTokenList}
       </i-panel>
     )
+    this.btnToken.width = "100%"
   }
 
   private async updateDataByChain() {
@@ -696,7 +699,7 @@ export class TokenSelection extends Module {
       this.gridTokenList.append(...tokenItems)
     } else if (
       !this.importable ||
-      (this.chainId && this.chainId !== getChainId())
+      (this.targetChainId && this.targetChainId !== getChainId())
     ) {
       this.clearTokenList()
     } else {
@@ -757,6 +760,12 @@ export class TokenSelection extends Module {
 
   private updateTokenButton(token?: ITokenObject) {
     if (!this.btnToken) return
+    if (!token)
+      token = (this.tokenDataList || []).find(
+        (v: ITokenObject) =>
+          (v.address && v.address == this.token?.address) ||
+          v.symbol == this.token?.symbol
+      )
     if (token) {
       const tokenIconPath = Assets.tokenPath(token, this.chainId)
       const icon = new Icon(this.btnToken, {
@@ -858,7 +867,6 @@ export class TokenSelection extends Module {
             <i-button
               id='btnToken'
               class={`${buttonStyle}`}
-              width='100%'
               height='100%'
               caption='Select a token'
               rightIcon={{ width: 14, height: 14, name: 'angle-down' }}
