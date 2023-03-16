@@ -35,6 +35,27 @@ export const formatNumberWithSeparators = (value: number, precision?: number) =>
   }
 }
 
+export const limitDecimals = (value: any, decimals: number) => {
+  let val = value;
+  if (typeof value !== 'string') {
+    val = val.toString();
+  }
+  let chart;
+  if (val.includes('.')) {
+    chart = '.';
+  } else if (val.includes(',')) {
+    chart = ',';
+  } else {
+    return value;
+  }
+  const parts = val.split(chart);
+  let decimalsPart = parts[1];
+  if (decimalsPart && decimalsPart.length > decimals) {
+    parts[1] = decimalsPart.substr(0, decimals);
+  }
+  return parts.join(chart);
+}
+
 export {
   getERC20Amount,
   getTokenBalance

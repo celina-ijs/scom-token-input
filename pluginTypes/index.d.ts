@@ -495,6 +495,7 @@ declare module "@scom/scom-token-input/utils/token.ts" {
 declare module "@scom/scom-token-input/utils/index.ts" {
     export const formatNumber: (value: any, decimals?: number) => string;
     export const formatNumberWithSeparators: (value: number, precision?: number) => string;
+    export const limitDecimals: (value: any, decimals: number) => any;
     export { getERC20Amount, getTokenBalance } from "@scom/scom-token-input/utils/token.ts";
 }
 /// <amd-module name="@scom/scom-token-input/assets.ts" />
@@ -680,7 +681,6 @@ declare module "@scom/scom-token-input/tokenSelection.tsx" {
         onCloseModal(): void;
         onOpenModal(): void;
         closeModal(): void;
-        onSetMaxBalanceFn(): void;
         render(): any;
     }
 }
@@ -746,6 +746,7 @@ declare module "@scom/scom-token-input" {
         set importable(value: boolean);
         get onSetMaxBalance(): any;
         set onSetMaxBalance(callback: any);
+        onSetMax(): Promise<void>;
         get onChanged(): any;
         set onChanged(callback: any);
         private onAmountChanged;
