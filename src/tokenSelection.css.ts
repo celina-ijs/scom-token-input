@@ -115,6 +115,9 @@ export default Styles.style({
       color: '#fff',
       fontSize: '1rem',
       padding: '0.25rem 1.25rem'
+    },
+    '#btnToken': {
+      justifyContent: 'space-between'
     }
   }
 })

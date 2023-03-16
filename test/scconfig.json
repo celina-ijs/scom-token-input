@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@scom/dapp": "*",
-    "@scom/scom-token-input": "*"
+    "@scom/scom-token-input": "*",
+    "@ijstech/eth-contract": "*",
+    "@ijstech/eth-wallet": "*"
   },
   "menus": [
     {

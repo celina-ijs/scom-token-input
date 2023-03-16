@@ -446,7 +446,7 @@ declare module "@scom/scom-token-input/store/utils.ts" {
     export const getGovToken: (chainId: number) => ITokenObject;
     export const getChainNativeToken: (chainId: number) => ITokenObject;
     export const addUserTokens: (token: ITokenObject) => void;
-    export const getNetworkInfo: (chainId: number) => INetwork;
+    export const getNetworkInfo: (chainId: number) => any;
     export const viewOnExplorerByAddress: (chainId: number, address: string) => void;
 }
 /// <amd-module name="@scom/scom-token-input/store/token.ts" />
@@ -654,7 +654,6 @@ declare module "@scom/scom-token-input/tokenSelection.tsx" {
         private renderCombobox;
         private updateDataByChain;
         private updateDataByNewToken;
-        private onChainChange;
         private onWalletConnect;
         private onWalletDisconnect;
         private onPaid;
@@ -752,6 +751,7 @@ declare module "@scom/scom-token-input" {
         private onAmountChanged;
         private onToggleFocus;
         private onSelectToken;
+        _handleFocus(event: Event): boolean;
         init(): void;
         render(): any;
     }

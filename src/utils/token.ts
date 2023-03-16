@@ -1,4 +1,5 @@
 import { BigNumber, Erc20, Wallet, IWallet } from "@ijstech/eth-wallet";
+import { getNetworkInfo } from "../store/index";
 import { ITokenObject } from "../global/index";
 
 export const getERC20Amount = async (wallet: IWallet, tokenAddress: string, decimals: number) => {
@@ -17,7 +18,10 @@ export const getTokenBalance = async (token: ITokenObject) => {
   if (token.address) {
     balance = await getERC20Amount(wallet, token.address, token.decimals);
   } else {
-    balance = await wallet.balance;
+    const networkInfo = getNetworkInfo(wallet.chainId);
+    const symbol = networkInfo?.nativeCurrency?.symbol || '';
+    if (symbol && symbol === token.symbol)
+      balance = await wallet.balance;
   }
   return balance;
 }

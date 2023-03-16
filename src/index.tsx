@@ -130,6 +130,8 @@ export default class ScomTokenInput extends Module {
   set readonly(value: boolean) {
     this._readonly = value;
     this.tokenSelection.readonly = value;
+    if (this.inputAmount)
+      this.inputAmount.readOnly = value;
   }
 
   get importable(): boolean {
@@ -145,7 +147,8 @@ export default class ScomTokenInput extends Module {
   }
   set onSetMaxBalance(callback: any) {
     this._onSetMaxBalance = callback;
-    if (callback) this.tokenSelection.onSetMaxBalance = callback;
+    if (callback && this.tokenSelection)
+      this.tokenSelection.onSetMaxBalance = callback;
   }
 
   get onChanged(): any {
@@ -159,15 +162,24 @@ export default class ScomTokenInput extends Module {
     if (this.onChanged) this.onChanged(target, event)
   }
 
-  private onToggleFocus(target: Input, value: boolean) {
+  private onToggleFocus(value: boolean) {
     value ?
       this.gridTokenInput.classList.add('focus-style') :
       this.gridTokenInput.classList.remove('focus-style')
   }
 
-  private async onSelectToken(token: ITokenObject) {
-    const symbol = token?.symbol || ''
-    this.lbBalance.caption = `${(await getTokenBalance(token)).toFixed(2)} ${symbol}`
+  private async onSelectToken(token: ITokenObject|undefined) {
+    if (token) {
+      const symbol = token?.symbol || ''
+      this.lbBalance.caption = `${(await getTokenBalance(token)).toFixed(2)} ${symbol}`
+    } else {
+      this.lbBalance.caption = '0.00'
+    }
+  }
+
+  _handleFocus(event: Event) {
+    this.onToggleFocus(true)
+    return super._handleFocus(event)
   }
 
   init() {
@@ -188,6 +200,14 @@ export default class ScomTokenInput extends Module {
       this.isSortBalanceShown = this.getAttribute('isSortBalanceShown', true, true)
       this.importable = this.getAttribute('importable', true, false)
     }
+    document.addEventListener('click', (event) => {
+      const target = event.target as Control
+      const tokenInput = target.closest('#gridTokenInput')
+      if (!tokenInput || !tokenInput.isSameNode(this.gridTokenInput))
+        this.onToggleFocus(false)
+      else
+        this.onToggleFocus(true)
+    })
   }
   render() {
     return (
@@ -234,8 +254,6 @@ export default class ScomTokenInput extends Module {
               font={{ size: '0.875rem' }}
               placeholder='Enter an amount'
               onChanged={this.onAmountChanged.bind(this)}
-              onFocus={(target: Input) => this.onToggleFocus(target, true)}
-              onBlur={(target: Input) => this.onToggleFocus(target, false)}
             ></i-input>
             <token-selection
               id='tokenSelection'
