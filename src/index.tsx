@@ -130,6 +130,8 @@ export default class ScomTokenInput extends Module {
   set readonly(value: boolean) {
     this._readonly = value;
     this.tokenSelection.readonly = value;
+    if (this.inputAmount)
+      this.inputAmount.readOnly = value;
   }
 
   get importable(): boolean {
@@ -145,7 +147,8 @@ export default class ScomTokenInput extends Module {
   }
   set onSetMaxBalance(callback: any) {
     this._onSetMaxBalance = callback;
-    if (callback) this.tokenSelection.onSetMaxBalance = callback;
+    if (callback && this.tokenSelection)
+      this.tokenSelection.onSetMaxBalance = callback;
   }
 
   get onChanged(): any {

@@ -654,7 +654,6 @@ declare module "@scom/scom-token-input/tokenSelection.tsx" {
         private renderCombobox;
         private updateDataByChain;
         private updateDataByNewToken;
-        private onChainChange;
         private onWalletConnect;
         private onWalletDisconnect;
         private onPaid;

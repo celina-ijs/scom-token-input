@@ -113,6 +113,8 @@ export class TokenSelection extends Module {
   set token(value: ITokenObject | undefined) {
     this._token = value
     this.updateTokenButton(value)
+    if (this.onSelectToken)
+      this.onSelectToken(this.token)
   }
 
   get targetChainId(): number {
@@ -150,7 +152,8 @@ export class TokenSelection extends Module {
   }
   set isSortBalanceShown(value: boolean) {
     this._isSortBalanceShown = value
-    if (this.pnlSortBalance) this.pnlSortBalance.visible = value
+    if (this.pnlSortBalance)
+      this.pnlSortBalance.visible = value
   }
 
   get readonly(): boolean {
@@ -240,20 +243,21 @@ export class TokenSelection extends Module {
   }
 
   private onRefresh() {
-    if (isWalletConnected())
-      this.tokenBalancesMap = tokenStore.tokenBalances || {}
-    if (this.token) {
-      const _tokenList = tokenStore.getTokenList(this.chainId)
-      const token = _tokenList.find(
-        (t) =>
-          (t.address && t.address == this.token?.address) ||
-          t.symbol == this.token?.symbol
-      )
-      if (!token) this.token = undefined
+    if (isWalletConnected()) {
+      this.tokenBalancesMap = tokenStore.tokenBalances || {};
+      if (this.token) {
+        const _tokenList = tokenStore.getTokenList(this.chainId)
+        const token = _tokenList.find(
+          (t) =>
+            (t.address && t.address == this.token?.address) ||
+            t.symbol == this.token?.symbol
+        )
+        if (!token) this.token = undefined
+        else this.token = token;
+      }
     }
-    this.renderTokenList()
-    this.updateTokenButton();
-    this.onSelectToken(this.token)
+    this.renderTokenList();
+    this.updateStatusButton();
   }
 
   private async renderButton() {
@@ -318,7 +322,7 @@ export class TokenSelection extends Module {
             onKeyUp={this.onSearch.bind(this)}
           ></i-input>
         </i-panel>
-        <i-panel id='pnlCommonToken' margin={{top: '0.5rem'}}>
+        <i-panel id='pnlCommonToken' margin={{top: '0.5rem', bottom: '0.5rem'}}>
           <i-label caption='Common Token' />
           <i-grid-layout
             id='gridCommonToken'
@@ -332,6 +336,7 @@ export class TokenSelection extends Module {
           horizontalAlignment='space-between'
           verticalAlignment='center'
           class='sort-panel'
+          visible={this.isSortBalanceShown}
         >
           <i-label
             caption='Token'
@@ -386,14 +391,9 @@ export class TokenSelection extends Module {
     this.renderTokenList()
   }
 
-  private async onChainChange() {
-    this.updateDataByChain()
-  }
-
   private async onWalletConnect() {
     this.checkHasMetaMask = hasMetaMask()
     this.onRefresh()
-    this.updateStatusButton()
   }
 
   private async onWalletDisconnect() {
@@ -416,7 +416,7 @@ export class TokenSelection extends Module {
       EventId.IsWalletDisconnected,
       this.onWalletDisconnect
     )
-    this.$eventBus.register(this, EventId.chainChanged, this.onChainChange)
+    this.$eventBus.register(this, EventId.chainChanged, this.updateDataByChain)
     this.$eventBus.register(this, EventId.Paid, this.onPaid)
     this.$eventBus.register(
       this,
@@ -768,22 +768,29 @@ export class TokenSelection extends Module {
       )
     if (token) {
       const tokenIconPath = Assets.tokenPath(token, this.chainId)
-      const icon = new Icon(this.btnToken, {
-        width: 24,
-        height: 24,
-        image: {
-          url: tokenIconPath,
-          fallBackUrl: this.fallbackUrl,
-        },
-      })
-      this.btnToken.icon = icon
-      this.btnToken.caption = token.symbol
-      this.btnToken.font = { bold: true, color: Theme.input.fontColor }
+      if (this.type === 'button') {
+        const icon = new Icon(this.btnToken, {
+          width: 24,
+          height: 24,
+          image: {
+            url: tokenIconPath,
+            fallBackUrl: this.fallbackUrl,
+          },
+        })
+        this.btnToken.icon = icon
+        this.btnToken.caption = token.symbol
+      } else {
+        this.btnToken.caption = `<i-hstack verticalAlignment="center" gap="0.5rem">
+          <i-panel>
+            <i-image width=${24} height=${24} url="${tokenIconPath}" fallbackUrl="${this.fallbackUrl}"></i-image>
+          </i-panel>
+          <i-label caption="${token.symbol}"></i-label>
+        </i-hstack>`
+      }
       this.btnMax.visible = this.isBtnMaxShown
     } else {
       this.btnToken.icon = undefined
       this.btnToken.caption = 'Select a token'
-      this.btnToken.font = { bold: false, color: Theme.input.fontColor }
       this.btnMax.visible = false
     }
   }
@@ -848,7 +855,7 @@ export class TokenSelection extends Module {
     return (
       <i-panel>
         <i-panel id='pnlSelection'>
-          <i-hstack verticalAlignment="center" horizontalAlignment="end" gap="0.5rem">
+          <i-hstack verticalAlignment="center" horizontalAlignment="end" gap="0.25rem">
             <i-button
               id='btnMax'
               visible={false}
