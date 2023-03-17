@@ -393,6 +393,7 @@ export class TokenSelection extends Module {
 
   private async onWalletConnect() {
     this.checkHasMetaMask = hasMetaMask()
+    this.tokenBalancesMap = await tokenStore.updateAllTokenBalances()
     this.onRefresh()
   }
 
@@ -847,10 +848,6 @@ export class TokenSelection extends Module {
     this.mdTokenSelection.visible = false
   }
 
-  onSetMaxBalanceFn() {
-    if (this.onSetMaxBalance) this.onSetMaxBalance()
-  }
-
   render() {
     return (
       <i-panel>
@@ -869,7 +866,7 @@ export class TokenSelection extends Module {
                 left: '0.5rem',
                 right: '0.5rem',
               }}
-              onClick={() => this.onSetMaxBalanceFn()}
+              onClick={() => this.onSetMaxBalance()}
             />
             <i-button
               id='btnToken'

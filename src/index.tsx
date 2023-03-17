@@ -14,7 +14,7 @@ import {} from '@ijstech/eth-contract'
 import customStyle, { inputStyle, tokenSelectionStyle } from './index.css'
 import { ITokenObject, IType } from './global/index'
 import { TokenSelection } from './tokenSelection'
-import { getTokenBalance } from './utils/index'
+import { getTokenBalance, limitDecimals } from './utils/index'
 
 interface TokenElement extends ControlElement {
   type?: IType;
@@ -143,12 +143,21 @@ export default class ScomTokenInput extends Module {
   }
 
   get onSetMaxBalance(): any {
-    return this._onSetMaxBalance;
+    return this._onSetMaxBalance || this.onSetMax.bind(this);
   }
   set onSetMaxBalance(callback: any) {
     this._onSetMaxBalance = callback;
-    if (callback && this.tokenSelection)
-      this.tokenSelection.onSetMaxBalance = callback;
+    if (this.tokenSelection)
+      this.tokenSelection.onSetMaxBalance = () => {
+        this.onSetMax();
+        callback && callback();
+      }
+  }
+
+  async onSetMax() {
+    this.inputAmount.value = this.token ?
+      limitDecimals(await getTokenBalance(this.token), this.token.decimals || 18)
+      : '';
   }
 
   get onChanged(): any {
@@ -169,6 +178,8 @@ export default class ScomTokenInput extends Module {
   }
 
   private async onSelectToken(token: ITokenObject|undefined) {
+    this._token = token;
+    this.inputAmount.value = ''
     if (token) {
       const symbol = token?.symbol || ''
       this.lbBalance.caption = `${(await getTokenBalance(token)).toFixed(2)} ${symbol}`
@@ -243,6 +254,7 @@ export default class ScomTokenInput extends Module {
             }}
             lineHeight={1.5715}
             padding={{ top: 4, bottom: 4, left: 11, right: 11 }}
+            gap={{column: '0.5rem'}}
           >
             <i-input
               id='inputAmount'
