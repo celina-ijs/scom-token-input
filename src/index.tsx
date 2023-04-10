@@ -9,6 +9,7 @@ import {
   Container,
   Input,
   Control,
+  Panel,
 } from '@ijstech/components'
 import {} from '@ijstech/eth-contract'
 import customStyle, { inputStyle, tokenSelectionStyle } from './index.css'
@@ -26,6 +27,8 @@ interface TokenElement extends ControlElement {
   isSortBalanceShown?: boolean;
   isBtnMaxShown?: boolean;
   isCommonShown?: boolean;
+  isInputShown?: boolean;
+  isBalanceShown?: boolean;
   onChanged?: (target: Control, event: Event) => void;
   onSetMaxBalance?: () => void;
 }
@@ -47,6 +50,7 @@ export default class ScomTokenInput extends Module {
   private inputAmount: Input
   private lbBalance: Label
   private lbTitle: Label
+  private pnlBalance: Panel
 
   private _type: IType
   private _chainId: number
@@ -57,6 +61,8 @@ export default class ScomTokenInput extends Module {
   private _isBtnMaxShown: boolean = true
   private _readonly: boolean = false
   private _importable: boolean = false
+  private _isInputShown: boolean = true
+  private _isBalanceShown: boolean = true
 
   private _onChanged: (target: Control, event: Event) => void
   private _onSetMaxBalance: () => void
@@ -154,6 +160,25 @@ export default class ScomTokenInput extends Module {
       }
   }
 
+  get isInputShown(): boolean {
+    return this._isInputShown;
+  }
+  set isInputShown(value: boolean) {
+    this._isInputShown = value;
+    if (this.inputAmount) {
+      this.inputAmount.visible = value
+      this.gridTokenInput.templateColumns = value ? ['50%', 'auto'] : ['auto']
+    }
+  }
+
+  get isBalanceShown(): boolean {
+    return this._isBalanceShown;
+  }
+  set isBalanceShown(value: boolean) {
+    this._isBalanceShown = value;
+    if (this.pnlBalance) this.pnlBalance.visible = value
+  }
+
   async onSetMax() {
     this.inputAmount.value = this.token ?
       limitDecimals(await getTokenBalance(this.token), this.token.decimals || 18)
@@ -211,6 +236,8 @@ export default class ScomTokenInput extends Module {
       this.isSortBalanceShown = this.getAttribute('isSortBalanceShown', true, true)
       this.importable = this.getAttribute('importable', true, false)
     }
+    this.isInputShown = this.getAttribute('isInputShown', true, true)
+    this.isBalanceShown = this.getAttribute('isBalanceShown', true, true)
     document.addEventListener('click', (event) => {
       const target = event.target as Control
       const tokenInput = target.closest('#gridTokenInput')
@@ -231,6 +258,7 @@ export default class ScomTokenInput extends Module {
           >
             <i-label id='lbTitle' font={{ size: '1.25rem' }}></i-label>
             <i-hstack
+              id="pnlBalance"
               horizontalAlignment='end'
               verticalAlignment='center'
               gap='0.5rem'

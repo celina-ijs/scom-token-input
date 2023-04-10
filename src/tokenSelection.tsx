@@ -73,6 +73,7 @@ export class TokenSelection extends Module {
   private fallbackUrl: string = Assets.fullPath('img/tokens/Custom.png')
   private _title: string | Control = 'Select Token'
   private _type: IType = 'button'
+  private isInited: boolean = false
 
   private mdTokenSelection: Modal
   private btnToken: Button
@@ -221,6 +222,7 @@ export class TokenSelection extends Module {
   }
 
   private async renderUI() {
+    if (!this.isInited) await this.ready()
     if (!this.gridTokenList)
       this.gridTokenList = (
         <i-grid-layout
@@ -822,6 +824,7 @@ export class TokenSelection extends Module {
     await this.onWalletConnect()
     super.init()
     this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken
+    this.isInited = true
   }
 
   showImportTokenModal(target: Control, event: Event, token: ITokenObject) {

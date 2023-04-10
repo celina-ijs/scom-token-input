@@ -1,5 +1,5 @@
 node_modules
 package-lock.json
-test/ref/*
+test/ref
 test/dist
 dist

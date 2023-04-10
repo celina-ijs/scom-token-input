@@ -602,6 +602,7 @@ declare module "@scom/scom-token-input/tokenSelection.tsx" {
         private fallbackUrl;
         private _title;
         private _type;
+        private isInited;
         private mdTokenSelection;
         private btnToken;
         private btnMax;
@@ -698,6 +699,8 @@ declare module "@scom/scom-token-input" {
         isSortBalanceShown?: boolean;
         isBtnMaxShown?: boolean;
         isCommonShown?: boolean;
+        isInputShown?: boolean;
+        isBalanceShown?: boolean;
         onChanged?: (target: Control, event: Event) => void;
         onSetMaxBalance?: () => void;
     }
@@ -714,6 +717,7 @@ declare module "@scom/scom-token-input" {
         private inputAmount;
         private lbBalance;
         private lbTitle;
+        private pnlBalance;
         private _type;
         private _chainId;
         private _token;
@@ -723,6 +727,8 @@ declare module "@scom/scom-token-input" {
         private _isBtnMaxShown;
         private _readonly;
         private _importable;
+        private _isInputShown;
+        private _isBalanceShown;
         private _onChanged;
         private _onSetMaxBalance;
         constructor(parent?: Container, options?: any);
@@ -746,6 +752,10 @@ declare module "@scom/scom-token-input" {
         set importable(value: boolean);
         get onSetMaxBalance(): any;
         set onSetMaxBalance(callback: any);
+        get isInputShown(): boolean;
+        set isInputShown(value: boolean);
+        get isBalanceShown(): boolean;
+        set isBalanceShown(value: boolean);
         onSetMax(): Promise<void>;
         get onChanged(): any;
         set onChanged(callback: any);
@@ -753,7 +763,7 @@ declare module "@scom/scom-token-input" {
         private onToggleFocus;
         private onSelectToken;
         _handleFocus(event: Event): boolean;
-        init(): void;
+        init(): Promise<void>;
         render(): any;
     }
 }

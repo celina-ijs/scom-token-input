@@ -19,6 +19,7 @@
     },
     "scripts": {
         "build": "rm -rf dist && npx @ijstech/compiler",
-        "test": "cd test && npm run test && cd .."
+        "test": "cd test && npm run test && cd ..",
+        "serve": "cd test && npm run serve && cd .."
     }
 }
