@@ -6,21 +6,28 @@ export default class Module1 extends Module {
     private picker2: ScomTokenInput;
     private mainStack: VStack;
 
-    constructor(parent?: Container, options?: any) {
-        super(parent, options);
-    }
-
-    init() {
+    async init() {
         super.init();
         this.picker1 = new ScomTokenInput(undefined, {
-            importable: true,
-            chainId: 43113,
-            onSetMaxBalance: () => console.log('onSetMaxBalance')
+            type: "combobox",
+            title: 'Add funds',
+            isBtnMaxShown: false,
+            readonly: false,
+            onSetMaxBalance: () => console.log('onSetMaxBalance'),
+            onSelectToken: (token: any) => console.log('on select token', token)
         })
         this.mainStack.appendChild(this.picker1);
-        this.picker2 = new ScomTokenInput(undefined, {
-            title: 'Add Funds',
-            type: 'combobox'
+
+        this.picker2 = await ScomTokenInput.create({
+            type: 'combobox',
+            chainId: 43113,
+            token: {
+                "name": "OpenSwap",
+                "address": "0x78d9D80E67bC80A11efbf84B7c8A65Da51a8EF3C",
+                "symbol": "OSWAP",
+                "decimals": 18,
+                "isCommon": true
+            }
         })
         this.mainStack.appendChild(this.picker2);
     }
@@ -29,7 +36,8 @@ export default class Module1 extends Module {
         return <i-panel>
             <i-hstack id="mainStack" margin={{top: '1rem', left: '1rem'}} gap="2rem">
                 <i-scom-token-input
-                    readonly={true}
+                    chainId={43113}
+                    title="New title"
                     token={{
                         "name": "OpenSwap",
                         "address": "0x78d9D80E67bC80A11efbf84B7c8A65Da51a8EF3C",

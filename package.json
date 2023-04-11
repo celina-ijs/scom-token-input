@@ -15,9 +15,12 @@
     },
     "devDependencies": {
         "@ijstech/compiler": "^0.1.22",
-        "typescript": "4.3.5"
+        "typescript": "4.3.5",
+        "@scom/scom-token-modal": "https://github.com/scom-repos/scom-token-modal",
+        "@scom/scom-token-list": "https://github.com/scom-repos/scom-token-list"
     },
     "scripts": {
+        "copy": "sh scripts/copy.sh",
         "build": "rm -rf dist && npx @ijstech/compiler",
         "test": "cd test && npm run test && cd ..",
         "serve": "cd test && npm run serve && cd .."
