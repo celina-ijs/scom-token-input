@@ -10,14 +10,21 @@ import {
   Input,
   Control,
   Panel,
+  Button,
+  Icon,
+  application,
+  HStack,
+  IEventBus,
 } from '@ijstech/components'
 import {} from '@ijstech/eth-contract'
-import customStyle, { inputStyle, tokenSelectionStyle } from './index.css'
-import { ITokenObject, IType } from './global/index'
-import { TokenSelection } from './tokenSelection'
+import customStyle, { buttonStyle, inputStyle, tokenSelectionStyle } from './index.css'
+import { EventId, ITokenObject, IType } from './global/index'
 import { getTokenBalance, limitDecimals } from './utils/index'
+import { TokenSelect } from './tokenSelect'
+import ScomTokenModal from './scom-token-modal/index'
+import { ChainNativeTokenByChainId, getChainId, isWalletConnected, tokenStore, assets } from './scom-token-list/index'
 
-interface TokenElement extends ControlElement {
+interface ScomTokenInputElement extends ControlElement {
   type?: IType;
   title?: string;
   chainId?: number;
@@ -30,6 +37,7 @@ interface TokenElement extends ControlElement {
   isInputShown?: boolean;
   isBalanceShown?: boolean;
   onChanged?: (target: Control, event: Event) => void;
+  onSelectToken?: (token: ITokenObject|undefined) => void;
   onSetMaxBalance?: () => void;
 }
 const Theme = Styles.Theme.ThemeVars
@@ -37,7 +45,7 @@ const Theme = Styles.Theme.ThemeVars
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      ['i-scom-token-input']: TokenElement
+      ['i-scom-token-input']: ScomTokenInputElement
     }
   }
 }
@@ -45,17 +53,22 @@ declare global {
 @customModule
 @customElements('i-scom-token-input')
 export default class ScomTokenInput extends Module {
-  private tokenSelection: TokenSelection
   private gridTokenInput: GridLayout
   private inputAmount: Input
   private lbBalance: Label
-  private lbTitle: Label
+  private pnlTitle: HStack
   private pnlBalance: Panel
+  private mdToken: ScomTokenModal
+  private cbToken: TokenSelect
+  private btnMax: Button
+  private btnToken: Button
+
+  private $eventBus: IEventBus;
 
   private _type: IType
-  private _chainId: number
+  private _targetChainId: number
   private _token: ITokenObject
-  private _title: string
+  private _title: string|Control
   private _isCommonShown: boolean = false
   private _isSortBalanceShown: boolean = true
   private _isBtnMaxShown: boolean = true
@@ -63,29 +76,127 @@ export default class ScomTokenInput extends Module {
   private _importable: boolean = false
   private _isInputShown: boolean = true
   private _isBalanceShown: boolean = true
+  private tokenBalancesMap: any
 
-  private _onChanged: (target: Control, event: Event) => void
-  private _onSetMaxBalance: () => void
+  onChanged: (target: Control, event: Event) => void
+  onSelectToken: (token: ITokenObject|undefined) => void;
+  onSetMaxBalance: () => void
 
   constructor(parent?: Container, options?: any) {
-    super(parent, options)
+    super(parent, options);
+    this.$eventBus =  application.EventBus;
+    this.registerEvent();
+  }
+
+  static async create(options?: ScomTokenInputElement, parent?: Container) {
+    let self = new this(parent, options);
+    await self.ready();
+    return self;
+  }
+
+  private onRefresh() {
+    if (isWalletConnected()) {
+      this.tokenBalancesMap = tokenStore.tokenBalances || {};
+      if (this.token) {
+        const _tokenList = tokenStore.getTokenList(this.chainId)
+        const token = _tokenList.find(
+          (t) =>
+            (t.address && t.address == this.token?.address) ||
+            t.symbol == this.token?.symbol
+        )
+        if (!token) this.token = undefined
+        else this.token = token;
+      }
+    }
+    this.renderTokenList();
+    this.updateStatusButton();
+  }
+
+  private async onUpdateData() {
+    this.tokenBalancesMap = await tokenStore.updateAllTokenBalances()
+    this.onRefresh()
+  }
+
+  private async updateDataByNewToken() {
+    this.tokenBalancesMap = tokenStore.tokenBalances || {}
+    this.renderTokenList()
+  }
+
+  private registerEvent() {
+     this.$eventBus.register(this, EventId.IsWalletConnected, this.onUpdateData)
+     this.$eventBus.register(this, EventId.IsWalletDisconnected, this.onRefresh)
+     this.$eventBus.register(this, EventId.chainChanged, this.onUpdateData)
+     this.$eventBus.register(this, EventId.Paid, this.onUpdateData)
+     this.$eventBus.register(this, EventId.EmitNewToken, this.updateDataByNewToken)
+  }
+
+  private get tokenDataList(): ITokenObject[] {
+    // let tokenList: ITokenObject[] = this.tokenDataListProp?.length
+    //   ? this.tokenDataListProp
+    //   : tokenStore.getTokenList(this.chainId)
+    let tokenList: ITokenObject[] = tokenStore.getTokenList(this.chainId);
+    return tokenList.map((token: ITokenObject) => {
+      const tokenObject = { ...token }
+      const nativeToken = ChainNativeTokenByChainId[this.chainId]
+      if (token.symbol === nativeToken.symbol) {
+        Object.assign(tokenObject, { isNative: true })
+      }
+      if (!isWalletConnected()) {
+        Object.assign(tokenObject, { balance: 0 })
+      } else if (this.tokenBalancesMap && this.chainId === getChainId()) {
+        Object.assign(tokenObject, {
+          balance:
+            this.tokenBalancesMap[
+              token.address?.toLowerCase() || token.symbol
+            ] || 0,
+        })
+      }
+      return tokenObject
+    })
+    .sort(this.sortToken)
+  }
+
+  private sortToken = (a: any, b: any, asc?: boolean) => {
+    if (a.balance != b.balance) {
+      return asc ? a.balance - b.balance : b.balance - a.balance
+    }
+    if (a.symbol.toLowerCase() < b.symbol.toLowerCase()) {
+      return -1
+    }
+    if (a.symbol.toLowerCase() > b.symbol.toLowerCase()) {
+      return 1
+    }
+    return 0
   }
 
   get type(): IType {
-    return this._type
+    return this._type ?? 'button'
   }
   set type(value: IType) {
     if (value === this._type) return
     this._type = value
-    this.tokenSelection.type = value
+    if (this.btnToken)
+      this.btnToken.width = value === 'button' ? "auto" : '100%'
+    this.onRefresh()
   }
 
-  get title(): string {
-    return this._title
+  get title(): any {
+    return this._title ?? ''
   }
-  set title(value: string) {
+  set title(value: string | Control) {
     this._title = value
-    this.lbTitle.caption = value || ''
+    let labelEl: Control
+    if (typeof value === 'string') {
+      labelEl = new Label(undefined, {
+        caption: value,
+        font: { color: Theme.colors.primary.main, size: '1rem', bold: true },
+      })
+    } else {
+      labelEl = value
+    }
+    if (!this.pnlTitle) this.pnlTitle = new HStack()
+    this.pnlTitle.clearInnerHTML()
+    this.pnlTitle.appendChild(labelEl)
   }
 
   get token() {
@@ -93,17 +204,28 @@ export default class ScomTokenInput extends Module {
   }
   set token(value: ITokenObject | undefined) {
     this._token = value;
-    this.tokenSelection.token = value
-    value && this.onSelectToken(value)
+    this.onSelectFn(value)
+    if (this.cbToken)
+      this.cbToken.token = value
+    if (this.mdToken)
+      this.mdToken.token = value
   }
   
-  get chainId() {
-    return this._chainId;
+  get targetChainId() {
+    return this._targetChainId;
   }
-  set chainId(value: number) {
-    this._chainId = value;
-    if (typeof value === 'number')
-      this.tokenSelection.targetChainId = value
+  set targetChainId(value: number) {
+    this._targetChainId = value;
+    if (typeof value === 'number') {
+      if (this.cbToken)
+        this.cbToken.targetChainId = value
+      if (this.mdToken)
+        this.mdToken.targetChainId = value
+    }
+  }
+
+  get chainId() {
+    return this.targetChainId || getChainId();
   }
 
   get isCommonShown(): boolean {
@@ -111,7 +233,8 @@ export default class ScomTokenInput extends Module {
   }
   set isCommonShown(value: boolean) {
     this._isCommonShown = value;
-    this.tokenSelection.isCommonShown = value;
+    if (this.mdToken)
+      this.mdToken.isCommonShown = value;
   }
 
   get isSortBalanceShown(): boolean {
@@ -119,7 +242,8 @@ export default class ScomTokenInput extends Module {
   }
   set isSortBalanceShown(value: boolean) {
     this._isSortBalanceShown = value;
-    this.tokenSelection.isSortBalanceShown = value;
+    if (this.mdToken)
+      this.mdToken.isSortBalanceShown = value;
   }
 
   get isBtnMaxShown(): boolean {
@@ -127,7 +251,7 @@ export default class ScomTokenInput extends Module {
   }
   set isBtnMaxShown(value: boolean) {
     this._isBtnMaxShown = value;
-    this.tokenSelection.isBtnMaxShown = value;
+    if (this.btnMax) this.btnMax.visible = value
   }
 
   get readonly(): boolean {
@@ -135,7 +259,12 @@ export default class ScomTokenInput extends Module {
   }
   set readonly(value: boolean) {
     this._readonly = value;
-    this.tokenSelection.readonly = value;
+    if (this.btnToken) {
+      this.btnToken.enabled = !value
+      this.btnToken.rightIcon.visible = !value
+    }
+    if (this.btnMax)
+      this.btnMax.enabled = !value
     if (this.inputAmount)
       this.inputAmount.readOnly = value;
   }
@@ -145,19 +274,8 @@ export default class ScomTokenInput extends Module {
   }
   set importable(value: boolean) {
     this._importable = value;
-    this.tokenSelection.importable = value;
-  }
-
-  get onSetMaxBalance(): any {
-    return this._onSetMaxBalance || this.onSetMax.bind(this);
-  }
-  set onSetMaxBalance(callback: any) {
-    this._onSetMaxBalance = callback;
-    if (this.tokenSelection)
-      this.tokenSelection.onSetMaxBalance = () => {
-        this.onSetMax();
-        callback && callback();
-      }
+    if (this.mdToken)
+      this.mdToken.importable = value;
   }
 
   get isInputShown(): boolean {
@@ -183,13 +301,7 @@ export default class ScomTokenInput extends Module {
     this.inputAmount.value = this.token ?
       limitDecimals(await getTokenBalance(this.token), this.token.decimals || 18)
       : '';
-  }
-
-  get onChanged(): any {
-    return this._onChanged;
-  }
-  set onChanged(callback: any) {
-    this._onChanged = callback;
+    if (this.onSetMaxBalance) this.onSetMaxBalance();
   }
 
   private async onAmountChanged(target: Control, event: Event) {
@@ -202,35 +314,92 @@ export default class ScomTokenInput extends Module {
       this.gridTokenInput.classList.remove('focus-style')
   }
 
-  private async onSelectToken(token: ITokenObject|undefined) {
+  _handleFocus(event: Event) {
+    this.onToggleFocus(true)
+    return super._handleFocus(event)
+  }
+
+  private async renderTokenList() {
+    if (this.type === 'combobox') {
+      if (!this.cbToken.isConnected)
+        await this.cbToken.ready();
+      this.cbToken.tokenList = [...this.tokenDataList]
+    }
+    else {
+      this.mdToken.onRefresh()
+    }
+  }
+
+  private updateStatusButton() {
+    const status = isWalletConnected()
+    const value = !this.readonly && status
+    if (this.btnToken) {
+      this.btnToken.enabled = value
+    }
+    if (this.btnMax) {
+      this.btnMax.enabled = value
+    }
+  }
+
+  private updateTokenButton(token?: ITokenObject) {
+    if (!this.btnToken) return
+    if (!token)
+      token = (this.tokenDataList || []).find(
+        (v: ITokenObject) =>
+          (v.address && v.address == this.token?.address) ||
+          v.symbol == this.token?.symbol
+      )
+    if (token) {
+      const tokenIconPath = assets.tokenPath(token, this.chainId)
+      this.btnToken.caption = `<i-hstack verticalAlignment="center" gap="0.5rem">
+          <i-panel>
+            <i-image width=${24} height=${24} url="${tokenIconPath}" fallbackUrl="${assets.fallbackUrl}"></i-image>
+          </i-panel>
+          <i-label caption="${token?.symbol || ''}"></i-label>
+        </i-hstack>`
+      this.btnMax.visible = this.isBtnMaxShown
+    } else {
+      this.btnToken.caption = 'Select a token'
+      this.btnMax.visible = false
+    }
+  }
+
+  private onButtonClicked() {
+    if (this.type === 'combobox')
+      this.cbToken.showModal()
+    else
+      this.mdToken.showModal()
+  }
+
+  private async onSelectFn(token: ITokenObject|undefined) {
     this._token = token;
-    this.inputAmount.value = ''
+    if (!this.inputAmount.isConnected) {
+      await this.inputAmount.ready()
+      this.inputAmount.value = ''
+    }
     if (token) {
       const symbol = token?.symbol || ''
       this.lbBalance.caption = `${(await getTokenBalance(token)).toFixed(2)} ${symbol}`
     } else {
       this.lbBalance.caption = '0.00'
     }
-  }
-
-  _handleFocus(event: Event) {
-    this.onToggleFocus(true)
-    return super._handleFocus(event)
+    this.updateTokenButton(token)
+    if (this.onSelectToken) this.onSelectToken(token)
   }
 
   init() {
     this.classList.add(customStyle)
     super.init()
-    this.onChanged = this.getAttribute('onChanged', true)
-    this.onSetMaxBalance = this.getAttribute('onSetMaxBalance', true)
+    this.onChanged = this.getAttribute('onChanged', true) || this.onChanged
+    this.onSetMaxBalance = this.getAttribute('onSetMaxBalance', true) || this.onSetMaxBalance
+    this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken
     this.title = this.getAttribute('title', true, '')
     const token = this.getAttribute('token', true)
     if (token) this.token = token
-    this.chainId = this.getAttribute('chainId', true)
+    this.targetChainId = this.getAttribute('chainId', true)
     this.readonly = this.getAttribute('readonly', true, false)
     this.isBtnMaxShown = this.getAttribute('isBtnMaxShown', true, true)
-    const typeAttr = this.getAttribute('type', true, 'button')
-    if (typeAttr) this.type = typeAttr
+    this.type = this.getAttribute('type', true, 'button')
     if (this.type === 'button') {
       this.isCommonShown = this.getAttribute('isCommonShown', true, false)
       this.isSortBalanceShown = this.getAttribute('isSortBalanceShown', true, true)
@@ -238,6 +407,7 @@ export default class ScomTokenInput extends Module {
     }
     this.isInputShown = this.getAttribute('isInputShown', true, true)
     this.isBalanceShown = this.getAttribute('isBalanceShown', true, true)
+
     document.addEventListener('click', (event) => {
       const target = event.target as Control
       const tokenInput = target.closest('#gridTokenInput')
@@ -247,6 +417,7 @@ export default class ScomTokenInput extends Module {
         this.onToggleFocus(true)
     })
   }
+
   render() {
     return (
       <i-panel width='100%'>
@@ -256,7 +427,7 @@ export default class ScomTokenInput extends Module {
             verticalAlignment='center'
             gap='0.5rem'
           >
-            <i-label id='lbTitle' font={{ size: '1.25rem' }}></i-label>
+            <i-hstack id="pnlTitle" gap="4px"></i-hstack>
             <i-hstack
               id="pnlBalance"
               horizontalAlignment='end'
@@ -274,12 +445,6 @@ export default class ScomTokenInput extends Module {
             background={{ color: Theme.input.background }}
             font={{ color: Theme.input.fontColor }}
             verticalAlignment='center'
-            border={{
-              radius: 6,
-              width: '1px',
-              style: 'solid',
-              color: Theme.divider,
-            }}
             lineHeight={1.5715}
             padding={{ top: 4, bottom: 4, left: 11, right: 11 }}
             gap={{column: '0.5rem'}}
@@ -295,13 +460,52 @@ export default class ScomTokenInput extends Module {
               placeholder='Enter an amount'
               onChanged={this.onAmountChanged.bind(this)}
             ></i-input>
-            <token-selection
-              id='tokenSelection'
-              class={tokenSelectionStyle}
-              background={{ color: 'transparent' }}
-              width='100%'
-              onSelectToken={this.onSelectToken.bind(this)}
-            ></token-selection>
+            <i-panel id="pnlSelection" width='100%' class={tokenSelectionStyle}>
+              <i-hstack verticalAlignment="center" horizontalAlignment="end" gap="0.25rem">
+                <i-button
+                  id='btnMax'
+                  visible={false}
+                  caption='Max'
+                  height='100%'
+                  background={{ color: Theme.colors.success.main }}
+                  font={{ color: Theme.colors.success.contrastText }}
+                  padding={{
+                    top: '0.25rem',
+                    bottom: '0.25rem',
+                    left: '0.5rem',
+                    right: '0.5rem',
+                  }}
+                  onClick={() => this.onSetMax()}
+                />
+                <i-button
+                  id='btnToken'
+                  class={`${buttonStyle}`}
+                  height='100%'
+                  caption='Select a token'
+                  rightIcon={{ width: 14, height: 14, name: 'angle-down' }}
+                  border={{ radius: 0 }}
+                  background={{ color: 'transparent' }}
+                  font={{ color: Theme.input.fontColor }}
+                  padding={{
+                    top: '0.25rem',
+                    bottom: '0.25rem',
+                    left: '0.5rem',
+                    right: '0.5rem',
+                  }}
+                  onClick={this.onButtonClicked.bind(this)}
+                ></i-button>
+              </i-hstack>
+              <token-select
+                id="cbToken"
+                width='100%'
+                onSelectToken={this.onSelectFn.bind(this)}
+              ></token-select>
+              <i-scom-token-modal
+                id="mdToken"
+                width='100%'
+                onSelectToken={this.onSelectFn.bind(this)}
+              ></i-scom-token-modal>
+            </i-panel>
           </i-grid-layout>
         </i-vstack>
       </i-panel>

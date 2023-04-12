@@ -44,7 +44,9 @@
     }
   ],
   "wallets": [
-    "metamask"
+    {
+      "name": "metamask"
+    }
   ],
   "themes": {
     "default": "light",

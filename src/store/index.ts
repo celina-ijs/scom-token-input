@@ -1,16 +1,18 @@
-import { DefaultTokens } from './tokens/index';
-import { TokenStore } from './token';
+import { Wallet } from '@ijstech/eth-wallet';
 
-export let tokenStore: TokenStore = new TokenStore(DefaultTokens);
 
-export const setTokenStore = () => {
-  tokenStore = new TokenStore(DefaultTokens);
+export function getChainId() {
+  return Wallet.getInstance().chainId;
 }
 
-export {
-  DefaultERC20Tokens,
-  ChainNativeTokenByChainId,
-  DefaultTokens,
-  CoreContractAddressesByChainId
-} from './tokens/index'
-export * from './utils'
+export const getNetworkInfo = (chainId: number): any => {
+  return Wallet.getClientInstance().getNetworkInfo(chainId) as any
+}
+
+export const viewOnExplorerByAddress = (chainId: number, address: string) => {
+  let network = getNetworkInfo(chainId);
+  if (network && network.blockExplorerUrls[0]) {
+    const url = `${network.blockExplorerUrls[0]}${address}`;
+    window.open(url);
+  }
+}
