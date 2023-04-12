@@ -37,6 +37,7 @@ interface ScomTokenInputElement extends ControlElement {
   isInputShown?: boolean;
   isBalanceShown?: boolean;
   onChanged?: (target: Control, event: Event) => void;
+  onSelectToken?: (token: ITokenObject|undefined) => void;
   onSetMaxBalance?: () => void;
 }
 const Theme = Styles.Theme.ThemeVars
@@ -77,8 +78,9 @@ export default class ScomTokenInput extends Module {
   private _isBalanceShown: boolean = true
   private tokenBalancesMap: any
 
-  private _onChanged: (target: Control, event: Event) => void
-  private _onSetMaxBalance: () => void
+  onChanged: (target: Control, event: Event) => void
+  onSelectToken: (token: ITokenObject|undefined) => void;
+  onSetMaxBalance: () => void
 
   constructor(parent?: Container, options?: any) {
     super(parent, options);
@@ -202,8 +204,7 @@ export default class ScomTokenInput extends Module {
   }
   set token(value: ITokenObject | undefined) {
     this._token = value;
-    this.updateTokenButton(value)
-    this.onSelectToken(value)
+    this.onSelectFn(value)
     if (this.cbToken)
       this.cbToken.token = value
     if (this.mdToken)
@@ -277,13 +278,6 @@ export default class ScomTokenInput extends Module {
       this.mdToken.importable = value;
   }
 
-  get onSetMaxBalance(): any {
-    return this._onSetMaxBalance;
-  }
-  set onSetMaxBalance(callback: any) {
-    this._onSetMaxBalance = callback;
-  }
-
   get isInputShown(): boolean {
     return this._isInputShown;
   }
@@ -310,13 +304,6 @@ export default class ScomTokenInput extends Module {
     if (this.onSetMaxBalance) this.onSetMaxBalance();
   }
 
-  get onChanged(): any {
-    return this._onChanged;
-  }
-  set onChanged(callback: any) {
-    this._onChanged = callback;
-  }
-
   private async onAmountChanged(target: Control, event: Event) {
     if (this.onChanged) this.onChanged(target, event)
   }
@@ -327,28 +314,20 @@ export default class ScomTokenInput extends Module {
       this.gridTokenInput.classList.remove('focus-style')
   }
 
-  private async onSelectToken(token: ITokenObject|undefined) {
-    this._token = token;
-    this.inputAmount.value = ''
-    if (token) {
-      const symbol = token?.symbol || ''
-      this.lbBalance.caption = `${(await getTokenBalance(token)).toFixed(2)} ${symbol}`
-      this.updateTokenButton(token)
-    } else {
-      this.lbBalance.caption = '0.00'
-    }
-  }
-
   _handleFocus(event: Event) {
     this.onToggleFocus(true)
     return super._handleFocus(event)
   }
 
-  private renderTokenList() {
-    if (this.type === 'combobox')
-      this.cbToken.tokenList = this.tokenDataList
-    else
+  private async renderTokenList() {
+    if (this.type === 'combobox') {
+      if (!this.cbToken.isConnected)
+        await this.cbToken.ready();
+      this.cbToken.tokenList = [...this.tokenDataList]
+    }
+    else {
       this.mdToken.onRefresh()
+    }
   }
 
   private updateStatusButton() {
@@ -372,28 +351,14 @@ export default class ScomTokenInput extends Module {
       )
     if (token) {
       const tokenIconPath = assets.tokenPath(token, this.chainId)
-      if (this.type === 'combobox') {
-        this.btnToken.caption = `<i-hstack verticalAlignment="center" gap="0.5rem">
+      this.btnToken.caption = `<i-hstack verticalAlignment="center" gap="0.5rem">
           <i-panel>
             <i-image width=${24} height=${24} url="${tokenIconPath}" fallbackUrl="${assets.fallbackUrl}"></i-image>
           </i-panel>
-          <i-label caption="${token.symbol}"></i-label>
+          <i-label caption="${token?.symbol || ''}"></i-label>
         </i-hstack>`
-      } else {
-        const icon = new Icon(this.btnToken, {
-          width: 24,
-          height: 24,
-          image: {
-            url: tokenIconPath,
-            fallBackUrl: assets.fallbackUrl,
-          },
-        })
-        this.btnToken.icon = icon
-        this.btnToken.caption = token?.symbol || ''
-      }
       this.btnMax.visible = this.isBtnMaxShown
     } else {
-      this.btnToken.icon = undefined
       this.btnToken.caption = 'Select a token'
       this.btnMax.visible = false
     }
@@ -406,11 +371,28 @@ export default class ScomTokenInput extends Module {
       this.mdToken.showModal()
   }
 
+  private async onSelectFn(token: ITokenObject|undefined) {
+    this._token = token;
+    if (!this.inputAmount.isConnected) {
+      await this.inputAmount.ready()
+      this.inputAmount.value = ''
+    }
+    if (token) {
+      const symbol = token?.symbol || ''
+      this.lbBalance.caption = `${(await getTokenBalance(token)).toFixed(2)} ${symbol}`
+    } else {
+      this.lbBalance.caption = '0.00'
+    }
+    this.updateTokenButton(token)
+    if (this.onSelectToken) this.onSelectToken(token)
+  }
+
   init() {
     this.classList.add(customStyle)
     super.init()
     this.onChanged = this.getAttribute('onChanged', true) || this.onChanged
     this.onSetMaxBalance = this.getAttribute('onSetMaxBalance', true) || this.onSetMaxBalance
+    this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken
     this.title = this.getAttribute('title', true, '')
     const token = this.getAttribute('token', true)
     if (token) this.token = token
@@ -425,6 +407,7 @@ export default class ScomTokenInput extends Module {
     }
     this.isInputShown = this.getAttribute('isInputShown', true, true)
     this.isBalanceShown = this.getAttribute('isBalanceShown', true, true)
+
     document.addEventListener('click', (event) => {
       const target = event.target as Control
       const tokenInput = target.closest('#gridTokenInput')
@@ -515,12 +498,12 @@ export default class ScomTokenInput extends Module {
               <token-select
                 id="cbToken"
                 width='100%'
-                onSelectToken={this.onSelectToken.bind(this)}
+                onSelectToken={this.onSelectFn.bind(this)}
               ></token-select>
               <i-scom-token-modal
                 id="mdToken"
                 width='100%'
-                onSelectToken={this.onSelectToken.bind(this)}
+                onSelectToken={this.onSelectFn.bind(this)}
               ></i-scom-token-modal>
             </i-panel>
           </i-grid-layout>

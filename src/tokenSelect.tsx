@@ -20,7 +20,7 @@ interface TokenSelectElement extends ControlElement {
   chainId?: number;
   token?: ITokenObject;
   tokenList?: ITokenObject[];
-  onSelectToken?: (token: ITokenObject) => void;
+  onSelectToken?: (token: ITokenObject|undefined) => void;
 }
 
 declare global {
@@ -42,7 +42,7 @@ export class TokenSelect extends Module {
   private mdCbToken: Modal
   private gridTokenList: GridLayout
 
-  onSelectToken: (token: ITokenObject) => void
+  onSelectToken: (token: ITokenObject|undefined) => void
 
   constructor(parent?: Container, options?: any) {
     super(parent, options)
@@ -128,7 +128,7 @@ export class TokenSelect extends Module {
   }
 
   private async renderTokenList() {
-    if (!this.gridTokenList) return
+    if (!this.gridTokenList) return;
     this.gridTokenList.clearInnerHTML()
     if (this.tokenList?.length) {
       const tokenItems = this.tokenList.map((token: ITokenObject) =>
@@ -151,12 +151,10 @@ export class TokenSelect extends Module {
   }
 
   private setActive(token: ITokenObject) {
-    if (this.currentToken && this.tokenMap.has(this.currentToken)) {
+    if (this.currentToken && this.tokenMap.has(this.currentToken))
       this.tokenMap.get(this.currentToken).classList.remove('is-selected')
-    }
-    if (this.tokenMap.has(token.address)) {
+    if (this.tokenMap.has(token.address))
       this.tokenMap.get(token.address).classList.add('is-selected')
-    }
     this.currentToken = token.address
   }
 
@@ -174,7 +172,8 @@ export class TokenSelect extends Module {
     const chainId = this.getAttribute('chainId', true)
     if (chainId) this.targetChainId = chainId
     this.token = this.getAttribute('token', true)
-    this.tokenList = this.getAttribute('tokenList', true, [])
+    const tokens = this.getAttribute('tokenList', true)
+    if (tokens) this.tokenList = tokens
   }
 
   render() {

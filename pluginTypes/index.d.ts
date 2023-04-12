@@ -495,7 +495,7 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         chainId?: number;
         token?: ITokenObject;
         tokenList?: ITokenObject[];
-        onSelectToken?: (token: ITokenObject) => void;
+        onSelectToken?: (token: ITokenObject | undefined) => void;
     }
     global {
         namespace JSX {
@@ -512,7 +512,7 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         private currentToken;
         private mdCbToken;
         private gridTokenList;
-        onSelectToken: (token: ITokenObject) => void;
+        onSelectToken: (token: ITokenObject | undefined) => void;
         constructor(parent?: Container, options?: any);
         get token(): ITokenObject | undefined;
         set token(value: ITokenObject | undefined);
@@ -1151,6 +1151,7 @@ declare module "@scom/scom-token-input" {
         isInputShown?: boolean;
         isBalanceShown?: boolean;
         onChanged?: (target: Control, event: Event) => void;
+        onSelectToken?: (token: ITokenObject | undefined) => void;
         onSetMaxBalance?: () => void;
     }
     global {
@@ -1183,8 +1184,9 @@ declare module "@scom/scom-token-input" {
         private _isInputShown;
         private _isBalanceShown;
         private tokenBalancesMap;
-        private _onChanged;
-        private _onSetMaxBalance;
+        onChanged: (target: Control, event: Event) => void;
+        onSelectToken: (token: ITokenObject | undefined) => void;
+        onSetMaxBalance: () => void;
         constructor(parent?: Container, options?: any);
         static create(options?: ScomTokenInputElement, parent?: Container): Promise<ScomTokenInput>;
         private onRefresh;
@@ -1212,23 +1214,19 @@ declare module "@scom/scom-token-input" {
         set readonly(value: boolean);
         get importable(): boolean;
         set importable(value: boolean);
-        get onSetMaxBalance(): any;
-        set onSetMaxBalance(callback: any);
         get isInputShown(): boolean;
         set isInputShown(value: boolean);
         get isBalanceShown(): boolean;
         set isBalanceShown(value: boolean);
         onSetMax(): Promise<void>;
-        get onChanged(): any;
-        set onChanged(callback: any);
         private onAmountChanged;
         private onToggleFocus;
-        private onSelectToken;
         _handleFocus(event: Event): boolean;
         private renderTokenList;
         private updateStatusButton;
         private updateTokenButton;
         private onButtonClicked;
+        private onSelectFn;
         init(): void;
         render(): any;
     }

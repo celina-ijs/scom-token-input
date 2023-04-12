@@ -27,7 +27,8 @@ export default class Module1 extends Module {
                 "symbol": "OSWAP",
                 "decimals": 18,
                 "isCommon": true
-            }
+            },
+            onSelectToken: (token: any) => console.log('on select token', token)
         })
         this.mainStack.appendChild(this.picker2);
     }
