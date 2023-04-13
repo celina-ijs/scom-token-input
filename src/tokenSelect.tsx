@@ -8,7 +8,7 @@ import {
   HStack
 } from '@ijstech/components'
 import { ITokenObject } from './global/index'
-import { assets } from './scom-token-list/index';
+import { assets } from '@scom/scom-token-list';
 import customStyle, {
   tokenStyle,
   scrollbarStyle,

@@ -20,9 +20,9 @@ import {} from '@ijstech/eth-contract'
 import customStyle, { buttonStyle, inputStyle, tokenSelectionStyle } from './index.css'
 import { EventId, ITokenObject, IType } from './global/index'
 import { getTokenBalance, limitDecimals } from './utils/index'
+import { ChainNativeTokenByChainId, getChainId, isWalletConnected, tokenStore, assets } from '@scom/scom-token-list'
 import { TokenSelect } from './tokenSelect'
-import ScomTokenModal from './scom-token-modal/index'
-import { ChainNativeTokenByChainId, getChainId, isWalletConnected, tokenStore, assets } from './scom-token-list/index'
+import ScomTokenModal from '@scom/scom-token-modal'
 
 interface ScomTokenInputElement extends ControlElement {
   type?: IType;
