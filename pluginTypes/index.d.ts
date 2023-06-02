@@ -116,6 +116,7 @@ declare module "@scom/scom-token-input" {
         chainId?: number;
         token?: ITokenObject;
         readonly?: boolean;
+        tokenReadOnly?: boolean;
         importable?: boolean;
         isSortBalanceShown?: boolean;
         isBtnMaxShown?: boolean;
@@ -152,6 +153,7 @@ declare module "@scom/scom-token-input" {
         private _isSortBalanceShown;
         private _isBtnMaxShown;
         private _readonly;
+        private _tokenReadOnly;
         private _importable;
         private _isInputShown;
         private _isBalanceShown;
@@ -184,6 +186,8 @@ declare module "@scom/scom-token-input" {
         set isBtnMaxShown(value: boolean);
         get readonly(): boolean;
         set readonly(value: boolean);
+        get tokenReadOnly(): boolean;
+        set tokenReadOnly(value: boolean);
         get importable(): boolean;
         set importable(value: boolean);
         get isInputShown(): boolean;

@@ -30,6 +30,7 @@ interface ScomTokenInputElement extends ControlElement {
   chainId?: number;
   token?: ITokenObject;
   readonly?: boolean;
+  tokenReadOnly?: boolean;
   importable?: boolean;
   isSortBalanceShown?: boolean;
   isBtnMaxShown?: boolean;
@@ -73,6 +74,7 @@ export default class ScomTokenInput extends Module {
   private _isSortBalanceShown: boolean = true
   private _isBtnMaxShown: boolean = true
   private _readonly: boolean = false
+  private _tokenReadOnly: boolean = false
   private _importable: boolean = false
   private _isInputShown: boolean = true
   private _isBalanceShown: boolean = true
@@ -269,6 +271,18 @@ export default class ScomTokenInput extends Module {
       this.inputAmount.readOnly = value;
   }
 
+  get tokenReadOnly(): boolean {
+    return this._tokenReadOnly;
+  }
+
+  set tokenReadOnly(value: boolean) {
+    this._tokenReadOnly = value;
+    if (this.btnToken) {
+      this.btnToken.enabled = !this._readonly && !value;
+      this.btnToken.rightIcon.visible = !this._readonly && !value
+    }
+  }
+
   get importable(): boolean {
     return this._importable;
   }
@@ -334,7 +348,7 @@ export default class ScomTokenInput extends Module {
     const status = isWalletConnected()
     const value = !this.readonly && status
     if (this.btnToken) {
-      this.btnToken.enabled = value
+      this.btnToken.enabled = value && !this.tokenReadOnly
     }
     if (this.btnMax) {
       this.btnMax.enabled = value
@@ -398,6 +412,7 @@ export default class ScomTokenInput extends Module {
     if (token) this.token = token
     this.targetChainId = this.getAttribute('chainId', true)
     this.readonly = this.getAttribute('readonly', true, false)
+    this.tokenReadOnly = this.getAttribute('tokenReadOnly', true, false)
     this.isBtnMaxShown = this.getAttribute('isBtnMaxShown', true, true)
     this.type = this.getAttribute('type', true, 'button')
     if (this.type === 'button') {

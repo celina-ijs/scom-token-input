@@ -426,6 +426,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this._isSortBalanceShown = true;
             this._isBtnMaxShown = true;
             this._readonly = false;
+            this._tokenReadOnly = false;
             this._importable = false;
             this._isInputShown = true;
             this._isBalanceShown = true;
@@ -604,6 +605,16 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             if (this.inputAmount)
                 this.inputAmount.readOnly = value;
         }
+        get tokenReadOnly() {
+            return this._tokenReadOnly;
+        }
+        set tokenReadOnly(value) {
+            this._tokenReadOnly = value;
+            if (this.btnToken) {
+                this.btnToken.enabled = !this._readonly && !value;
+                this.btnToken.rightIcon.visible = !this._readonly && !value;
+            }
+        }
         get importable() {
             return this._importable;
         }
@@ -664,7 +675,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             const status = scom_token_list_2.isWalletConnected();
             const value = !this.readonly && status;
             if (this.btnToken) {
-                this.btnToken.enabled = value;
+                this.btnToken.enabled = value && !this.tokenReadOnly;
             }
             if (this.btnMax) {
                 this.btnMax.enabled = value;
@@ -729,6 +740,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.token = token;
             this.targetChainId = this.getAttribute('chainId', true);
             this.readonly = this.getAttribute('readonly', true, false);
+            this.tokenReadOnly = this.getAttribute('tokenReadOnly', true, false);
             this.isBtnMaxShown = this.getAttribute('isBtnMaxShown', true, true);
             this.type = this.getAttribute('type', true, 'button');
             if (this.type === 'button') {
