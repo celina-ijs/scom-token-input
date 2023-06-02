@@ -37,7 +37,7 @@ interface ScomTokenInputElement extends ControlElement {
   isCommonShown?: boolean;
   isInputShown?: boolean;
   isBalanceShown?: boolean;
-  onChanged?: (target: Control, event: Event) => void;
+  onInputAmountChanged?: (target: Control, event: Event) => void;
   onSelectToken?: (token: ITokenObject|undefined) => void;
   onSetMaxBalance?: () => void;
 }
@@ -80,7 +80,7 @@ export default class ScomTokenInput extends Module {
   private _isBalanceShown: boolean = true
   private tokenBalancesMap: any
 
-  onChanged: (target: Control, event: Event) => void
+  onInputAmountChanged: (target: Control, event: Event) => void
   onSelectToken: (token: ITokenObject|undefined) => void;
   onSetMaxBalance: () => void
 
@@ -311,6 +311,10 @@ export default class ScomTokenInput extends Module {
     if (this.pnlBalance) this.pnlBalance.visible = value
   }
 
+  get amount(): string {
+    return this.inputAmount.value
+  }
+
   async onSetMax() {
     this.inputAmount.value = this.token ?
       limitDecimals(await getTokenBalance(this.token), this.token.decimals || 18)
@@ -319,7 +323,7 @@ export default class ScomTokenInput extends Module {
   }
 
   private async onAmountChanged(target: Control, event: Event) {
-    if (this.onChanged) this.onChanged(target, event)
+    if (this.onInputAmountChanged) this.onInputAmountChanged(target, event)
   }
 
   private onToggleFocus(value: boolean) {
@@ -404,7 +408,7 @@ export default class ScomTokenInput extends Module {
   init() {
     this.classList.add(customStyle)
     super.init()
-    this.onChanged = this.getAttribute('onChanged', true) || this.onChanged
+    this.onInputAmountChanged = this.getAttribute('onInputAmountChanged', true) || this.onInputAmountChanged
     this.onSetMaxBalance = this.getAttribute('onSetMaxBalance', true) || this.onSetMaxBalance
     this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken
     this.title = this.getAttribute('title', true, '')

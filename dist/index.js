@@ -641,6 +641,9 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             if (this.pnlBalance)
                 this.pnlBalance.visible = value;
         }
+        get amount() {
+            return this.inputAmount.value;
+        }
         async onSetMax() {
             this.inputAmount.value = this.token ?
                 index_3.limitDecimals(await index_3.getTokenBalance(this.token), this.token.decimals || 18)
@@ -649,8 +652,8 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.onSetMaxBalance();
         }
         async onAmountChanged(target, event) {
-            if (this.onChanged)
-                this.onChanged(target, event);
+            if (this.onInputAmountChanged)
+                this.onInputAmountChanged(target, event);
         }
         onToggleFocus(value) {
             value ?
@@ -731,7 +734,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         init() {
             this.classList.add(index_css_1.default);
             super.init();
-            this.onChanged = this.getAttribute('onChanged', true) || this.onChanged;
+            this.onInputAmountChanged = this.getAttribute('onInputAmountChanged', true) || this.onInputAmountChanged;
             this.onSetMaxBalance = this.getAttribute('onSetMaxBalance', true) || this.onSetMaxBalance;
             this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken;
             this.title = this.getAttribute('title', true, '');

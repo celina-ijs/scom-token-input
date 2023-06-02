@@ -123,7 +123,7 @@ declare module "@scom/scom-token-input" {
         isCommonShown?: boolean;
         isInputShown?: boolean;
         isBalanceShown?: boolean;
-        onChanged?: (target: Control, event: Event) => void;
+        onInputAmountChanged?: (target: Control, event: Event) => void;
         onSelectToken?: (token: ITokenObject | undefined) => void;
         onSetMaxBalance?: () => void;
     }
@@ -158,7 +158,7 @@ declare module "@scom/scom-token-input" {
         private _isInputShown;
         private _isBalanceShown;
         private tokenBalancesMap;
-        onChanged: (target: Control, event: Event) => void;
+        onInputAmountChanged: (target: Control, event: Event) => void;
         onSelectToken: (token: ITokenObject | undefined) => void;
         onSetMaxBalance: () => void;
         constructor(parent?: Container, options?: any);
@@ -194,6 +194,7 @@ declare module "@scom/scom-token-input" {
         set isInputShown(value: boolean);
         get isBalanceShown(): boolean;
         set isBalanceShown(value: boolean);
+        get amount(): string;
         onSetMax(): Promise<void>;
         private onAmountChanged;
         private onToggleFocus;
