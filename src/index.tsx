@@ -19,7 +19,7 @@ import {
 import { } from '@ijstech/eth-contract'
 import customStyle, { buttonStyle, inputStyle, tokenSelectionStyle } from './index.css'
 import { EventId, ITokenObject, IType } from './global/index'
-import { getTokenBalance, limitDecimals } from './utils/index'
+import { formatNumber, getTokenBalance, limitDecimals } from './utils/index'
 import { ChainNativeTokenByChainId, getChainId, isWalletConnected, tokenStore, assets, DefaultERC20Tokens } from '@scom/scom-token-list'
 import { TokenSelect } from './tokenSelect'
 import ScomTokenModal from '@scom/scom-token-modal'
@@ -428,7 +428,7 @@ export default class ScomTokenInput extends Module {
     }
     if (token) {
       const symbol = token?.symbol || ''
-      this.lbBalance.caption = isWalletConnected() ? `${(await getTokenBalance(token)).toFixed(2)} ${symbol}` : `0.00 ${symbol}`
+      this.lbBalance.caption = isWalletConnected() ? `${formatNumber(await getTokenBalance(token), 2)} ${symbol}` : `0.00 ${symbol}`
     } else {
       this.lbBalance.caption = '0.00'
     }

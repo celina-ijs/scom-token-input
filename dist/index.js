@@ -144,7 +144,9 @@ define("@scom/scom-token-input/utils/index.ts", ["require", "exports", "@ijstech
         if (precision) {
             let outputStr = '';
             if (value >= 1) {
-                outputStr = value.toLocaleString('en-US', { maximumFractionDigits: precision });
+                const unit = Math.pow(10, precision);
+                const rounded = Math.floor(value * unit) / unit;
+                outputStr = rounded.toLocaleString('en-US', { maximumFractionDigits: precision });
             }
             else {
                 outputStr = value.toLocaleString('en-US', { maximumSignificantDigits: precision });
@@ -757,7 +759,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             }
             if (token) {
                 const symbol = (token === null || token === void 0 ? void 0 : token.symbol) || '';
-                this.lbBalance.caption = (0, scom_token_list_2.isWalletConnected)() ? `${(await (0, index_3.getTokenBalance)(token)).toFixed(2)} ${symbol}` : `0.00 ${symbol}`;
+                this.lbBalance.caption = (0, scom_token_list_2.isWalletConnected)() ? `${(0, index_3.formatNumber)(await (0, index_3.getTokenBalance)(token), 2)} ${symbol}` : `0.00 ${symbol}`;
             }
             else {
                 this.lbBalance.caption = '0.00';
