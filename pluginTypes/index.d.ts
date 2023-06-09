@@ -30,6 +30,7 @@ declare module "@scom/scom-token-input/global/index.ts" {
         isNative?: boolean | null;
         isWETH?: boolean | null;
         isNew?: boolean | null;
+        chainId?: number;
     }
     export type IType = 'button' | 'combobox';
 }
@@ -115,8 +116,10 @@ declare module "@scom/scom-token-input" {
         title?: string;
         chainId?: number;
         token?: ITokenObject;
+        tokenDataListProp?: ITokenObject[];
         readonly?: boolean;
         tokenReadOnly?: boolean;
+        withoutConnected?: boolean;
         importable?: boolean;
         isSortBalanceShown?: boolean;
         isBtnMaxShown?: boolean;
@@ -157,6 +160,8 @@ declare module "@scom/scom-token-input" {
         private _importable;
         private _isInputShown;
         private _isBalanceShown;
+        private _tokenDataListProp;
+        private _withoutConnected;
         private tokenBalancesMap;
         onInputAmountChanged: (target: Control, event: Event) => void;
         onSelectToken: (token: ITokenObject | undefined) => void;
@@ -167,6 +172,9 @@ declare module "@scom/scom-token-input" {
         private onUpdateData;
         private updateDataByNewToken;
         private registerEvent;
+        get tokenDataListProp(): Array<ITokenObject>;
+        set tokenDataListProp(value: Array<ITokenObject>);
+        private get tokenListByChainId();
         private get tokenDataList();
         private sortToken;
         get type(): IType;

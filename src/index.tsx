@@ -16,11 +16,11 @@ import {
   HStack,
   IEventBus,
 } from '@ijstech/components'
-import {} from '@ijstech/eth-contract'
+import { } from '@ijstech/eth-contract'
 import customStyle, { buttonStyle, inputStyle, tokenSelectionStyle } from './index.css'
 import { EventId, ITokenObject, IType } from './global/index'
-import { getTokenBalance, limitDecimals } from './utils/index'
-import { ChainNativeTokenByChainId, getChainId, isWalletConnected, tokenStore, assets } from '@scom/scom-token-list'
+import { formatNumber, getTokenBalance, limitDecimals } from './utils/index'
+import { ChainNativeTokenByChainId, getChainId, isWalletConnected, tokenStore, assets, DefaultERC20Tokens } from '@scom/scom-token-list'
 import { TokenSelect } from './tokenSelect'
 import ScomTokenModal from '@scom/scom-token-modal'
 
@@ -29,8 +29,10 @@ interface ScomTokenInputElement extends ControlElement {
   title?: string;
   chainId?: number;
   token?: ITokenObject;
+  tokenDataListProp?: ITokenObject[];
   readonly?: boolean;
   tokenReadOnly?: boolean;
+  withoutConnected?: boolean;
   importable?: boolean;
   isSortBalanceShown?: boolean;
   isBtnMaxShown?: boolean;
@@ -38,7 +40,7 @@ interface ScomTokenInputElement extends ControlElement {
   isInputShown?: boolean;
   isBalanceShown?: boolean;
   onInputAmountChanged?: (target: Control, event: Event) => void;
-  onSelectToken?: (token: ITokenObject|undefined) => void;
+  onSelectToken?: (token: ITokenObject | undefined) => void;
   onSetMaxBalance?: () => void;
 }
 const Theme = Styles.Theme.ThemeVars
@@ -69,7 +71,7 @@ export default class ScomTokenInput extends Module {
   private _type: IType
   private _targetChainId: number
   private _token: ITokenObject
-  private _title: string|Control
+  private _title: string | Control
   private _isCommonShown: boolean = false
   private _isSortBalanceShown: boolean = true
   private _isBtnMaxShown: boolean = true
@@ -78,15 +80,17 @@ export default class ScomTokenInput extends Module {
   private _importable: boolean = false
   private _isInputShown: boolean = true
   private _isBalanceShown: boolean = true
+  private _tokenDataListProp: ITokenObject[] = []
+  private _withoutConnected: boolean = false;
   private tokenBalancesMap: any
 
   onInputAmountChanged: (target: Control, event: Event) => void
-  onSelectToken: (token: ITokenObject|undefined) => void;
+  onSelectToken: (token: ITokenObject | undefined) => void;
   onSetMaxBalance: () => void
 
   constructor(parent?: Container, options?: any) {
     super(parent, options);
-    this.$eventBus =  application.EventBus;
+    this.$eventBus = application.EventBus;
     this.registerEvent();
   }
 
@@ -100,8 +104,7 @@ export default class ScomTokenInput extends Module {
     if (isWalletConnected()) {
       this.tokenBalancesMap = tokenStore.tokenBalances || {};
       if (this.token) {
-        const _tokenList = tokenStore.getTokenList(this.chainId)
-        const token = _tokenList.find(
+        const token = this.tokenDataList.find(
           (t) =>
             (t.address && t.address == this.token?.address) ||
             t.symbol == this.token?.symbol
@@ -109,6 +112,8 @@ export default class ScomTokenInput extends Module {
         if (!token) this.token = undefined
         else this.token = token;
       }
+    } else {
+      if (this.lbBalance.isConnected) this.lbBalance.caption =  `0.00 ${this.token?.symbol || ''}`
     }
     this.renderTokenList();
     this.updateStatusButton();
@@ -125,18 +130,41 @@ export default class ScomTokenInput extends Module {
   }
 
   private registerEvent() {
-     this.$eventBus.register(this, EventId.IsWalletConnected, this.onUpdateData)
-     this.$eventBus.register(this, EventId.IsWalletDisconnected, this.onRefresh)
-     this.$eventBus.register(this, EventId.chainChanged, this.onUpdateData)
-     this.$eventBus.register(this, EventId.Paid, this.onUpdateData)
-     this.$eventBus.register(this, EventId.EmitNewToken, this.updateDataByNewToken)
+    this.$eventBus.register(this, EventId.IsWalletConnected, this.onUpdateData)
+    this.$eventBus.register(this, EventId.IsWalletDisconnected, this.onRefresh)
+    this.$eventBus.register(this, EventId.chainChanged, this.onUpdateData)
+    this.$eventBus.register(this, EventId.Paid, this.onUpdateData)
+    this.$eventBus.register(this, EventId.EmitNewToken, this.updateDataByNewToken)
+  }
+
+  get tokenDataListProp(): Array<ITokenObject> {
+    return this._tokenDataListProp;
+  }
+
+  set tokenDataListProp(value: Array<ITokenObject>) {
+    this._tokenDataListProp = value;
+    this.renderTokenList();
+  }
+
+  private get tokenListByChainId() {
+    let list: ITokenObject[] = [];
+    const propList = this.tokenDataListProp.filter(f => !f.chainId || f.chainId === this.chainId);
+    const nativeToken = ChainNativeTokenByChainId[this.chainId];
+    const tokens = DefaultERC20Tokens[this.chainId];
+    for (const token of propList) {
+      const tokenAddress = token.address?.toLowerCase();
+      if (!tokenAddress || tokenAddress === nativeToken?.symbol?.toLowerCase()) {
+        if (nativeToken) list.push({ ...nativeToken, chainId: this.chainId });
+      } else {
+        const tokenObj = tokens.find(v => v.address?.toLowerCase() === tokenAddress);
+        if (tokenObj) list.push({ ...token, chainId: this.chainId });
+      }
+    }
+    return list;
   }
 
   private get tokenDataList(): ITokenObject[] {
-    // let tokenList: ITokenObject[] = this.tokenDataListProp?.length
-    //   ? this.tokenDataListProp
-    //   : tokenStore.getTokenList(this.chainId)
-    let tokenList: ITokenObject[] = tokenStore.getTokenList(this.chainId);
+    let tokenList: ITokenObject[] = this.tokenListByChainId?.length ? this.tokenListByChainId : tokenStore.getTokenList(this.chainId);
     return tokenList.map((token: ITokenObject) => {
       const tokenObject = { ...token }
       const nativeToken = ChainNativeTokenByChainId[this.chainId]
@@ -149,13 +177,12 @@ export default class ScomTokenInput extends Module {
         Object.assign(tokenObject, {
           balance:
             this.tokenBalancesMap[
-              token.address?.toLowerCase() || token.symbol
+            token.address?.toLowerCase() || token.symbol
             ] || 0,
         })
       }
       return tokenObject
-    })
-    .sort(this.sortToken)
+    }).sort(this.sortToken)
   }
 
   private sortToken = (a: any, b: any, asc?: boolean) => {
@@ -212,7 +239,7 @@ export default class ScomTokenInput extends Module {
     if (this.mdToken)
       this.mdToken.token = value
   }
-  
+
   get targetChainId() {
     return this._targetChainId;
   }
@@ -341,16 +368,20 @@ export default class ScomTokenInput extends Module {
     if (this.type === 'combobox') {
       if (!this.cbToken.isConnected)
         await this.cbToken.ready();
+      this.cbToken.visible = true;
       this.cbToken.tokenList = [...this.tokenDataList]
-    }
-    else {
+    } else {
+      if (!this.mdToken.isConnected)
+        await this.mdToken.ready()
+      this.cbToken.visible = false;
+      this.mdToken.tokenDataListProp = this.tokenDataListProp
       this.mdToken.onRefresh()
     }
   }
 
   private updateStatusButton() {
     const status = isWalletConnected()
-    const value = !this.readonly && status
+    const value = !this.readonly && (status || this._withoutConnected)
     if (this.btnToken) {
       this.btnToken.enabled = value && !this.tokenReadOnly
     }
@@ -389,7 +420,7 @@ export default class ScomTokenInput extends Module {
       this.mdToken.showModal()
   }
 
-  private async onSelectFn(token: ITokenObject|undefined) {
+  private async onSelectFn(token: ITokenObject | undefined) {
     this._token = token;
     if (!this.inputAmount.isConnected) {
       await this.inputAmount.ready()
@@ -397,7 +428,7 @@ export default class ScomTokenInput extends Module {
     }
     if (token) {
       const symbol = token?.symbol || ''
-      this.lbBalance.caption = `${(await getTokenBalance(token)).toFixed(2)} ${symbol}`
+      this.lbBalance.caption = isWalletConnected() ? `${formatNumber(await getTokenBalance(token), 2)} ${symbol}` : `0.00 ${symbol}`
     } else {
       this.lbBalance.caption = '0.00'
     }
@@ -412,6 +443,8 @@ export default class ScomTokenInput extends Module {
     this.onSetMaxBalance = this.getAttribute('onSetMaxBalance', true) || this.onSetMaxBalance
     this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken
     this.title = this.getAttribute('title', true, '')
+    this._withoutConnected = this.getAttribute('withoutConnected', true, false)
+    this.tokenDataListProp = this.getAttribute('tokenDataListProp', true, [])
     const token = this.getAttribute('token', true)
     if (token) this.token = token
     this.targetChainId = this.getAttribute('chainId', true)
@@ -466,7 +499,7 @@ export default class ScomTokenInput extends Module {
             verticalAlignment='center'
             lineHeight={1.5715}
             padding={{ top: 4, bottom: 4, left: 11, right: 11 }}
-            gap={{column: '0.5rem'}}
+            gap={{ column: '0.5rem' }}
           >
             <i-input
               id='inputAmount'
@@ -516,12 +549,12 @@ export default class ScomTokenInput extends Module {
               </i-hstack>
               <token-select
                 id="cbToken"
-                width='100%'
+                width="100%"
                 onSelectToken={this.onSelectFn.bind(this)}
               ></token-select>
               <i-scom-token-modal
                 id="mdToken"
-                width='100%'
+                width="100%"
                 onSelectToken={this.onSelectFn.bind(this)}
               ></i-scom-token-modal>
             </i-panel>
