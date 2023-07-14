@@ -11,23 +11,26 @@ import {
   Control,
   Panel,
   Button,
-  Icon,
   application,
   HStack,
   IEventBus,
+  VStack,
 } from '@ijstech/components'
 import { } from '@ijstech/eth-contract'
 import customStyle, { buttonStyle, inputStyle, tokenSelectionStyle } from './index.css'
-import { EventId, ITokenObject, IType } from './global/index'
+import { EventId, IType } from './global/index'
 import { formatNumber, getTokenBalance, limitDecimals } from './utils/index'
-import { ChainNativeTokenByChainId, getChainId, isWalletConnected, tokenStore, assets, DefaultERC20Tokens } from '@scom/scom-token-list'
+import { ChainNativeTokenByChainId, isWalletConnected, tokenStore, assets, DefaultERC20Tokens, ITokenObject } from '@scom/scom-token-list'
 import { TokenSelect } from './tokenSelect'
 import ScomTokenModal from '@scom/scom-token-modal'
+import { getChainId, getRpcWallet, updateStore } from './store/index'
+import { Constants, IEventBusRegistry, Wallet } from '@ijstech/eth-wallet'
 
 interface ScomTokenInputElement extends ControlElement {
   type?: IType;
   title?: string;
   chainId?: number;
+  rpcWalletId?: string;
   token?: ITokenObject;
   tokenDataListProp?: ITokenObject[];
   readonly?: boolean;
@@ -39,6 +42,8 @@ interface ScomTokenInputElement extends ControlElement {
   isCommonShown?: boolean;
   isInputShown?: boolean;
   isBalanceShown?: boolean;
+  value?: string;
+  placeholder?: string;
   onInputAmountChanged?: (target: Control, event: Event) => void;
   onSelectToken?: (token: ITokenObject | undefined) => void;
   onSetMaxBalance?: () => void;
@@ -65,6 +70,7 @@ export default class ScomTokenInput extends Module {
   private cbToken: TokenSelect
   private btnMax: Button
   private btnToken: Button
+  private inputStack: VStack
 
   private $eventBus: IEventBus;
 
@@ -82,10 +88,14 @@ export default class ScomTokenInput extends Module {
   private _isBalanceShown: boolean = true
   private _tokenDataListProp: ITokenObject[] = []
   private _withoutConnected: boolean = false;
+  private _rpcWalletId: string = '';
   private tokenBalancesMap: any
 
+  private walletEvents: IEventBusRegistry[] = [];
+  private clientEvents: any[] = [];
+
   onInputAmountChanged: (target: Control, event: Event) => void
-  onSelectToken: (token: ITokenObject | undefined) => void;
+  private _onSelectToken: (token: ITokenObject | undefined) => void;
   onSetMaxBalance: () => void
 
   constructor(parent?: Container, options?: any) {
@@ -119,30 +129,57 @@ export default class ScomTokenInput extends Module {
     this.updateStatusButton();
   }
 
-  private async onUpdateData() {
-    this.tokenBalancesMap = await tokenStore.updateAllTokenBalances()
+
+  private async updateDataByNewToken() {
+    this.tokenBalancesMap = tokenStore.tokenBalances || {};
+    this.renderTokenList();
+  }
+
+  private async onUpdateData(onPaid?: boolean) {
+    const rpcWallet = getRpcWallet()
+    if (rpcWallet)
+      this.tokenBalancesMap = onPaid ? tokenStore.tokenBalances : await tokenStore.updateAllTokenBalances(rpcWallet);
+    else this.tokenBalancesMap = {};
     this.onRefresh()
   }
 
-  private async updateDataByNewToken() {
-    this.tokenBalancesMap = tokenStore.tokenBalances || {}
-    this.renderTokenList()
+  private registerEvent() {
+    // const clientWallet = Wallet.getClientInstance();
+    // this.walletEvents.push(clientWallet.registerWalletEvent(this, Constants.ClientWalletEvent.AccountsChanged, async (payload: Record<string, any>) => {
+    //   const { account } = payload;
+    //   const connected = !!account;
+    //   if (connected && clientWallet.address === this.token?.address) {
+    //     const rpcWallet = getRpcWallet();
+    //     const balance = await rpcWallet.balanceOf(clientWallet.address);
+    //     this.lbBalance.caption = `${formatNumber(balance.toFixed(), 2)} ${this.token?.symbol}`;
+    //   }
+    //   console.log('is connected', connected)
+    //   this.onUpdateData()
+    // }));
+    this.clientEvents.push(this.$eventBus.register(this, EventId.IsWalletConnected, this.onUpdateData))
+    this.clientEvents.push(this.$eventBus.register(this, EventId.chainChanged, this.onUpdateData))
+    this.clientEvents.push(this.$eventBus.register(this, EventId.Paid, () => this.onUpdateData(true)))
+    this.clientEvents.push(this.$eventBus.register(this, EventId.EmitNewToken, this.updateDataByNewToken))
   }
 
-  private registerEvent() {
-    this.$eventBus.register(this, EventId.IsWalletConnected, this.onUpdateData)
-    this.$eventBus.register(this, EventId.IsWalletDisconnected, this.onRefresh)
-    this.$eventBus.register(this, EventId.chainChanged, this.onUpdateData)
-    this.$eventBus.register(this, EventId.Paid, this.onUpdateData)
-    this.$eventBus.register(this, EventId.EmitNewToken, this.updateDataByNewToken)
+  onHide() {
+    const rpcWallet = getRpcWallet();
+    for (let event of this.walletEvents) {
+      rpcWallet.unregisterWalletEvent(event);
+    }
+    this.walletEvents = [];
+    for (let event of this.clientEvents) {
+      event.unregister();
+    }
+    this.clientEvents = [];
   }
 
   get tokenDataListProp(): Array<ITokenObject> {
-    return this._tokenDataListProp;
+    return this._tokenDataListProp ?? [];
   }
 
   set tokenDataListProp(value: Array<ITokenObject>) {
-    this._tokenDataListProp = value;
+    this._tokenDataListProp = value ?? [];
     this.renderTokenList();
   }
 
@@ -163,26 +200,54 @@ export default class ScomTokenInput extends Module {
     return list;
   }
 
+  // private get tokenDataList(): ITokenObject[] {
+  //   let tokenList: ITokenObject[] = this.tokenListByChainId?.length ? this.tokenListByChainId : tokenStore.getTokenList(this.chainId);
+  //   return tokenList.map((token: ITokenObject) => {
+  //     const tokenObject = { ...token }
+  //     const nativeToken = ChainNativeTokenByChainId[this.chainId]
+  //     if (token.symbol === nativeToken.symbol) {
+  //       Object.assign(tokenObject, { isNative: true })
+  //     }
+  //     if (!isWalletConnected()) {
+  //       Object.assign(tokenObject, { balance: 0 })
+  //     } else if (this.tokenBalancesMap && this.chainId === getChainId()) {
+  //       Object.assign(tokenObject, {
+  //         balance:
+  //           this.tokenBalancesMap[
+  //           token.address?.toLowerCase() || token.symbol
+  //           ] || 0,
+  //       })
+  //     }
+  //     return tokenObject
+  //   }).sort(this.sortToken)
+  // }
+
   private get tokenDataList(): ITokenObject[] {
-    let tokenList: ITokenObject[] = this.tokenListByChainId?.length ? this.tokenListByChainId : tokenStore.getTokenList(this.chainId);
+    let tokenList: ITokenObject[] = [];
+    if (this.tokenDataListProp && this.tokenDataListProp.length) {
+      tokenList = this.tokenDataListProp;
+    }
+    if (!this.tokenBalancesMap || !Object.keys(this.tokenBalancesMap).length) {
+      this.tokenBalancesMap = tokenStore.tokenBalances || {};
+    }
     return tokenList.map((token: ITokenObject) => {
-      const tokenObject = { ...token }
-      const nativeToken = ChainNativeTokenByChainId[this.chainId]
-      if (token.symbol === nativeToken.symbol) {
+      const tokenObject = { ...token };
+      const nativeToken = ChainNativeTokenByChainId[this.chainId];
+      if (nativeToken?.symbol && token.symbol === nativeToken.symbol) {
         Object.assign(tokenObject, { isNative: true })
       }
-      if (!isWalletConnected()) {
-        Object.assign(tokenObject, { balance: 0 })
-      } else if (this.tokenBalancesMap && this.chainId === getChainId()) {
+      if (!isWalletConnected()){
         Object.assign(tokenObject, {
-          balance:
-            this.tokenBalancesMap[
-            token.address?.toLowerCase() || token.symbol
-            ] || 0,
+          balance: 0,
         })
       }
-      return tokenObject
-    }).sort(this.sortToken)
+      else if (this.tokenBalancesMap) {
+        Object.assign(tokenObject, {
+          balance: this.tokenBalancesMap[token.address?.toLowerCase() || token.symbol] || 0,
+        })
+      }
+      return tokenObject;
+    }).sort(this.sortToken);
   }
 
   private sortToken = (a: any, b: any, asc?: boolean) => {
@@ -196,6 +261,14 @@ export default class ScomTokenInput extends Module {
       return 1
     }
     return 0
+  }
+
+  get onSelectToken(): any {
+    return this._onSelectToken;
+  }
+
+  set onSelectToken(callback: any) {
+    this._onSelectToken = callback;
   }
 
   get type(): IType {
@@ -342,6 +415,17 @@ export default class ScomTokenInput extends Module {
     return this.inputAmount.value
   }
 
+  get rpcWalletId() {
+    return this._rpcWalletId
+  }
+  set rpcWalletId(value: string) {
+    this._rpcWalletId = value
+    updateStore({ rpcWalletId: value })
+    if (this.mdToken)
+      this.mdToken.rpcWalletId = value
+    this.onUpdateData()
+  }
+
   async onSetMax() {
     this.inputAmount.value = this.token ?
       limitDecimals(await getTokenBalance(this.token), this.token.decimals || 18)
@@ -374,6 +458,7 @@ export default class ScomTokenInput extends Module {
       if (!this.mdToken.isConnected)
         await this.mdToken.ready()
       this.cbToken.visible = false;
+      console.log('tokenDataListProp', this.tokenDataListProp)
       this.mdToken.tokenDataListProp = this.tokenDataListProp
       this.mdToken.onRefresh()
     }
@@ -400,6 +485,7 @@ export default class ScomTokenInput extends Module {
       )
     if (token) {
       const tokenIconPath = assets.tokenPath(token, this.chainId)
+      console.log(this.chainId)
       this.btnToken.caption = `<i-hstack verticalAlignment="center" gap="0.5rem">
           <i-panel>
             <i-image width=${24} height=${24} url="${tokenIconPath}" fallbackUrl="${assets.fallbackUrl}"></i-image>
@@ -408,7 +494,7 @@ export default class ScomTokenInput extends Module {
         </i-hstack>`
       this.btnMax.visible = this.isBtnMaxShown
     } else {
-      this.btnToken.caption = 'Select a token'
+      this.btnToken.caption = 'Select Token'
       this.btnMax.visible = false
     }
   }
@@ -459,6 +545,8 @@ export default class ScomTokenInput extends Module {
     }
     this.isInputShown = this.getAttribute('isInputShown', true, true)
     this.isBalanceShown = this.getAttribute('isBalanceShown', true, true)
+    const rpcWalletId = this.getAttribute('rpcWalletId', true)
+    if (rpcWalletId) this.rpcWalletId = rpcWalletId;
 
     document.addEventListener('click', (event) => {
       const target = event.target as Control
@@ -472,8 +560,8 @@ export default class ScomTokenInput extends Module {
 
   render() {
     return (
-      <i-panel width='100%'>
-        <i-vstack gap='0.5rem'>
+      <i-panel class="custom-border" width='100%'>
+        <i-vstack gap='0.5rem' class="custom-border">
           <i-hstack
             horizontalAlignment='space-between'
             verticalAlignment='center'
@@ -501,17 +589,20 @@ export default class ScomTokenInput extends Module {
             padding={{ top: 4, bottom: 4, left: 11, right: 11 }}
             gap={{ column: '0.5rem' }}
           >
-            <i-input
-              id='inputAmount'
-              width='100%'
-              height='100%'
-              minHeight={34}
-              class={inputStyle}
-              inputType='number'
-              font={{ size: '0.875rem' }}
-              placeholder='Enter an amount'
-              onChanged={this.onAmountChanged.bind(this)}
-            ></i-input>
+            <i-vstack id="inputStack">
+              <i-label class="text-value text-right" caption=" - "></i-label>
+              <i-input
+                id='inputAmount'
+                width='100%'
+                height='100%'
+                minHeight={34}
+                class={inputStyle}
+                inputType='number'
+                font={{ size: '0.875rem' }}
+                placeholder='Enter an amount'
+                onChanged={this.onAmountChanged.bind(this)}
+              ></i-input>
+            </i-vstack>
             <i-panel id="pnlSelection" width='100%' class={tokenSelectionStyle}>
               <i-hstack verticalAlignment="center" horizontalAlignment="end" gap="0.25rem">
                 <i-button
@@ -533,7 +624,7 @@ export default class ScomTokenInput extends Module {
                   id='btnToken'
                   class={`${buttonStyle}`}
                   height='100%'
-                  caption='Select a token'
+                  caption='Select Token'
                   rightIcon={{ width: 14, height: 14, name: 'angle-down' }}
                   border={{ radius: 0 }}
                   background={{ color: 'transparent' }}

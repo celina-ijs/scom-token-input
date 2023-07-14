@@ -1,8 +1,7 @@
 import { Wallet } from '@ijstech/eth-wallet';
 
-
-export function getChainId() {
-  return Wallet.getInstance().chainId;
+const state = {
+  rpcWalletId: "",
 }
 
 export const getNetworkInfo = (chainId: number): any => {
@@ -16,3 +15,20 @@ export const viewOnExplorerByAddress = (chainId: number, address: string) => {
     window.open(url);
   }
 }
+
+export const updateStore = (data: any) => {
+  if (data.rpcWalletId) {
+    console.log('data.rpcWalletId', data.rpcWalletId)
+    state.rpcWalletId = data.rpcWalletId;
+  }
+}
+
+export const getRpcWallet = () => {
+  return Wallet.getRpcWalletInstance(state.rpcWalletId);
+}
+
+export function getChainId() {
+  const rpcWallet = getRpcWallet();
+  return rpcWallet?.chainId;
+};
+

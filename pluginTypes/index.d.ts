@@ -1,3 +1,5 @@
+/// <reference path="@ijstech/eth-wallet/index.d.ts" />
+/// <reference path="@scom/scom-token-modal/@ijstech/eth-wallet/index.d.ts" />
 /// <amd-module name="@scom/scom-token-input/index.css.ts" />
 declare module "@scom/scom-token-input/index.css.ts" {
     export const imageStyle: string;
@@ -18,32 +20,20 @@ declare module "@scom/scom-token-input/global/index.ts" {
         EmitNewToken = "EmitNewToken",
         Paid = "Paid"
     }
-    export interface ITokenObject {
-        address?: string;
-        name: string;
-        decimals: number;
-        symbol: string;
-        status?: boolean | null;
-        logoURI?: string;
-        isCommon?: boolean | null;
-        balance?: string | number;
-        isNative?: boolean | null;
-        isWETH?: boolean | null;
-        isNew?: boolean | null;
-        chainId?: number;
-    }
     export type IType = 'button' | 'combobox';
 }
 /// <amd-module name="@scom/scom-token-input/store/index.ts" />
 declare module "@scom/scom-token-input/store/index.ts" {
-    export function getChainId(): number;
     export const getNetworkInfo: (chainId: number) => any;
     export const viewOnExplorerByAddress: (chainId: number, address: string) => void;
+    export const updateStore: (data: any) => void;
+    export const getRpcWallet: () => import("@ijstech/eth-wallet").IRpcWallet;
+    export function getChainId(): number;
 }
 /// <amd-module name="@scom/scom-token-input/utils/token.ts" />
 declare module "@scom/scom-token-input/utils/token.ts" {
     import { BigNumber, IWallet } from "@ijstech/eth-wallet";
-    import { ITokenObject } from "@scom/scom-token-input/global/index.ts";
+    import { ITokenObject } from "@scom/scom-token-list";
     export const getERC20Amount: (wallet: IWallet, tokenAddress: string, decimals: number) => Promise<BigNumber>;
     export const getTokenBalance: (token: ITokenObject) => Promise<BigNumber>;
 }
@@ -65,7 +55,7 @@ declare module "@scom/scom-token-input/tokenSelect.css.ts" {
 /// <amd-module name="@scom/scom-token-input/tokenSelect.tsx" />
 declare module "@scom/scom-token-input/tokenSelect.tsx" {
     import { Module, ControlElement, Container } from '@ijstech/components';
-    import { ITokenObject } from "@scom/scom-token-input/global/index.ts";
+    import { ITokenObject } from '@scom/scom-token-list';
     interface TokenSelectElement extends ControlElement {
         chainId?: number;
         token?: ITokenObject;
@@ -110,11 +100,13 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
 /// <amd-module name="@scom/scom-token-input" />
 declare module "@scom/scom-token-input" {
     import { ControlElement, Module, Container, Control } from '@ijstech/components';
-    import { ITokenObject, IType } from "@scom/scom-token-input/global/index.ts";
+    import { IType } from "@scom/scom-token-input/global/index.ts";
+    import { ITokenObject } from '@scom/scom-token-list';
     interface ScomTokenInputElement extends ControlElement {
         type?: IType;
         title?: string;
         chainId?: number;
+        rpcWalletId?: string;
         token?: ITokenObject;
         tokenDataListProp?: ITokenObject[];
         readonly?: boolean;
@@ -126,6 +118,8 @@ declare module "@scom/scom-token-input" {
         isCommonShown?: boolean;
         isInputShown?: boolean;
         isBalanceShown?: boolean;
+        value?: string;
+        placeholder?: string;
         onInputAmountChanged?: (target: Control, event: Event) => void;
         onSelectToken?: (token: ITokenObject | undefined) => void;
         onSetMaxBalance?: () => void;
@@ -147,6 +141,7 @@ declare module "@scom/scom-token-input" {
         private cbToken;
         private btnMax;
         private btnToken;
+        private inputStack;
         private $eventBus;
         private _type;
         private _targetChainId;
@@ -162,21 +157,27 @@ declare module "@scom/scom-token-input" {
         private _isBalanceShown;
         private _tokenDataListProp;
         private _withoutConnected;
+        private _rpcWalletId;
         private tokenBalancesMap;
+        private walletEvents;
+        private clientEvents;
         onInputAmountChanged: (target: Control, event: Event) => void;
-        onSelectToken: (token: ITokenObject | undefined) => void;
+        private _onSelectToken;
         onSetMaxBalance: () => void;
         constructor(parent?: Container, options?: any);
         static create(options?: ScomTokenInputElement, parent?: Container): Promise<ScomTokenInput>;
         private onRefresh;
-        private onUpdateData;
         private updateDataByNewToken;
+        private onUpdateData;
         private registerEvent;
+        onHide(): void;
         get tokenDataListProp(): Array<ITokenObject>;
         set tokenDataListProp(value: Array<ITokenObject>);
         private get tokenListByChainId();
         private get tokenDataList();
         private sortToken;
+        get onSelectToken(): any;
+        set onSelectToken(callback: any);
         get type(): IType;
         set type(value: IType);
         get title(): any;
@@ -203,6 +204,8 @@ declare module "@scom/scom-token-input" {
         get isBalanceShown(): boolean;
         set isBalanceShown(value: boolean);
         get amount(): string;
+        get rpcWalletId(): string;
+        set rpcWalletId(value: string);
         onSetMax(): Promise<void>;
         private onAmountChanged;
         private onToggleFocus;

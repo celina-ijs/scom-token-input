@@ -48,13 +48,17 @@ define("@scom/scom-token-input/index.css.ts", ["require", "exports", "@ijstech/c
             '#gridTokenInput': {
                 boxShadow: 'none',
                 outline: 'none',
-                borderRadius: 6,
-                border: `1px solid ${Theme.divider}`,
+                borderRadius: 'inherit',
+                border: 'inherit',
                 transition: 'all .5s ease-in'
             },
             '#gridTokenInput.focus-style': {
                 border: `1px solid ${Theme.colors.primary.main}`,
                 boxShadow: '0 0 0 2px rgba(87, 75, 144, .2)'
+            },
+            '.custom-border': {
+                border: 'inherit',
+                borderRadius: 'inherit'
             }
         }
     });
@@ -63,16 +67,14 @@ define("@scom/scom-token-input/global/index.ts", ["require", "exports"], functio
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     ;
-    ;
 });
 define("@scom/scom-token-input/store/index.ts", ["require", "exports", "@ijstech/eth-wallet"], function (require, exports, eth_wallet_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.viewOnExplorerByAddress = exports.getNetworkInfo = exports.getChainId = void 0;
-    function getChainId() {
-        return eth_wallet_1.Wallet.getInstance().chainId;
-    }
-    exports.getChainId = getChainId;
+    exports.getChainId = exports.getRpcWallet = exports.updateStore = exports.viewOnExplorerByAddress = exports.getNetworkInfo = void 0;
+    const state = {
+        rpcWalletId: "",
+    };
     const getNetworkInfo = (chainId) => {
         return eth_wallet_1.Wallet.getClientInstance().getNetworkInfo(chainId);
     };
@@ -85,6 +87,23 @@ define("@scom/scom-token-input/store/index.ts", ["require", "exports", "@ijstech
         }
     };
     exports.viewOnExplorerByAddress = viewOnExplorerByAddress;
+    const updateStore = (data) => {
+        if (data.rpcWalletId) {
+            console.log('data.rpcWalletId', data.rpcWalletId);
+            state.rpcWalletId = data.rpcWalletId;
+        }
+    };
+    exports.updateStore = updateStore;
+    const getRpcWallet = () => {
+        return eth_wallet_1.Wallet.getRpcWalletInstance(state.rpcWalletId);
+    };
+    exports.getRpcWallet = getRpcWallet;
+    function getChainId() {
+        const rpcWallet = (0, exports.getRpcWallet)();
+        return rpcWallet === null || rpcWallet === void 0 ? void 0 : rpcWallet.chainId;
+    }
+    exports.getChainId = getChainId;
+    ;
 });
 define("@scom/scom-token-input/utils/token.ts", ["require", "exports", "@ijstech/eth-wallet", "@scom/scom-token-input/store/index.ts"], function (require, exports, eth_wallet_2, index_1) {
     "use strict";
@@ -417,7 +436,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
     ], TokenSelect);
     exports.TokenSelect = TokenSelect;
 });
-define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "@scom/scom-token-input/index.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-list"], function (require, exports, components_4, index_css_1, index_3, scom_token_list_2) {
+define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "@scom/scom-token-input/index.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-list", "@scom/scom-token-input/store/index.ts"], function (require, exports, components_4, index_css_1, index_3, scom_token_list_2, index_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_4.Styles.Theme.ThemeVars;
@@ -434,6 +453,9 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this._isBalanceShown = true;
             this._tokenDataListProp = [];
             this._withoutConnected = false;
+            this._rpcWalletId = '';
+            this.walletEvents = [];
+            this.clientEvents = [];
             this.sortToken = (a, b, asc) => {
                 if (a.balance != b.balance) {
                     return asc ? a.balance - b.balance : b.balance - a.balance;
@@ -477,26 +499,53 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.renderTokenList();
             this.updateStatusButton();
         }
-        async onUpdateData() {
-            this.tokenBalancesMap = await scom_token_list_2.tokenStore.updateAllTokenBalances();
-            this.onRefresh();
-        }
         async updateDataByNewToken() {
             this.tokenBalancesMap = scom_token_list_2.tokenStore.tokenBalances || {};
             this.renderTokenList();
         }
+        async onUpdateData(onPaid) {
+            const rpcWallet = (0, index_4.getRpcWallet)();
+            if (rpcWallet)
+                this.tokenBalancesMap = onPaid ? scom_token_list_2.tokenStore.tokenBalances : await scom_token_list_2.tokenStore.updateAllTokenBalances(rpcWallet);
+            else
+                this.tokenBalancesMap = {};
+            this.onRefresh();
+        }
         registerEvent() {
-            this.$eventBus.register(this, "isWalletConnected" /* EventId.IsWalletConnected */, this.onUpdateData);
-            this.$eventBus.register(this, "IsWalletDisconnected" /* EventId.IsWalletDisconnected */, this.onRefresh);
-            this.$eventBus.register(this, "chainChanged" /* EventId.chainChanged */, this.onUpdateData);
-            this.$eventBus.register(this, "Paid" /* EventId.Paid */, this.onUpdateData);
-            this.$eventBus.register(this, "EmitNewToken" /* EventId.EmitNewToken */, this.updateDataByNewToken);
+            // const clientWallet = Wallet.getClientInstance();
+            // this.walletEvents.push(clientWallet.registerWalletEvent(this, Constants.ClientWalletEvent.AccountsChanged, async (payload: Record<string, any>) => {
+            //   const { account } = payload;
+            //   const connected = !!account;
+            //   if (connected && clientWallet.address === this.token?.address) {
+            //     const rpcWallet = getRpcWallet();
+            //     const balance = await rpcWallet.balanceOf(clientWallet.address);
+            //     this.lbBalance.caption = `${formatNumber(balance.toFixed(), 2)} ${this.token?.symbol}`;
+            //   }
+            //   console.log('is connected', connected)
+            //   this.onUpdateData()
+            // }));
+            this.clientEvents.push(this.$eventBus.register(this, "isWalletConnected" /* EventId.IsWalletConnected */, this.onUpdateData));
+            this.clientEvents.push(this.$eventBus.register(this, "chainChanged" /* EventId.chainChanged */, this.onUpdateData));
+            this.clientEvents.push(this.$eventBus.register(this, "Paid" /* EventId.Paid */, () => this.onUpdateData(true)));
+            this.clientEvents.push(this.$eventBus.register(this, "EmitNewToken" /* EventId.EmitNewToken */, this.updateDataByNewToken));
+        }
+        onHide() {
+            const rpcWallet = (0, index_4.getRpcWallet)();
+            for (let event of this.walletEvents) {
+                rpcWallet.unregisterWalletEvent(event);
+            }
+            this.walletEvents = [];
+            for (let event of this.clientEvents) {
+                event.unregister();
+            }
+            this.clientEvents = [];
         }
         get tokenDataListProp() {
-            return this._tokenDataListProp;
+            var _a;
+            return (_a = this._tokenDataListProp) !== null && _a !== void 0 ? _a : [];
         }
         set tokenDataListProp(value) {
-            this._tokenDataListProp = value;
+            this._tokenDataListProp = value !== null && value !== void 0 ? value : [];
             this.renderTokenList();
         }
         get tokenListByChainId() {
@@ -519,26 +568,60 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             }
             return list;
         }
+        // private get tokenDataList(): ITokenObject[] {
+        //   let tokenList: ITokenObject[] = this.tokenListByChainId?.length ? this.tokenListByChainId : tokenStore.getTokenList(this.chainId);
+        //   return tokenList.map((token: ITokenObject) => {
+        //     const tokenObject = { ...token }
+        //     const nativeToken = ChainNativeTokenByChainId[this.chainId]
+        //     if (token.symbol === nativeToken.symbol) {
+        //       Object.assign(tokenObject, { isNative: true })
+        //     }
+        //     if (!isWalletConnected()) {
+        //       Object.assign(tokenObject, { balance: 0 })
+        //     } else if (this.tokenBalancesMap && this.chainId === getChainId()) {
+        //       Object.assign(tokenObject, {
+        //         balance:
+        //           this.tokenBalancesMap[
+        //           token.address?.toLowerCase() || token.symbol
+        //           ] || 0,
+        //       })
+        //     }
+        //     return tokenObject
+        //   }).sort(this.sortToken)
+        // }
         get tokenDataList() {
-            var _a;
-            let tokenList = ((_a = this.tokenListByChainId) === null || _a === void 0 ? void 0 : _a.length) ? this.tokenListByChainId : scom_token_list_2.tokenStore.getTokenList(this.chainId);
+            let tokenList = [];
+            if (this.tokenDataListProp && this.tokenDataListProp.length) {
+                tokenList = this.tokenDataListProp;
+            }
+            if (!this.tokenBalancesMap || !Object.keys(this.tokenBalancesMap).length) {
+                this.tokenBalancesMap = scom_token_list_2.tokenStore.tokenBalances || {};
+            }
             return tokenList.map((token) => {
                 var _a;
                 const tokenObject = Object.assign({}, token);
                 const nativeToken = scom_token_list_2.ChainNativeTokenByChainId[this.chainId];
-                if (token.symbol === nativeToken.symbol) {
+                if ((nativeToken === null || nativeToken === void 0 ? void 0 : nativeToken.symbol) && token.symbol === nativeToken.symbol) {
                     Object.assign(tokenObject, { isNative: true });
                 }
                 if (!(0, scom_token_list_2.isWalletConnected)()) {
-                    Object.assign(tokenObject, { balance: 0 });
+                    Object.assign(tokenObject, {
+                        balance: 0,
+                    });
                 }
-                else if (this.tokenBalancesMap && this.chainId === (0, scom_token_list_2.getChainId)()) {
+                else if (this.tokenBalancesMap) {
                     Object.assign(tokenObject, {
                         balance: this.tokenBalancesMap[((_a = token.address) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || token.symbol] || 0,
                     });
                 }
                 return tokenObject;
             }).sort(this.sortToken);
+        }
+        get onSelectToken() {
+            return this._onSelectToken;
+        }
+        set onSelectToken(callback) {
+            this._onSelectToken = callback;
         }
         get type() {
             var _a;
@@ -597,7 +680,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             }
         }
         get chainId() {
-            return this.targetChainId || (0, scom_token_list_2.getChainId)();
+            return this.targetChainId || (0, index_4.getChainId)();
         }
         get isCommonShown() {
             return this._isCommonShown;
@@ -676,6 +759,16 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         get amount() {
             return this.inputAmount.value;
         }
+        get rpcWalletId() {
+            return this._rpcWalletId;
+        }
+        set rpcWalletId(value) {
+            this._rpcWalletId = value;
+            (0, index_4.updateStore)({ rpcWalletId: value });
+            if (this.mdToken)
+                this.mdToken.rpcWalletId = value;
+            this.onUpdateData();
+        }
         async onSetMax() {
             this.inputAmount.value = this.token ?
                 (0, index_3.limitDecimals)(await (0, index_3.getTokenBalance)(this.token), this.token.decimals || 18)
@@ -707,6 +800,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 if (!this.mdToken.isConnected)
                     await this.mdToken.ready();
                 this.cbToken.visible = false;
+                console.log('tokenDataListProp', this.tokenDataListProp);
                 this.mdToken.tokenDataListProp = this.tokenDataListProp;
                 this.mdToken.onRefresh();
             }
@@ -732,6 +826,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 });
             if (token) {
                 const tokenIconPath = scom_token_list_2.assets.tokenPath(token, this.chainId);
+                console.log(this.chainId);
                 this.btnToken.caption = `<i-hstack verticalAlignment="center" gap="0.5rem">
           <i-panel>
             <i-image width=${24} height=${24} url="${tokenIconPath}" fallbackUrl="${scom_token_list_2.assets.fallbackUrl}"></i-image>
@@ -741,7 +836,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.btnMax.visible = this.isBtnMaxShown;
             }
             else {
-                this.btnToken.caption = 'Select a token';
+                this.btnToken.caption = 'Select Token';
                 this.btnMax.visible = false;
             }
         }
@@ -792,6 +887,9 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             }
             this.isInputShown = this.getAttribute('isInputShown', true, true);
             this.isBalanceShown = this.getAttribute('isBalanceShown', true, true);
+            const rpcWalletId = this.getAttribute('rpcWalletId', true);
+            if (rpcWalletId)
+                this.rpcWalletId = rpcWalletId;
             document.addEventListener('click', (event) => {
                 const target = event.target;
                 const tokenInput = target.closest('#gridTokenInput');
@@ -802,15 +900,17 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             });
         }
         render() {
-            return (this.$render("i-panel", { width: '100%' },
-                this.$render("i-vstack", { gap: '0.5rem' },
+            return (this.$render("i-panel", { class: "custom-border", width: '100%' },
+                this.$render("i-vstack", { gap: '0.5rem', class: "custom-border" },
                     this.$render("i-hstack", { horizontalAlignment: 'space-between', verticalAlignment: 'center', gap: '0.5rem' },
                         this.$render("i-hstack", { id: "pnlTitle", gap: "4px" }),
                         this.$render("i-hstack", { id: "pnlBalance", horizontalAlignment: 'end', verticalAlignment: 'center', gap: '0.5rem', opacity: 0.6 },
                             this.$render("i-label", { caption: 'Balance:', font: { size: '0.875rem' } }),
                             this.$render("i-label", { id: 'lbBalance', font: { size: '0.875rem' }, caption: "0" }))),
                     this.$render("i-grid-layout", { id: 'gridTokenInput', templateColumns: ['50%', 'auto'], background: { color: Theme.input.background }, font: { color: Theme.input.fontColor }, verticalAlignment: 'center', lineHeight: 1.5715, padding: { top: 4, bottom: 4, left: 11, right: 11 }, gap: { column: '0.5rem' } },
-                        this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', minHeight: 34, class: index_css_1.inputStyle, inputType: 'number', font: { size: '0.875rem' }, placeholder: 'Enter an amount', onChanged: this.onAmountChanged.bind(this) }),
+                        this.$render("i-vstack", { id: "inputStack" },
+                            this.$render("i-label", { class: "text-value text-right", caption: " - " }),
+                            this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', minHeight: 34, class: index_css_1.inputStyle, inputType: 'number', font: { size: '0.875rem' }, placeholder: 'Enter an amount', onChanged: this.onAmountChanged.bind(this) })),
                         this.$render("i-panel", { id: "pnlSelection", width: '100%', class: index_css_1.tokenSelectionStyle },
                             this.$render("i-hstack", { verticalAlignment: "center", horizontalAlignment: "end", gap: "0.25rem" },
                                 this.$render("i-button", { id: 'btnMax', visible: false, caption: 'Max', height: '100%', background: { color: Theme.colors.success.main }, font: { color: Theme.colors.success.contrastText }, padding: {
@@ -819,14 +919,14 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                                         left: '0.5rem',
                                         right: '0.5rem',
                                     }, onClick: () => this.onSetMax() }),
-                                this.$render("i-button", { id: 'btnToken', class: `${index_css_1.buttonStyle}`, height: '100%', caption: 'Select a token', rightIcon: { width: 14, height: 14, name: 'angle-down' }, border: { radius: 0 }, background: { color: 'transparent' }, font: { color: Theme.input.fontColor }, padding: {
+                                this.$render("i-button", { id: 'btnToken', class: `${index_css_1.buttonStyle}`, height: '100%', caption: 'Select Token', rightIcon: { width: 14, height: 14, name: 'angle-down' }, border: { radius: 0 }, background: { color: 'transparent' }, font: { color: Theme.input.fontColor }, padding: {
                                         top: '0.25rem',
                                         bottom: '0.25rem',
                                         left: '0.5rem',
                                         right: '0.5rem',
-                                    }, onClick: this.onButtonClicked.bind(this) })),
-                            this.$render("token-select", { id: "cbToken", width: "100%", onSelectToken: this.onSelectFn.bind(this) }),
-                            this.$render("i-scom-token-modal", { id: "mdToken", width: "100%", onSelectToken: this.onSelectFn.bind(this) }))))));
+                                    }, onClick: this.onButtonClicked })),
+                            this.$render("token-select", { id: "cbToken", width: "100%", onSelectToken: this.onSelectFn }),
+                            this.$render("i-scom-token-modal", { id: "mdToken", width: "100%", onSelectToken: this.onSelectFn }))))));
         }
     };
     ScomTokenInput = __decorate([
