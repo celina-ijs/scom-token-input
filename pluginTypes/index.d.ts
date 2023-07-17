@@ -141,7 +141,6 @@ declare module "@scom/scom-token-input" {
         private cbToken;
         private btnMax;
         private btnToken;
-        private inputStack;
         private $eventBus;
         private _type;
         private _targetChainId;
@@ -206,6 +205,7 @@ declare module "@scom/scom-token-input" {
         get amount(): string;
         get rpcWalletId(): string;
         set rpcWalletId(value: string);
+        getBalance(token?: ITokenObject): string | number;
         onSetMax(): Promise<void>;
         private onAmountChanged;
         private onToggleFocus;

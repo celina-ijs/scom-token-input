@@ -69,8 +69,7 @@ export default class ScomTokenInput extends Module {
   private mdToken: ScomTokenModal
   private cbToken: TokenSelect
   private btnMax: Button
-  private btnToken: Button
-  private inputStack: VStack
+  private btnToken: Button;
 
   private $eventBus: IEventBus;
 
@@ -306,7 +305,7 @@ export default class ScomTokenInput extends Module {
   }
   set token(value: ITokenObject | undefined) {
     this._token = value;
-    this.onSelectFn(value)
+    // this.onSelectFn(value)
     if (this.cbToken)
       this.cbToken.token = value
     if (this.mdToken)
@@ -426,10 +425,18 @@ export default class ScomTokenInput extends Module {
     this.onUpdateData()
   }
 
+  getBalance(token?: ITokenObject) {
+    if (token) {
+      const address = token.address || '';
+      let balance = address ? tokenStore.tokenBalances[address.toLowerCase()] ?? 0 : tokenStore.tokenBalances[token.symbol] || 0;
+      return balance
+    }
+    return 0;
+  }
+
   async onSetMax() {
-    this.inputAmount.value = this.token ?
-      limitDecimals(await getTokenBalance(this.token), this.token.decimals || 18)
-      : '';
+    const balance = this.getBalance(this.token);
+    this.inputAmount.value = limitDecimals(balance, 4)
     if (this.onSetMaxBalance) this.onSetMaxBalance();
   }
 
@@ -500,6 +507,7 @@ export default class ScomTokenInput extends Module {
   }
 
   private onButtonClicked() {
+    // this.onRefresh();
     if (this.type === 'combobox')
       this.cbToken.showModal()
     else
@@ -589,20 +597,17 @@ export default class ScomTokenInput extends Module {
             padding={{ top: 4, bottom: 4, left: 11, right: 11 }}
             gap={{ column: '0.5rem' }}
           >
-            <i-vstack id="inputStack">
-              <i-label class="text-value text-right" caption=" - "></i-label>
-              <i-input
-                id='inputAmount'
-                width='100%'
-                height='100%'
-                minHeight={34}
-                class={inputStyle}
-                inputType='number'
-                font={{ size: '0.875rem' }}
-                placeholder='Enter an amount'
-                onChanged={this.onAmountChanged}
-              ></i-input>
-            </i-vstack>
+            <i-input
+              id='inputAmount'
+              width='100%'
+              height='100%'
+              minHeight={34}
+              class={inputStyle}
+              inputType='number'
+              font={{ size: '0.875rem' }}
+              placeholder='Enter an amount'
+              onChanged={this.onAmountChanged.bind(this)}
+            ></i-input>
             <i-panel id="pnlSelection" width='100%' class={tokenSelectionStyle}>
               <i-hstack verticalAlignment="center" horizontalAlignment="end" gap="0.25rem">
                 <i-button

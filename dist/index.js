@@ -661,7 +661,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         set token(value) {
             this._token = value;
-            this.onSelectFn(value);
+            // this.onSelectFn(value)
             if (this.cbToken)
                 this.cbToken.token = value;
             if (this.mdToken)
@@ -769,10 +769,18 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.mdToken.rpcWalletId = value;
             this.onUpdateData();
         }
+        getBalance(token) {
+            var _a;
+            if (token) {
+                const address = token.address || '';
+                let balance = address ? (_a = scom_token_list_2.tokenStore.tokenBalances[address.toLowerCase()]) !== null && _a !== void 0 ? _a : 0 : scom_token_list_2.tokenStore.tokenBalances[token.symbol] || 0;
+                return balance;
+            }
+            return 0;
+        }
         async onSetMax() {
-            this.inputAmount.value = this.token ?
-                (0, index_3.limitDecimals)(await (0, index_3.getTokenBalance)(this.token), this.token.decimals || 18)
-                : '';
+            const balance = this.getBalance(this.token);
+            this.inputAmount.value = (0, index_3.limitDecimals)(balance, 4);
             if (this.onSetMaxBalance)
                 this.onSetMaxBalance();
         }
@@ -841,6 +849,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             }
         }
         onButtonClicked() {
+            // this.onRefresh();
             if (this.type === 'combobox')
                 this.cbToken.showModal();
             else
@@ -908,9 +917,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                             this.$render("i-label", { caption: 'Balance:', font: { size: '0.875rem' } }),
                             this.$render("i-label", { id: 'lbBalance', font: { size: '0.875rem' }, caption: "0" }))),
                     this.$render("i-grid-layout", { id: 'gridTokenInput', templateColumns: ['50%', 'auto'], background: { color: Theme.input.background }, font: { color: Theme.input.fontColor }, verticalAlignment: 'center', lineHeight: 1.5715, padding: { top: 4, bottom: 4, left: 11, right: 11 }, gap: { column: '0.5rem' } },
-                        this.$render("i-vstack", { id: "inputStack" },
-                            this.$render("i-label", { class: "text-value text-right", caption: " - " }),
-                            this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', minHeight: 34, class: index_css_1.inputStyle, inputType: 'number', font: { size: '0.875rem' }, placeholder: 'Enter an amount', onChanged: this.onAmountChanged })),
+                        this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', minHeight: 34, class: index_css_1.inputStyle, inputType: 'number', font: { size: '0.875rem' }, placeholder: 'Enter an amount', onChanged: this.onAmountChanged.bind(this) }),
                         this.$render("i-panel", { id: "pnlSelection", width: '100%', class: index_css_1.tokenSelectionStyle },
                             this.$render("i-hstack", { verticalAlignment: "center", horizontalAlignment: "end", gap: "0.25rem" },
                                 this.$render("i-button", { id: 'btnMax', visible: false, caption: 'Max', height: '100%', background: { color: Theme.colors.success.main }, font: { color: Theme.colors.success.contrastText }, padding: {
