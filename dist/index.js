@@ -919,14 +919,14 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         render() {
             return (this.$render("i-hstack", { class: "custom-border", width: '100%', verticalAlignment: "center" },
-                this.$render("i-vstack", { gap: '0.5rem', class: "custom-border" },
+                this.$render("i-vstack", { gap: '0.5rem', width: '100%', class: "custom-border" },
                     this.$render("i-hstack", { horizontalAlignment: 'space-between', verticalAlignment: 'center' },
                         this.$render("i-hstack", { id: "pnlTitle", gap: "4px" }),
                         this.$render("i-hstack", { id: "pnlBalance", horizontalAlignment: 'end', verticalAlignment: 'center', gap: '0.5rem', margin: { bottom: '0.5rem' }, opacity: 0.6 },
                             this.$render("i-label", { caption: 'Balance:', font: { size: '0.875rem' } }),
                             this.$render("i-label", { id: 'lbBalance', font: { size: '0.875rem' }, caption: "0" }))),
                     this.$render("i-grid-layout", { id: 'gridTokenInput', templateColumns: ['50%', 'auto'], background: { color: Theme.input.background }, font: { color: Theme.input.fontColor }, verticalAlignment: 'center', lineHeight: 1.5715, padding: { left: 11, right: 11 }, gap: { column: '0.5rem' } },
-                        this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', class: index_css_1.inputStyle, font: { size: 'inherit' }, inputType: 'number', placeholder: 'Enter an amount', onChanged: this.onAmountChanged.bind(this) }),
+                        this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', class: index_css_1.inputStyle, font: { size: 'inherit' }, inputType: 'number', placeholder: 'Enter an amount', onChanged: this.onAmountChanged }),
                         this.$render("i-panel", { id: "pnlSelection", width: '100%', class: index_css_1.tokenSelectionStyle },
                             this.$render("i-hstack", { verticalAlignment: "center", horizontalAlignment: "end", gap: "0.25rem" },
                                 this.$render("i-button", { id: 'btnMax', visible: false, caption: 'Max', height: '100%', background: { color: Theme.colors.success.main }, font: { color: Theme.colors.success.contrastText }, padding: {

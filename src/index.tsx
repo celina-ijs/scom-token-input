@@ -573,7 +573,7 @@ export default class ScomTokenInput extends Module {
   render() {
     return (
       <i-hstack class="custom-border" width='100%' verticalAlignment="center">
-        <i-vstack gap='0.5rem' class="custom-border">
+        <i-vstack gap='0.5rem' width='100%' class="custom-border">
           <i-hstack
             horizontalAlignment='space-between'
             verticalAlignment='center'
@@ -609,7 +609,7 @@ export default class ScomTokenInput extends Module {
               font={{size: 'inherit'}}
               inputType='number'
               placeholder='Enter an amount'
-              onChanged={this.onAmountChanged.bind(this)}
+              onChanged={this.onAmountChanged}
             ></i-input>
             <i-panel id="pnlSelection" width='100%' class={tokenSelectionStyle}>
               <i-hstack verticalAlignment="center" horizontalAlignment="end" gap="0.25rem">
