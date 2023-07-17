@@ -206,6 +206,8 @@ declare module "@scom/scom-token-input" {
         get amount(): string;
         get rpcWalletId(): string;
         set rpcWalletId(value: string);
+        get placeholder(): string;
+        set placeholder(value: string);
         onSetMax(): Promise<void>;
         private onAmountChanged;
         private onToggleFocus;

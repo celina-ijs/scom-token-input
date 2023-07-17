@@ -24,12 +24,11 @@ import { ChainNativeTokenByChainId, isWalletConnected, tokenStore, assets, Defau
 import { TokenSelect } from './tokenSelect'
 import ScomTokenModal from '@scom/scom-token-modal'
 import { getChainId, getRpcWallet, updateStore } from './store/index'
-import { Constants, IEventBusRegistry, Wallet } from '@ijstech/eth-wallet'
+import { IEventBusRegistry } from '@ijstech/eth-wallet'
 
 interface ScomTokenInputElement extends ControlElement {
   type?: IType;
   title?: string;
-  chainId?: number;
   rpcWalletId?: string;
   token?: ITokenObject;
   tokenDataListProp?: ITokenObject[];
@@ -42,7 +41,7 @@ interface ScomTokenInputElement extends ControlElement {
   isCommonShown?: boolean;
   isInputShown?: boolean;
   isBalanceShown?: boolean;
-  value?: string;
+  value?: any;
   placeholder?: string;
   onInputAmountChanged?: (target: Control, event: Event) => void;
   onSelectToken?: (token: ITokenObject | undefined) => void;
@@ -70,7 +69,7 @@ export default class ScomTokenInput extends Module {
   private cbToken: TokenSelect
   private btnMax: Button
   private btnToken: Button
-  private inputStack: VStack
+  // private inputStack: VStack
 
   private $eventBus: IEventBus;
 
@@ -200,30 +199,8 @@ export default class ScomTokenInput extends Module {
     return list;
   }
 
-  // private get tokenDataList(): ITokenObject[] {
-  //   let tokenList: ITokenObject[] = this.tokenListByChainId?.length ? this.tokenListByChainId : tokenStore.getTokenList(this.chainId);
-  //   return tokenList.map((token: ITokenObject) => {
-  //     const tokenObject = { ...token }
-  //     const nativeToken = ChainNativeTokenByChainId[this.chainId]
-  //     if (token.symbol === nativeToken.symbol) {
-  //       Object.assign(tokenObject, { isNative: true })
-  //     }
-  //     if (!isWalletConnected()) {
-  //       Object.assign(tokenObject, { balance: 0 })
-  //     } else if (this.tokenBalancesMap && this.chainId === getChainId()) {
-  //       Object.assign(tokenObject, {
-  //         balance:
-  //           this.tokenBalancesMap[
-  //           token.address?.toLowerCase() || token.symbol
-  //           ] || 0,
-  //       })
-  //     }
-  //     return tokenObject
-  //   }).sort(this.sortToken)
-  // }
-
   private get tokenDataList(): ITokenObject[] {
-    let tokenList: ITokenObject[] = [];
+    let tokenList: ITokenObject[] = this.tokenListByChainId?.length ? this.tokenListByChainId : tokenStore.getTokenList(this.chainId);
     if (this.tokenDataListProp && this.tokenDataListProp.length) {
       tokenList = this.tokenDataListProp;
     }
@@ -313,21 +290,21 @@ export default class ScomTokenInput extends Module {
       this.mdToken.token = value
   }
 
-  get targetChainId() {
-    return this._targetChainId;
-  }
-  set targetChainId(value: number) {
-    this._targetChainId = value;
-    if (typeof value === 'number') {
-      if (this.cbToken)
-        this.cbToken.targetChainId = value
-      if (this.mdToken)
-        this.mdToken.targetChainId = value
-    }
-  }
+  // get targetChainId() {
+  //   return this._targetChainId;
+  // }
+  // set targetChainId(value: number) {
+  //   this._targetChainId = value;
+  //   if (typeof value === 'number') {
+  //     if (this.cbToken)
+  //       this.cbToken.targetChainId = value
+  //     if (this.mdToken)
+  //       this.mdToken.targetChainId = value
+  //   }
+  // }
 
   get chainId() {
-    return this.targetChainId || getChainId();
+    return getChainId();
   }
 
   get isCommonShown(): boolean {
@@ -426,6 +403,20 @@ export default class ScomTokenInput extends Module {
     this.onUpdateData()
   }
 
+  get placeholder() {
+    return this.inputAmount?.placeholder ?? 'Enter an amount'
+  }
+  set placeholder(value: string) {
+    this.inputAmount.placeholder = value ?? 'Enter an amount'
+  }
+
+  get value() {
+    return this.inputAmount.value
+  }
+  set value(value: any) {
+    this.inputAmount.value = value
+  }
+
   async onSetMax() {
     this.inputAmount.value = this.token ?
       limitDecimals(await getTokenBalance(this.token), this.token.decimals || 18)
@@ -458,7 +449,6 @@ export default class ScomTokenInput extends Module {
       if (!this.mdToken.isConnected)
         await this.mdToken.ready()
       this.cbToken.visible = false;
-      console.log('tokenDataListProp', this.tokenDataListProp)
       this.mdToken.tokenDataListProp = this.tokenDataListProp
       this.mdToken.onRefresh()
     }
@@ -485,7 +475,6 @@ export default class ScomTokenInput extends Module {
       )
     if (token) {
       const tokenIconPath = assets.tokenPath(token, this.chainId)
-      console.log(this.chainId)
       this.btnToken.caption = `<i-hstack verticalAlignment="center" gap="0.5rem">
           <i-panel>
             <i-image width=${24} height=${24} url="${tokenIconPath}" fallbackUrl="${assets.fallbackUrl}"></i-image>
@@ -530,10 +519,11 @@ export default class ScomTokenInput extends Module {
     this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken
     this.title = this.getAttribute('title', true, '')
     this._withoutConnected = this.getAttribute('withoutConnected', true, false)
-    this.tokenDataListProp = this.getAttribute('tokenDataListProp', true, [])
+    const tokenDataListProp = this.getAttribute('tokenDataListProp', true)
+    if (tokenDataListProp) this.tokenDataListProp = tokenDataListProp;
     const token = this.getAttribute('token', true)
     if (token) this.token = token
-    this.targetChainId = this.getAttribute('chainId', true)
+    // this.targetChainId = this.getAttribute('chainId', true)
     this.readonly = this.getAttribute('readonly', true, false)
     this.tokenReadOnly = this.getAttribute('tokenReadOnly', true, false)
     this.isBtnMaxShown = this.getAttribute('isBtnMaxShown', true, true)
@@ -547,6 +537,8 @@ export default class ScomTokenInput extends Module {
     this.isBalanceShown = this.getAttribute('isBalanceShown', true, true)
     const rpcWalletId = this.getAttribute('rpcWalletId', true)
     if (rpcWalletId) this.rpcWalletId = rpcWalletId;
+    const value = this.getAttribute('value', true);
+    if (value !== undefined) this.value = value;
 
     document.addEventListener('click', (event) => {
       const target = event.target as Control
@@ -560,12 +552,11 @@ export default class ScomTokenInput extends Module {
 
   render() {
     return (
-      <i-panel class="custom-border" width='100%'>
+      <i-hstack class="custom-border" width='100%' verticalAlignment="center">
         <i-vstack gap='0.5rem' class="custom-border">
           <i-hstack
             horizontalAlignment='space-between'
             verticalAlignment='center'
-            gap='0.5rem'
           >
             <i-hstack id="pnlTitle" gap="4px"></i-hstack>
             <i-hstack
@@ -573,6 +564,7 @@ export default class ScomTokenInput extends Module {
               horizontalAlignment='end'
               verticalAlignment='center'
               gap='0.5rem'
+              margin={{bottom: '0.5rem'}}
               opacity={0.6}
             >
               <i-label caption='Balance:' font={{ size: '0.875rem' }}></i-label>
@@ -590,15 +582,13 @@ export default class ScomTokenInput extends Module {
             gap={{ column: '0.5rem' }}
           >
             <i-vstack id="inputStack">
-              <i-label class="text-value text-right" caption=" - "></i-label>
               <i-input
                 id='inputAmount'
                 width='100%'
                 height='100%'
-                minHeight={34}
                 class={inputStyle}
+                font={{size: 'inherit'}}
                 inputType='number'
-                font={{ size: '0.875rem' }}
                 placeholder='Enter an amount'
                 onChanged={this.onAmountChanged.bind(this)}
               ></i-input>
@@ -651,7 +641,7 @@ export default class ScomTokenInput extends Module {
             </i-panel>
           </i-grid-layout>
         </i-vstack>
-      </i-panel>
+      </i-hstack>
     )
   }
 }
