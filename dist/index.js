@@ -642,26 +642,26 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         set token(value) {
             this._token = value;
-            this.onSelectFn(value);
+            // this.onSelectFn(value)
             if (this.cbToken)
                 this.cbToken.token = value;
             if (this.mdToken)
                 this.mdToken.token = value;
         }
-        get targetChainId() {
-            return this._targetChainId;
-        }
-        set targetChainId(value) {
-            this._targetChainId = value;
-            if (typeof value === 'number') {
-                if (this.cbToken)
-                    this.cbToken.targetChainId = value;
-                if (this.mdToken)
-                    this.mdToken.targetChainId = value;
-            }
-        }
+        // get targetChainId() {
+        //   return this._targetChainId;
+        // }
+        // set targetChainId(value: number) {
+        //   this._targetChainId = value;
+        //   if (typeof value === 'number') {
+        //     if (this.cbToken)
+        //       this.cbToken.targetChainId = value
+        //     if (this.mdToken)
+        //       this.mdToken.targetChainId = value
+        //   }
+        // }
         get chainId() {
-            return this.targetChainId || (0, index_4.getChainId)();
+            return (0, index_4.getChainId)();
         }
         get isCommonShown() {
             return this._isCommonShown;
@@ -757,10 +757,24 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         set placeholder(value) {
             this.inputAmount.placeholder = value !== null && value !== void 0 ? value : 'Enter an amount';
         }
+        get value() {
+            return this.inputAmount.value;
+        }
+        set value(value) {
+            this.inputAmount.value = value;
+        }
+        getBalance(token) {
+            var _a;
+            if (token) {
+                const address = token.address || '';
+                let balance = address ? (_a = scom_token_list_2.tokenStore.tokenBalances[address.toLowerCase()]) !== null && _a !== void 0 ? _a : 0 : scom_token_list_2.tokenStore.tokenBalances[token.symbol] || 0;
+                return balance;
+            }
+            return 0;
+        }
         async onSetMax() {
-            this.inputAmount.value = this.token ?
-                (0, index_3.limitDecimals)(await (0, index_3.getTokenBalance)(this.token), this.token.decimals || 18)
-                : '';
+            const balance = this.getBalance(this.token);
+            this.inputAmount.value = (0, index_3.limitDecimals)(balance, 4);
             if (this.onSetMaxBalance)
                 this.onSetMaxBalance();
         }
@@ -827,6 +841,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             }
         }
         onButtonClicked() {
+            // this.onRefresh();
             if (this.type === 'combobox')
                 this.cbToken.showModal();
             else
@@ -863,7 +878,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             const token = this.getAttribute('token', true);
             if (token)
                 this.token = token;
-            this.targetChainId = this.getAttribute('chainId', true);
+            // this.targetChainId = this.getAttribute('chainId', true)
             this.readonly = this.getAttribute('readonly', true, false);
             this.tokenReadOnly = this.getAttribute('tokenReadOnly', true, false);
             this.isBtnMaxShown = this.getAttribute('isBtnMaxShown', true, true);
@@ -878,6 +893,9 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             const rpcWalletId = this.getAttribute('rpcWalletId', true);
             if (rpcWalletId)
                 this.rpcWalletId = rpcWalletId;
+            const value = this.getAttribute('value', true);
+            if (value !== undefined)
+                this.value = value;
             document.addEventListener('click', (event) => {
                 const target = event.target;
                 const tokenInput = target.closest('#gridTokenInput');
@@ -896,8 +914,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                             this.$render("i-label", { caption: 'Balance:', font: { size: '0.875rem' } }),
                             this.$render("i-label", { id: 'lbBalance', font: { size: '0.875rem' }, caption: "0" }))),
                     this.$render("i-grid-layout", { id: 'gridTokenInput', templateColumns: ['50%', 'auto'], background: { color: Theme.input.background }, font: { color: Theme.input.fontColor }, verticalAlignment: 'center', lineHeight: 1.5715, padding: { top: 4, bottom: 4, left: 11, right: 11 }, gap: { column: '0.5rem' } },
-                        this.$render("i-vstack", { id: "inputStack" },
-                            this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', class: index_css_1.inputStyle, font: { size: 'inherit' }, inputType: 'number', placeholder: 'Enter an amount', onChanged: this.onAmountChanged.bind(this) })),
+                        this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', class: index_css_1.inputStyle, font: { size: 'inherit' }, inputType: 'number', placeholder: 'Enter an amount', onChanged: this.onAmountChanged.bind(this) }),
                         this.$render("i-panel", { id: "pnlSelection", width: '100%', class: index_css_1.tokenSelectionStyle },
                             this.$render("i-hstack", { verticalAlignment: "center", horizontalAlignment: "end", gap: "0.25rem" },
                                 this.$render("i-button", { id: 'btnMax', visible: false, caption: 'Max', height: '100%', background: { color: Theme.colors.success.main }, font: { color: Theme.colors.success.contrastText }, padding: {
@@ -911,9 +928,9 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                                         bottom: '0.25rem',
                                         left: '0.5rem',
                                         right: '0.5rem',
-                                    }, onClick: this.onButtonClicked.bind(this) })),
-                            this.$render("token-select", { id: "cbToken", width: "100%", onSelectToken: this.onSelectFn.bind(this) }),
-                            this.$render("i-scom-token-modal", { id: "mdToken", width: "100%", onSelectToken: this.onSelectFn.bind(this) }))))));
+                                    }, onClick: this.onButtonClicked })),
+                            this.$render("token-select", { id: "cbToken", width: "100%", onSelectToken: this.onSelectFn }),
+                            this.$render("i-scom-token-modal", { id: "mdToken", width: "100%", onSelectToken: this.onSelectFn }))))));
         }
     };
     ScomTokenInput = __decorate([

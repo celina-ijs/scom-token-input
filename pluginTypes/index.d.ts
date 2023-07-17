@@ -105,7 +105,6 @@ declare module "@scom/scom-token-input" {
     interface ScomTokenInputElement extends ControlElement {
         type?: IType;
         title?: string;
-        chainId?: number;
         rpcWalletId?: string;
         token?: ITokenObject;
         tokenDataListProp?: ITokenObject[];
@@ -118,7 +117,7 @@ declare module "@scom/scom-token-input" {
         isCommonShown?: boolean;
         isInputShown?: boolean;
         isBalanceShown?: boolean;
-        value?: string;
+        value?: any;
         placeholder?: string;
         onInputAmountChanged?: (target: Control, event: Event) => void;
         onSelectToken?: (token: ITokenObject | undefined) => void;
@@ -141,7 +140,6 @@ declare module "@scom/scom-token-input" {
         private cbToken;
         private btnMax;
         private btnToken;
-        private inputStack;
         private $eventBus;
         private _type;
         private _targetChainId;
@@ -184,8 +182,6 @@ declare module "@scom/scom-token-input" {
         set title(value: string | Control);
         get token(): ITokenObject | undefined;
         set token(value: ITokenObject | undefined);
-        get targetChainId(): number;
-        set targetChainId(value: number);
         get chainId(): number;
         get isCommonShown(): boolean;
         set isCommonShown(value: boolean);
@@ -208,6 +204,9 @@ declare module "@scom/scom-token-input" {
         set rpcWalletId(value: string);
         get placeholder(): string;
         set placeholder(value: string);
+        get value(): any;
+        set value(value: any);
+        getBalance(token?: ITokenObject): string | number;
         onSetMax(): Promise<void>;
         private onAmountChanged;
         private onToggleFocus;
