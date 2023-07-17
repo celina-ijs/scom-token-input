@@ -910,7 +910,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                     this.$render("i-grid-layout", { id: 'gridTokenInput', templateColumns: ['50%', 'auto'], background: { color: Theme.input.background }, font: { color: Theme.input.fontColor }, verticalAlignment: 'center', lineHeight: 1.5715, padding: { top: 4, bottom: 4, left: 11, right: 11 }, gap: { column: '0.5rem' } },
                         this.$render("i-vstack", { id: "inputStack" },
                             this.$render("i-label", { class: "text-value text-right", caption: " - " }),
-                            this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', minHeight: 34, class: index_css_1.inputStyle, inputType: 'number', font: { size: '0.875rem' }, placeholder: 'Enter an amount', onChanged: this.onAmountChanged.bind(this) })),
+                            this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', minHeight: 34, class: index_css_1.inputStyle, inputType: 'number', font: { size: '0.875rem' }, placeholder: 'Enter an amount', onChanged: this.onAmountChanged })),
                         this.$render("i-panel", { id: "pnlSelection", width: '100%', class: index_css_1.tokenSelectionStyle },
                             this.$render("i-hstack", { verticalAlignment: "center", horizontalAlignment: "end", gap: "0.25rem" },
                                 this.$render("i-button", { id: 'btnMax', visible: false, caption: 'Max', height: '100%', background: { color: Theme.colors.success.main }, font: { color: Theme.colors.success.contrastText }, padding: {
