@@ -600,7 +600,7 @@ export default class ScomTokenInput extends Module {
                 inputType='number'
                 font={{ size: '0.875rem' }}
                 placeholder='Enter an amount'
-                onChanged={this.onAmountChanged.bind(this)}
+                onChanged={this.onAmountChanged}
               ></i-input>
             </i-vstack>
             <i-panel id="pnlSelection" width='100%' class={tokenSelectionStyle}>
@@ -635,18 +635,18 @@ export default class ScomTokenInput extends Module {
                     left: '0.5rem',
                     right: '0.5rem',
                   }}
-                  onClick={this.onButtonClicked.bind(this)}
+                  onClick={this.onButtonClicked}
                 ></i-button>
               </i-hstack>
               <token-select
                 id="cbToken"
                 width="100%"
-                onSelectToken={this.onSelectFn.bind(this)}
+                onSelectToken={this.onSelectFn}
               ></token-select>
               <i-scom-token-modal
                 id="mdToken"
                 width="100%"
-                onSelectToken={this.onSelectFn.bind(this)}
+                onSelectToken={this.onSelectFn}
               ></i-scom-token-modal>
             </i-panel>
           </i-grid-layout>
