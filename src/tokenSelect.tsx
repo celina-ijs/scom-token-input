@@ -7,8 +7,7 @@ import {
   GridLayout,
   HStack
 } from '@ijstech/components'
-import { ITokenObject } from './global/index'
-import { assets } from '@scom/scom-token-list';
+import { assets, ITokenObject } from '@scom/scom-token-list';
 import customStyle, {
   tokenStyle,
   scrollbarStyle,

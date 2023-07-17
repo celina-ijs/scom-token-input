@@ -45,13 +45,17 @@ export default Styles.style({
     '#gridTokenInput': {
       boxShadow: 'none',
       outline: 'none',
-      borderRadius: 6,
-      border: `1px solid ${Theme.divider}`,
+      borderRadius: 'inherit',
+      border: 'inherit',
       transition: 'all .5s ease-in'
     },
     '#gridTokenInput.focus-style': {
       border: `1px solid ${Theme.colors.primary.main}`,
       boxShadow: '0 0 0 2px rgba(87, 75, 144, .2)'
+    },
+    '.custom-border': {
+      border: 'inherit',
+      borderRadius: 'inherit'
     }
   }
 })
