@@ -108,8 +108,9 @@ declare module "@scom/scom-token-input" {
         rpcWalletId?: string;
         token?: ITokenObject;
         tokenDataListProp?: ITokenObject[];
-        readonly?: boolean;
+        readOnly?: boolean;
         tokenReadOnly?: boolean;
+        inputReadOnly?: boolean;
         withoutConnected?: boolean;
         importable?: boolean;
         isSortBalanceShown?: boolean;
@@ -148,8 +149,9 @@ declare module "@scom/scom-token-input" {
         private _isCommonShown;
         private _isSortBalanceShown;
         private _isBtnMaxShown;
-        private _readonly;
+        private _readOnly;
         private _tokenReadOnly;
+        private _inputReadOnly;
         private _importable;
         private _isInputShown;
         private _isBalanceShown;
@@ -189,10 +191,12 @@ declare module "@scom/scom-token-input" {
         set isSortBalanceShown(value: boolean);
         get isBtnMaxShown(): boolean;
         set isBtnMaxShown(value: boolean);
-        get readonly(): boolean;
-        set readonly(value: boolean);
+        get readOnly(): boolean;
+        set readOnly(value: boolean);
         get tokenReadOnly(): boolean;
         set tokenReadOnly(value: boolean);
+        get inputReadOnly(): boolean;
+        set inputReadOnly(value: boolean);
         get importable(): boolean;
         set importable(value: boolean);
         get isInputShown(): boolean;

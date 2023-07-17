@@ -13,8 +13,7 @@ import {
   Button,
   application,
   HStack,
-  IEventBus,
-  VStack,
+  IEventBus
 } from '@ijstech/components'
 import { } from '@ijstech/eth-contract'
 import customStyle, { buttonStyle, inputStyle, tokenSelectionStyle } from './index.css'
@@ -32,8 +31,9 @@ interface ScomTokenInputElement extends ControlElement {
   rpcWalletId?: string;
   token?: ITokenObject;
   tokenDataListProp?: ITokenObject[];
-  readonly?: boolean;
+  readOnly?: boolean;
   tokenReadOnly?: boolean;
+  inputReadOnly?: boolean;
   withoutConnected?: boolean;
   importable?: boolean;
   isSortBalanceShown?: boolean;
@@ -79,8 +79,9 @@ export default class ScomTokenInput extends Module {
   private _isCommonShown: boolean = false
   private _isSortBalanceShown: boolean = true
   private _isBtnMaxShown: boolean = true
-  private _readonly: boolean = false
+  private _readOnly: boolean = false
   private _tokenReadOnly: boolean = false
+  private _inputReadOnly: boolean = false
   private _importable: boolean = false
   private _isInputShown: boolean = true
   private _isBalanceShown: boolean = true
@@ -332,11 +333,11 @@ export default class ScomTokenInput extends Module {
     if (this.btnMax) this.btnMax.visible = value
   }
 
-  get readonly(): boolean {
-    return this._readonly;
+  get readOnly(): boolean {
+    return this._readOnly;
   }
-  set readonly(value: boolean) {
-    this._readonly = value;
+  set readOnly(value: boolean) {
+    this._readOnly = value;
     if (this.btnToken) {
       this.btnToken.enabled = !value
       this.btnToken.rightIcon.visible = !value
@@ -350,12 +351,21 @@ export default class ScomTokenInput extends Module {
   get tokenReadOnly(): boolean {
     return this._tokenReadOnly;
   }
-
   set tokenReadOnly(value: boolean) {
     this._tokenReadOnly = value;
     if (this.btnToken) {
-      this.btnToken.enabled = !this._readonly && !value;
-      this.btnToken.rightIcon.visible = !this._readonly && !value
+      this.btnToken.enabled = !this._readOnly && !value;
+      this.btnToken.rightIcon.visible = !this._readOnly && !value
+    }
+  }
+
+  get inputReadOnly(): boolean {
+    return this._inputReadOnly;
+  }
+  set inputReadOnly(value: boolean) {
+    this._inputReadOnly = value;
+    if (this.inputAmount) {
+      this.inputAmount.readOnly = value;
     }
   }
 
@@ -463,7 +473,7 @@ export default class ScomTokenInput extends Module {
 
   private updateStatusButton() {
     const status = isWalletConnected()
-    const value = !this.readonly && (status || this._withoutConnected)
+    const value = !this.readOnly && (status || this._withoutConnected)
     if (this.btnToken) {
       this.btnToken.enabled = value && !this.tokenReadOnly
     }
@@ -532,8 +542,9 @@ export default class ScomTokenInput extends Module {
     const token = this.getAttribute('token', true)
     if (token) this.token = token
     // this.targetChainId = this.getAttribute('chainId', true)
-    this.readonly = this.getAttribute('readonly', true, false)
+    this.readOnly = this.getAttribute('readOnly', true, false)
     this.tokenReadOnly = this.getAttribute('tokenReadOnly', true, false)
+    this.inputReadOnly = this.getAttribute('inputReadOnly', true, false)
     this.isBtnMaxShown = this.getAttribute('isBtnMaxShown', true, true)
     this.type = this.getAttribute('type', true, 'button')
     if (this.type === 'button') {
@@ -545,6 +556,7 @@ export default class ScomTokenInput extends Module {
     this.isBalanceShown = this.getAttribute('isBalanceShown', true, true)
     const rpcWalletId = this.getAttribute('rpcWalletId', true)
     if (rpcWalletId) this.rpcWalletId = rpcWalletId;
+    this.placeholder = this.getAttribute('placeholder', true);
     const value = this.getAttribute('value', true);
     if (value !== undefined) this.value = value;
 
@@ -586,7 +598,7 @@ export default class ScomTokenInput extends Module {
             font={{ color: Theme.input.fontColor }}
             verticalAlignment='center'
             lineHeight={1.5715}
-            padding={{ top: 4, bottom: 4, left: 11, right: 11 }}
+            padding={{ left: 11, right: 11 }}
             gap={{ column: '0.5rem' }}
           >
             <i-input

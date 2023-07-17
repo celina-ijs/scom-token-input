@@ -447,8 +447,9 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this._isCommonShown = false;
             this._isSortBalanceShown = true;
             this._isBtnMaxShown = true;
-            this._readonly = false;
+            this._readOnly = false;
             this._tokenReadOnly = false;
+            this._inputReadOnly = false;
             this._importable = false;
             this._isInputShown = true;
             this._isBalanceShown = true;
@@ -687,11 +688,11 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             if (this.btnMax)
                 this.btnMax.visible = value;
         }
-        get readonly() {
-            return this._readonly;
+        get readOnly() {
+            return this._readOnly;
         }
-        set readonly(value) {
-            this._readonly = value;
+        set readOnly(value) {
+            this._readOnly = value;
             if (this.btnToken) {
                 this.btnToken.enabled = !value;
                 this.btnToken.rightIcon.visible = !value;
@@ -707,8 +708,17 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         set tokenReadOnly(value) {
             this._tokenReadOnly = value;
             if (this.btnToken) {
-                this.btnToken.enabled = !this._readonly && !value;
-                this.btnToken.rightIcon.visible = !this._readonly && !value;
+                this.btnToken.enabled = !this._readOnly && !value;
+                this.btnToken.rightIcon.visible = !this._readOnly && !value;
+            }
+        }
+        get inputReadOnly() {
+            return this._inputReadOnly;
+        }
+        set inputReadOnly(value) {
+            this._inputReadOnly = value;
+            if (this.inputAmount) {
+                this.inputAmount.readOnly = value;
             }
         }
         get importable() {
@@ -808,7 +818,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         updateStatusButton() {
             const status = (0, scom_token_list_2.isWalletConnected)();
-            const value = !this.readonly && (status || this._withoutConnected);
+            const value = !this.readOnly && (status || this._withoutConnected);
             if (this.btnToken) {
                 this.btnToken.enabled = value && !this.tokenReadOnly;
             }
@@ -879,8 +889,9 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             if (token)
                 this.token = token;
             // this.targetChainId = this.getAttribute('chainId', true)
-            this.readonly = this.getAttribute('readonly', true, false);
+            this.readOnly = this.getAttribute('readOnly', true, false);
             this.tokenReadOnly = this.getAttribute('tokenReadOnly', true, false);
+            this.inputReadOnly = this.getAttribute('inputReadOnly', true, false);
             this.isBtnMaxShown = this.getAttribute('isBtnMaxShown', true, true);
             this.type = this.getAttribute('type', true, 'button');
             if (this.type === 'button') {
@@ -893,6 +904,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             const rpcWalletId = this.getAttribute('rpcWalletId', true);
             if (rpcWalletId)
                 this.rpcWalletId = rpcWalletId;
+            this.placeholder = this.getAttribute('placeholder', true);
             const value = this.getAttribute('value', true);
             if (value !== undefined)
                 this.value = value;
@@ -913,7 +925,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                         this.$render("i-hstack", { id: "pnlBalance", horizontalAlignment: 'end', verticalAlignment: 'center', gap: '0.5rem', margin: { bottom: '0.5rem' }, opacity: 0.6 },
                             this.$render("i-label", { caption: 'Balance:', font: { size: '0.875rem' } }),
                             this.$render("i-label", { id: 'lbBalance', font: { size: '0.875rem' }, caption: "0" }))),
-                    this.$render("i-grid-layout", { id: 'gridTokenInput', templateColumns: ['50%', 'auto'], background: { color: Theme.input.background }, font: { color: Theme.input.fontColor }, verticalAlignment: 'center', lineHeight: 1.5715, padding: { top: 4, bottom: 4, left: 11, right: 11 }, gap: { column: '0.5rem' } },
+                    this.$render("i-grid-layout", { id: 'gridTokenInput', templateColumns: ['50%', 'auto'], background: { color: Theme.input.background }, font: { color: Theme.input.fontColor }, verticalAlignment: 'center', lineHeight: 1.5715, padding: { left: 11, right: 11 }, gap: { column: '0.5rem' } },
                         this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', class: index_css_1.inputStyle, font: { size: 'inherit' }, inputType: 'number', placeholder: 'Enter an amount', onChanged: this.onAmountChanged.bind(this) }),
                         this.$render("i-panel", { id: "pnlSelection", width: '100%', class: index_css_1.tokenSelectionStyle },
                             this.$render("i-hstack", { verticalAlignment: "center", horizontalAlignment: "end", gap: "0.25rem" },
