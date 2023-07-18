@@ -427,7 +427,7 @@ export default class ScomTokenInput extends Module {
   }
 
   getBalance(token?: ITokenObject) {
-    if (token && Object.keys(tokenStore.tokenBalances).length) {
+    if (token && tokenStore?.tokenBalances && Object.keys(tokenStore.tokenBalances).length) {
       const address = (token.address || '').toLowerCase();
       let balance = address ? (tokenStore.tokenBalances[address] ?? 0) : (tokenStore.tokenBalances[token.symbol] || 0);
       return balance
