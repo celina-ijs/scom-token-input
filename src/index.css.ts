@@ -21,7 +21,8 @@ export const inputStyle = Styles.style({
       background: 'transparent',
       border: 0,
       padding: 0,
-      color: Theme.input.fontColor
+      color: Theme.input.fontColor,
+      fontSize: 'inherit'
     }
   }
 })
@@ -50,12 +51,13 @@ export default Styles.style({
       transition: 'all .5s ease-in'
     },
     '#gridTokenInput.focus-style': {
-      border: `1px solid ${Theme.colors.primary.main}`,
-      boxShadow: '0 0 0 2px rgba(87, 75, 144, .2)'
+      // border: `1px solid ${Theme.colors.primary.main}`,
+      // boxShadow: '0 0 0 2px rgba(87, 75, 144, .2)'
     },
     '.custom-border': {
-      border: 'inherit',
-      borderRadius: 'inherit'
+      border: 'none',
+      borderRadius: 'inherit',
+      height: '100%'
     }
   }
 })

@@ -105,12 +105,12 @@ declare module "@scom/scom-token-input" {
     interface ScomTokenInputElement extends ControlElement {
         type?: IType;
         title?: string;
-        chainId?: number;
         rpcWalletId?: string;
         token?: ITokenObject;
         tokenDataListProp?: ITokenObject[];
-        readonly?: boolean;
+        readOnly?: boolean;
         tokenReadOnly?: boolean;
+        inputReadOnly?: boolean;
         withoutConnected?: boolean;
         importable?: boolean;
         isSortBalanceShown?: boolean;
@@ -118,7 +118,7 @@ declare module "@scom/scom-token-input" {
         isCommonShown?: boolean;
         isInputShown?: boolean;
         isBalanceShown?: boolean;
-        value?: string;
+        value?: any;
         placeholder?: string;
         onInputAmountChanged?: (target: Control, event: Event) => void;
         onSelectToken?: (token: ITokenObject | undefined) => void;
@@ -149,8 +149,9 @@ declare module "@scom/scom-token-input" {
         private _isCommonShown;
         private _isSortBalanceShown;
         private _isBtnMaxShown;
-        private _readonly;
+        private _readOnly;
         private _tokenReadOnly;
+        private _inputReadOnly;
         private _importable;
         private _isInputShown;
         private _isBalanceShown;
@@ -183,8 +184,6 @@ declare module "@scom/scom-token-input" {
         set title(value: string | Control);
         get token(): ITokenObject | undefined;
         set token(value: ITokenObject | undefined);
-        get targetChainId(): number;
-        set targetChainId(value: number);
         get chainId(): number;
         get isCommonShown(): boolean;
         set isCommonShown(value: boolean);
@@ -192,10 +191,12 @@ declare module "@scom/scom-token-input" {
         set isSortBalanceShown(value: boolean);
         get isBtnMaxShown(): boolean;
         set isBtnMaxShown(value: boolean);
-        get readonly(): boolean;
-        set readonly(value: boolean);
+        get readOnly(): boolean;
+        set readOnly(value: boolean);
         get tokenReadOnly(): boolean;
         set tokenReadOnly(value: boolean);
+        get inputReadOnly(): boolean;
+        set inputReadOnly(value: boolean);
         get importable(): boolean;
         set importable(value: boolean);
         get isInputShown(): boolean;
@@ -205,6 +206,10 @@ declare module "@scom/scom-token-input" {
         get amount(): string;
         get rpcWalletId(): string;
         set rpcWalletId(value: string);
+        get placeholder(): string;
+        set placeholder(value: string);
+        get value(): any;
+        set value(value: any);
         getBalance(token?: ITokenObject): string | number;
         onSetMax(): Promise<void>;
         private onAmountChanged;

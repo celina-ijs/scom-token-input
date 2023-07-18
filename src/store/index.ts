@@ -18,7 +18,6 @@ export const viewOnExplorerByAddress = (chainId: number, address: string) => {
 
 export const updateStore = (data: any) => {
   if (data.rpcWalletId) {
-    console.log('data.rpcWalletId', data.rpcWalletId)
     state.rpcWalletId = data.rpcWalletId;
   }
 }
