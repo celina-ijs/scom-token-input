@@ -136,7 +136,6 @@ declare module "@scom/scom-token-input" {
         private btnToken;
         private $eventBus;
         private _type;
-        private _targetChainId;
         private _token;
         private _title;
         private _isCommonShown;
@@ -203,12 +202,14 @@ declare module "@scom/scom-token-input" {
         set placeholder(value: string);
         get value(): any;
         set value(value: any);
-        getBalance(token?: ITokenObject): string | number;
-        onSetMax(): Promise<void>;
+        private getBalance;
+        private onSetMax;
         private onAmountChanged;
         private onToggleFocus;
         _handleFocus(event: Event): boolean;
         private renderTokenList;
+        private updateTokenUI;
+        private updateBalance;
         private updateStatusButton;
         private updateTokenButton;
         private onButtonClicked;

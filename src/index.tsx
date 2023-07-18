@@ -23,7 +23,7 @@ import { ChainNativeTokenByChainId, isWalletConnected, tokenStore, assets, Defau
 import { TokenSelect } from './tokenSelect'
 import ScomTokenModal from '@scom/scom-token-modal'
 import { getChainId, getRpcWallet, isRpcWalletConnected, updateStore } from './store/index'
-import { IEventBusRegistry } from '@ijstech/eth-wallet'
+import { Constants, IEventBusRegistry, Wallet } from '@ijstech/eth-wallet'
 
 interface ScomTokenInputElement extends ControlElement {
   type?: IType;
@@ -73,7 +73,7 @@ export default class ScomTokenInput extends Module {
   private $eventBus: IEventBus;
 
   private _type: IType
-  private _targetChainId: number
+  // private _targetChainId: number
   private _token: ITokenObject
   private _title: string | Control
   private _isCommonShown: boolean = false
@@ -109,7 +109,7 @@ export default class ScomTokenInput extends Module {
     return self;
   }
 
-  private onRefresh() {
+  private async onRefresh() {
     if (isWalletConnected()) {
       this.tokenBalancesMap = tokenStore.tokenBalances || {};
       if (this.token) {
@@ -121,13 +121,11 @@ export default class ScomTokenInput extends Module {
         if (!token) this.token = undefined
         else this.token = token;
       }
-    } else {
-      if (this.lbBalance.isConnected) this.lbBalance.caption =  `0.00 ${this.token?.symbol || ''}`
     }
+    this.updateTokenUI();
     this.renderTokenList();
     this.updateStatusButton();
   }
-
 
   private async updateDataByNewToken() {
     this.tokenBalancesMap = tokenStore.tokenBalances || {};
@@ -143,18 +141,6 @@ export default class ScomTokenInput extends Module {
   }
 
   private registerEvent() {
-    // const clientWallet = Wallet.getClientInstance();
-    // this.walletEvents.push(clientWallet.registerWalletEvent(this, Constants.ClientWalletEvent.AccountsChanged, async (payload: Record<string, any>) => {
-    //   const { account } = payload;
-    //   const connected = !!account;
-    //   if (connected && clientWallet.address === this.token?.address) {
-    //     const rpcWallet = getRpcWallet();
-    //     const balance = await rpcWallet.balanceOf(clientWallet.address);
-    //     this.lbBalance.caption = `${formatNumber(balance.toFixed(), 2)} ${this.token?.symbol}`;
-    //   }
-    //   console.log('is connected', connected)
-    //   this.onUpdateData()
-    // }));
     this.clientEvents.push(this.$eventBus.register(this, EventId.IsWalletConnected, this.onUpdateData))
     this.clientEvents.push(this.$eventBus.register(this, EventId.chainChanged, this.onUpdateData))
     this.clientEvents.push(this.$eventBus.register(this, EventId.Paid, () => this.onUpdateData(true)))
@@ -288,7 +274,7 @@ export default class ScomTokenInput extends Module {
       this.cbToken.token = value
     if (this.mdToken)
       this.mdToken.token = value
-    this.updateTokenButton(value);
+    this.updateTokenUI();
   }
 
   // get targetChainId() {
@@ -424,11 +410,12 @@ export default class ScomTokenInput extends Module {
     return this.inputAmount.value
   }
   set value(value: any) {
-    this.inputAmount.value = value
+    if (this.inputAmount)
+      this.inputAmount.value = value
   }
 
-  getBalance(token?: ITokenObject) {
-    if (token && Object.keys(tokenStore.tokenBalances).length) {
+  private getBalance(token?: ITokenObject) {
+    if (token && tokenStore?.tokenBalances && Object.keys(tokenStore.tokenBalances).length) {
       const address = (token.address || '').toLowerCase();
       let balance = address ? (tokenStore.tokenBalances[address] ?? 0) : (tokenStore.tokenBalances[token.symbol] || 0);
       return balance
@@ -436,7 +423,7 @@ export default class ScomTokenInput extends Module {
     return 0;
   }
 
-  async onSetMax() {
+  private async onSetMax() {
     const balance = this.getBalance(this.token);
     this.inputAmount.value = limitDecimals(balance, 4)
     if (this.onSetMaxBalance) this.onSetMaxBalance();
@@ -472,6 +459,27 @@ export default class ScomTokenInput extends Module {
     }
   }
 
+  private async updateTokenUI() {
+    this.value = ''
+    if (this._token?.isNew && isRpcWalletConnected()) {
+      const rpcWallet = getRpcWallet();
+      await tokenStore.updateAllTokenBalances(rpcWallet);
+    }
+    this.updateBalance()
+    this.updateTokenButton()
+  }
+
+  private async updateBalance() {
+    if (!this.lbBalance.isConnected) await this.lbBalance.ready();
+    if (this.token) {
+      const symbol = this.token?.symbol || ''
+      const balance = this.getBalance(this.token);
+      this.lbBalance.caption = `${formatNumber(balance, 2)} ${symbol}`;
+    } else {
+      this.lbBalance.caption = '0.00';
+    }
+  }
+
   private updateStatusButton() {
     const status = isWalletConnected()
     const value = !this.readOnly && (status || this._withoutConnected)
@@ -483,8 +491,9 @@ export default class ScomTokenInput extends Module {
     }
   }
 
-  private updateTokenButton(token?: ITokenObject) {
+  private updateTokenButton() {
     if (!this.btnToken) return
+    let token = this.token ? {...this.token} : undefined
     if (!token)
       token = (this.tokenDataList || []).find(
         (v: ITokenObject) =>
@@ -515,24 +524,9 @@ export default class ScomTokenInput extends Module {
   }
 
   private async onSelectFn(token: ITokenObject | undefined) {
-    this._token = token;
-    if (!this.inputAmount.isConnected) {
-      await this.inputAmount.ready()
-      this.inputAmount.value = ''
-    }
-    if (token?.isNew && isRpcWalletConnected()) {
-      const rpcWallet = getRpcWallet();
-      await tokenStore.updateAllTokenBalances(rpcWallet);
-    }
-    if (token) {
-      const symbol = token?.symbol || ''
-      const balance = this.getBalance(token);
-      this.lbBalance.caption = `${formatNumber(balance, 2)} ${symbol}`;
-    } else {
-      this.lbBalance.caption = '0.00'
-    }
-    this.updateTokenButton(token)
-    if (this.onSelectToken) this.onSelectToken(token)
+    this._token = token
+    this.updateTokenUI()
+    this.onSelectToken && this.onSelectToken(token)
   }
 
   init() {

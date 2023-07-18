@@ -448,8 +448,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             await self.ready();
             return self;
         }
-        onRefresh() {
-            var _a;
+        async onRefresh() {
             if ((0, scom_token_list_2.isWalletConnected)()) {
                 this.tokenBalancesMap = scom_token_list_2.tokenStore.tokenBalances || {};
                 if (this.token) {
@@ -464,10 +463,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                         this.token = token;
                 }
             }
-            else {
-                if (this.lbBalance.isConnected)
-                    this.lbBalance.caption = `0.00 ${((_a = this.token) === null || _a === void 0 ? void 0 : _a.symbol) || ''}`;
-            }
+            this.updateTokenUI();
             this.renderTokenList();
             this.updateStatusButton();
         }
@@ -484,18 +480,6 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.onRefresh();
         }
         registerEvent() {
-            // const clientWallet = Wallet.getClientInstance();
-            // this.walletEvents.push(clientWallet.registerWalletEvent(this, Constants.ClientWalletEvent.AccountsChanged, async (payload: Record<string, any>) => {
-            //   const { account } = payload;
-            //   const connected = !!account;
-            //   if (connected && clientWallet.address === this.token?.address) {
-            //     const rpcWallet = getRpcWallet();
-            //     const balance = await rpcWallet.balanceOf(clientWallet.address);
-            //     this.lbBalance.caption = `${formatNumber(balance.toFixed(), 2)} ${this.token?.symbol}`;
-            //   }
-            //   console.log('is connected', connected)
-            //   this.onUpdateData()
-            // }));
             this.clientEvents.push(this.$eventBus.register(this, "isWalletConnected" /* EventId.IsWalletConnected */, this.onUpdateData));
             this.clientEvents.push(this.$eventBus.register(this, "chainChanged" /* EventId.chainChanged */, this.onUpdateData));
             this.clientEvents.push(this.$eventBus.register(this, "Paid" /* EventId.Paid */, () => this.onUpdateData(true)));
@@ -618,7 +602,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.cbToken.token = value;
             if (this.mdToken)
                 this.mdToken.token = value;
-            this.updateTokenButton(value);
+            this.updateTokenUI();
         }
         // get targetChainId() {
         //   return this._targetChainId;
@@ -742,11 +726,12 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             return this.inputAmount.value;
         }
         set value(value) {
-            this.inputAmount.value = value;
+            if (this.inputAmount)
+                this.inputAmount.value = value;
         }
         getBalance(token) {
             var _a;
-            if (token && Object.keys(scom_token_list_2.tokenStore.tokenBalances).length) {
+            if (token && (scom_token_list_2.tokenStore === null || scom_token_list_2.tokenStore === void 0 ? void 0 : scom_token_list_2.tokenStore.tokenBalances) && Object.keys(scom_token_list_2.tokenStore.tokenBalances).length) {
                 const address = (token.address || '').toLowerCase();
                 let balance = address ? ((_a = scom_token_list_2.tokenStore.tokenBalances[address]) !== null && _a !== void 0 ? _a : 0) : (scom_token_list_2.tokenStore.tokenBalances[token.symbol] || 0);
                 return balance;
@@ -787,6 +772,29 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.mdToken.onRefresh();
             }
         }
+        async updateTokenUI() {
+            var _a;
+            this.value = '';
+            if (((_a = this._token) === null || _a === void 0 ? void 0 : _a.isNew) && (0, index_3.isRpcWalletConnected)()) {
+                const rpcWallet = (0, index_3.getRpcWallet)();
+                await scom_token_list_2.tokenStore.updateAllTokenBalances(rpcWallet);
+            }
+            this.updateBalance();
+            this.updateTokenButton();
+        }
+        async updateBalance() {
+            var _a;
+            if (!this.lbBalance.isConnected)
+                await this.lbBalance.ready();
+            if (this.token) {
+                const symbol = ((_a = this.token) === null || _a === void 0 ? void 0 : _a.symbol) || '';
+                const balance = this.getBalance(this.token);
+                this.lbBalance.caption = `${(0, index_2.formatNumber)(balance, 2)} ${symbol}`;
+            }
+            else {
+                this.lbBalance.caption = '0.00';
+            }
+        }
         updateStatusButton() {
             const status = (0, scom_token_list_2.isWalletConnected)();
             const value = !this.readOnly && (status || this._withoutConnected);
@@ -797,9 +805,10 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.btnMax.enabled = value;
             }
         }
-        updateTokenButton(token) {
+        updateTokenButton() {
             if (!this.btnToken)
                 return;
+            let token = this.token ? Object.assign({}, this.token) : undefined;
             if (!token)
                 token = (this.tokenDataList || []).find((v) => {
                     var _a, _b;
@@ -830,25 +839,8 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         async onSelectFn(token) {
             this._token = token;
-            if (!this.inputAmount.isConnected) {
-                await this.inputAmount.ready();
-                this.inputAmount.value = '';
-            }
-            if ((token === null || token === void 0 ? void 0 : token.isNew) && (0, index_3.isRpcWalletConnected)()) {
-                const rpcWallet = (0, index_3.getRpcWallet)();
-                await scom_token_list_2.tokenStore.updateAllTokenBalances(rpcWallet);
-            }
-            if (token) {
-                const symbol = (token === null || token === void 0 ? void 0 : token.symbol) || '';
-                const balance = this.getBalance(token);
-                this.lbBalance.caption = `${(0, index_2.formatNumber)(balance, 2)} ${symbol}`;
-            }
-            else {
-                this.lbBalance.caption = '0.00';
-            }
-            this.updateTokenButton(token);
-            if (this.onSelectToken)
-                this.onSelectToken(token);
+            this.updateTokenUI();
+            this.onSelectToken && this.onSelectToken(token);
         }
         init() {
             this.classList.add(index_css_1.default);
