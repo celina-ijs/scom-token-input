@@ -618,6 +618,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.cbToken.token = value;
             if (this.mdToken)
                 this.mdToken.token = value;
+            this.updateTokenButton(value);
         }
         // get targetChainId() {
         //   return this._targetChainId;
