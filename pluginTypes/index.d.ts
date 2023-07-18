@@ -22,27 +22,11 @@ declare module "@scom/scom-token-input/global/index.ts" {
     }
     export type IType = 'button' | 'combobox';
 }
-/// <amd-module name="@scom/scom-token-input/store/index.ts" />
-declare module "@scom/scom-token-input/store/index.ts" {
-    export const getNetworkInfo: (chainId: number) => any;
-    export const viewOnExplorerByAddress: (chainId: number, address: string) => void;
-    export const updateStore: (data: any) => void;
-    export const getRpcWallet: () => import("@ijstech/eth-wallet").IRpcWallet;
-    export function getChainId(): number;
-}
-/// <amd-module name="@scom/scom-token-input/utils/token.ts" />
-declare module "@scom/scom-token-input/utils/token.ts" {
-    import { BigNumber, IWallet } from "@ijstech/eth-wallet";
-    import { ITokenObject } from "@scom/scom-token-list";
-    export const getERC20Amount: (wallet: IWallet, tokenAddress: string, decimals: number) => Promise<BigNumber>;
-    export const getTokenBalance: (token: ITokenObject) => Promise<BigNumber>;
-}
 /// <amd-module name="@scom/scom-token-input/utils/index.ts" />
 declare module "@scom/scom-token-input/utils/index.ts" {
     export const formatNumber: (value: any, decimals?: number) => string;
     export const formatNumberWithSeparators: (value: number, precision?: number) => string;
     export const limitDecimals: (value: any, decimals: number) => any;
-    export { getERC20Amount, getTokenBalance } from "@scom/scom-token-input/utils/token.ts";
 }
 /// <amd-module name="@scom/scom-token-input/tokenSelect.css.ts" />
 declare module "@scom/scom-token-input/tokenSelect.css.ts" {
@@ -51,6 +35,15 @@ declare module "@scom/scom-token-input/tokenSelect.css.ts" {
     export const modalStyle: string;
     const _default_1: string;
     export default _default_1;
+}
+/// <amd-module name="@scom/scom-token-input/store/index.ts" />
+declare module "@scom/scom-token-input/store/index.ts" {
+    export const getNetworkInfo: (chainId: number) => any;
+    export const viewOnExplorerByAddress: (chainId: number, address: string) => void;
+    export const updateStore: (data: any) => void;
+    export const getRpcWallet: () => import("@ijstech/eth-wallet").IRpcWallet;
+    export function isRpcWalletConnected(): boolean;
+    export function getChainId(): number;
 }
 /// <amd-module name="@scom/scom-token-input/tokenSelect.tsx" />
 declare module "@scom/scom-token-input/tokenSelect.tsx" {

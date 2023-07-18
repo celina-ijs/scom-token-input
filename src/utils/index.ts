@@ -57,8 +57,3 @@ export const limitDecimals = (value: any, decimals: number) => {
   }
   return parts.join(chart);
 }
-
-export {
-  getERC20Amount,
-  getTokenBalance
-} from './token';

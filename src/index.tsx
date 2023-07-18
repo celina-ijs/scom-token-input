@@ -18,11 +18,11 @@ import {
 import { } from '@ijstech/eth-contract'
 import customStyle, { buttonStyle, inputStyle, tokenSelectionStyle } from './index.css'
 import { EventId, IType } from './global/index'
-import { formatNumber, getTokenBalance, limitDecimals } from './utils/index'
+import { formatNumber, limitDecimals } from './utils/index'
 import { ChainNativeTokenByChainId, isWalletConnected, tokenStore, assets, DefaultERC20Tokens, ITokenObject } from '@scom/scom-token-list'
 import { TokenSelect } from './tokenSelect'
 import ScomTokenModal from '@scom/scom-token-modal'
-import { getChainId, getRpcWallet, updateStore } from './store/index'
+import { getChainId, getRpcWallet, isRpcWalletConnected, updateStore } from './store/index'
 import { IEventBusRegistry } from '@ijstech/eth-wallet'
 
 interface ScomTokenInputElement extends ControlElement {
@@ -427,9 +427,9 @@ export default class ScomTokenInput extends Module {
   }
 
   getBalance(token?: ITokenObject) {
-    if (token) {
-      const address = token.address || '';
-      let balance = address ? tokenStore.tokenBalances[address.toLowerCase()] ?? 0 : tokenStore.tokenBalances[token.symbol] || 0;
+    if (token && Object.keys(tokenStore.tokenBalances).length) {
+      const address = (token.address || '').toLowerCase();
+      let balance = address ? (tokenStore.tokenBalances[address] ?? 0) : (tokenStore.tokenBalances[token.symbol] || 0);
       return balance
     }
     return 0;
@@ -519,9 +519,14 @@ export default class ScomTokenInput extends Module {
       await this.inputAmount.ready()
       this.inputAmount.value = ''
     }
+    if (token?.isNew && isRpcWalletConnected()) {
+      const rpcWallet = getRpcWallet();
+      await tokenStore.updateAllTokenBalances(rpcWallet);
+    }
     if (token) {
       const symbol = token?.symbol || ''
-      this.lbBalance.caption = isWalletConnected() ? `${formatNumber(await getTokenBalance(token), 2)} ${symbol}` : `0.00 ${symbol}`
+      const balance = this.getBalance(token);
+      this.lbBalance.caption = `${formatNumber(balance, 2)} ${symbol}`;
     } else {
       this.lbBalance.caption = '0.00'
     }

@@ -26,8 +26,12 @@ export const getRpcWallet = () => {
   return Wallet.getRpcWalletInstance(state.rpcWalletId);
 }
 
+export function isRpcWalletConnected() {
+  const wallet = getRpcWallet();
+  return wallet?.isConnected;
+}
+
 export function getChainId() {
   const rpcWallet = getRpcWallet();
   return rpcWallet?.chainId;
 };
-
