@@ -288,6 +288,7 @@ export default class ScomTokenInput extends Module {
       this.cbToken.token = value
     if (this.mdToken)
       this.mdToken.token = value
+    this.updateTokenButton(value);
   }
 
   // get targetChainId() {
