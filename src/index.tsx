@@ -134,15 +134,16 @@ export default class ScomTokenInput extends Module {
 
   private async onUpdateData(onPaid?: boolean) {
     const rpcWallet = getRpcWallet()
-    if (rpcWallet)
-      this.tokenBalancesMap = onPaid ? tokenStore.tokenBalances : await tokenStore.updateAllTokenBalances(rpcWallet);
-    else this.tokenBalancesMap = {};
+    this.tokenBalancesMap = onPaid ? tokenStore.tokenBalances : await tokenStore.updateAllTokenBalances(rpcWallet);
     this.onRefresh()
   }
 
   private registerEvent() {
-    this.clientEvents.push(this.$eventBus.register(this, EventId.IsWalletConnected, this.onUpdateData))
-    this.clientEvents.push(this.$eventBus.register(this, EventId.chainChanged, this.onUpdateData))
+    const clientWallet = Wallet.getClientInstance();
+    this.walletEvents.push(clientWallet.registerWalletEvent(this, Constants.ClientWalletEvent.AccountsChanged, async (payload: Record<string, any>) => {
+      this.onUpdateData();
+    }));
+    this.walletEvents.push(this.$eventBus.register(this, EventId.chainChanged, this.onUpdateData))
     this.clientEvents.push(this.$eventBus.register(this, EventId.Paid, () => this.onUpdateData(true)))
     this.clientEvents.push(this.$eventBus.register(this, EventId.EmitNewToken, this.updateDataByNewToken))
   }
@@ -276,19 +277,6 @@ export default class ScomTokenInput extends Module {
       this.mdToken.token = value
     this.updateTokenUI();
   }
-
-  // get targetChainId() {
-  //   return this._targetChainId;
-  // }
-  // set targetChainId(value: number) {
-  //   this._targetChainId = value;
-  //   if (typeof value === 'number') {
-  //     if (this.cbToken)
-  //       this.cbToken.targetChainId = value
-  //     if (this.mdToken)
-  //       this.mdToken.targetChainId = value
-  //   }
-  // }
 
   get chainId() {
     return getChainId();
@@ -541,7 +529,6 @@ export default class ScomTokenInput extends Module {
     if (tokenDataListProp) this.tokenDataListProp = tokenDataListProp;
     const token = this.getAttribute('token', true)
     if (token) this.token = token
-    // this.targetChainId = this.getAttribute('chainId', true)
     this.readOnly = this.getAttribute('readOnly', true, false)
     this.tokenReadOnly = this.getAttribute('tokenReadOnly', true, false)
     this.inputReadOnly = this.getAttribute('inputReadOnly', true, false)

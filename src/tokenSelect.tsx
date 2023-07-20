@@ -5,7 +5,8 @@ import {
   Modal,
   Container,
   GridLayout,
-  HStack
+  HStack,
+  Panel
 } from '@ijstech/components'
 import { assets, ITokenObject } from '@scom/scom-token-list';
 import customStyle, {
@@ -34,12 +35,13 @@ declare global {
 export class TokenSelect extends Module {
   private _token?: ITokenObject
   private _tokenList: Array<ITokenObject>
-  private _targetChainId: number
   private tokenMap: Map<string, HStack> = new Map()
   private currentToken: string = ''
+  private mapScrollTop: {[key: string]: number} = {};
 
   private mdCbToken: Modal
   private gridTokenList: GridLayout
+  private wrapper: Panel
 
   onSelectToken: (token: ITokenObject|undefined) => void
 
@@ -63,22 +65,14 @@ export class TokenSelect extends Module {
     this.renderTokenList()
   }
 
-  get targetChainId(): number {
-    return this._targetChainId
-  }
-  set targetChainId(value: number) {
-    this._targetChainId = value
-    this.renderTokenList();
-  }
-
   get chainId(): number {
-    return this.targetChainId || getChainId()
+    return getChainId()
   }
 
   private renderToken(token: ITokenObject) {
     const tokenIconPath = assets.tokenPath(token, this.chainId)
-    const isActive = this.token && token.address === this.token.address;
-    if (isActive) this.currentToken = token.address || '';
+    const isActive = this.token && (token.address === this.token.address || token.symbol === this.token.symbol);
+    if (isActive) this.currentToken = token.address || token.symbol;
     const tokenElm = (
       <i-hstack
         width='100%'
@@ -111,7 +105,7 @@ export class TokenSelect extends Module {
         </i-vstack>
       </i-hstack>
     )
-    this.tokenMap.set(token.address, tokenElm)
+    this.tokenMap.set(token.address || token.symbol, tokenElm)
     return tokenElm;
   }
 
@@ -128,6 +122,7 @@ export class TokenSelect extends Module {
 
   private async renderTokenList() {
     if (!this.gridTokenList) return;
+    this.tokenMap = new Map();
     this.gridTokenList.clearInnerHTML()
     if (this.tokenList?.length) {
       const tokenItems = this.tokenList.map((token: ITokenObject) =>
@@ -141,8 +136,35 @@ export class TokenSelect extends Module {
 
   showModal() {
     if (!this.enabled) return;
+    const child = this.mdCbToken.querySelector('.modal-wrapper') as HTMLElement;
+    const isVisible = this.mdCbToken.visible;
+    if (child) {
+      child.style.position = isVisible ? 'unset' : 'relative';
+      child.style.display = isVisible ? 'none' : 'block';
+    }
+    if (!isVisible) {
+      const { x, y } = this.wrapper.getBoundingClientRect();
+      const mdClientRect = this.mdCbToken.getBoundingClientRect();
+      const { innerHeight, innerWidth } = window;
+      const elmHeight = mdClientRect.height + 20;
+      const elmWidth = mdClientRect.width;
+      let totalScrollY = 0;
+      for (const key in this.mapScrollTop) {
+        totalScrollY += this.mapScrollTop[key];
+      }
+      if ((y + elmHeight) > innerHeight) {
+        const elmTop = y - elmHeight + totalScrollY;
+        this.mdCbToken.style.top = `${elmTop < 0 ? 0 : y - elmHeight + totalScrollY}px`;
+      } else {
+        this.mdCbToken.style.top = `${y + totalScrollY}px`;
+      }
+      if ((x + elmWidth) > innerWidth) {
+        this.mdCbToken.style.left = `${innerWidth - elmWidth}px`;
+      } else {
+        this.mdCbToken.style.left = `${x}px`;
+      }
+    }
     this.mdCbToken.visible = !this.mdCbToken.visible;
-    this.gridTokenList.scrollTop = 0;
   }
 
   hideModal() {
@@ -152,9 +174,10 @@ export class TokenSelect extends Module {
   private setActive(token: ITokenObject) {
     if (this.currentToken && this.tokenMap.has(this.currentToken))
       this.tokenMap.get(this.currentToken).classList.remove('is-selected')
-    if (this.tokenMap.has(token.address))
-      this.tokenMap.get(token.address).classList.add('is-selected')
-    this.currentToken = token.address
+    const newToken = token.address || token.symbol
+    if (this.tokenMap.has(newToken))
+      this.tokenMap.get(newToken).classList.add('is-selected')
+    this.currentToken = newToken
   }
 
   private async onSelect(token: ITokenObject) {
@@ -164,25 +187,64 @@ export class TokenSelect extends Module {
     this.hideModal()
   }
 
+  private generateUUID() {
+    const uuid = 'xxxxxxxx-xxxx-xxxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      let r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+    return uuid;
+  }
+
   init() {
     this.classList.add(customStyle)
     super.init()
     this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken
-    const chainId = this.getAttribute('chainId', true)
-    if (chainId) this.targetChainId = chainId
     this.token = this.getAttribute('token', true)
     const tokens = this.getAttribute('tokenList', true)
     if (tokens) this.tokenList = tokens
+    this.mdCbToken.visible = false
+    this.mdCbToken.style.position = "fixed"
+    this.mdCbToken.zIndex = 999
+
+    const getScrollY = (elm: HTMLElement) => {
+      let scrollID = elm.getAttribute('scroll-id');
+      if (!scrollID) {
+        scrollID = this.generateUUID();
+        elm.setAttribute('scroll-id', scrollID);
+      }
+      this.mapScrollTop[scrollID] = elm.scrollTop;
+    }
+    const onParentScroll = (e: any) => {
+      if (this.mdCbToken.visible)
+        this.mdCbToken.visible = false;
+      if (e && !e.target.offsetParent && e.target.getAttribute) {
+        getScrollY(e.target);
+      }
+    }
+    let parentElement = this.mdCbToken.parentNode as HTMLElement;
+    while (parentElement) {
+      parentElement.addEventListener('scroll', (e) => onParentScroll(e));
+      parentElement = parentElement.parentNode as HTMLElement;
+      if (parentElement === document.body) {
+        document.addEventListener('scroll', (e) => onParentScroll(e));
+        break;
+      } else if (parentElement && !parentElement.offsetParent && parentElement.scrollTop && typeof parentElement.getAttribute === 'function') {
+        getScrollY(parentElement);
+      }
+    }
   }
 
   render() {
     return (
-      <i-panel>
+      <i-panel id="wrapper">
         <i-modal
           id="mdCbToken"
           showBackdrop={false}
           width='100%'
-          popupPlacement='bottom'
+          minWidth={230}
+          maxWidth={300}
+          closeOnBackdropClick={true}
+          popupPlacement='bottomRight'
           class={`full-width box-shadow ${modalStyle}`}
         >
           <i-panel
