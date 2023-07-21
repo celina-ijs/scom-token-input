@@ -303,6 +303,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             super(parent, options);
             this.tokenMap = new Map();
             this.currentToken = '';
+            this.mapScrollTop = {};
         }
         get token() {
             return this._token;
@@ -319,28 +320,21 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             this._tokenList = value;
             this.renderTokenList();
         }
-        get targetChainId() {
-            return this._targetChainId;
-        }
-        set targetChainId(value) {
-            this._targetChainId = value;
-            this.renderTokenList();
-        }
         get chainId() {
-            return this.targetChainId || (0, index_1.getChainId)();
+            return (0, index_1.getChainId)();
         }
         renderToken(token) {
             const tokenIconPath = scom_token_list_1.assets.tokenPath(token, this.chainId);
-            const isActive = this.token && token.address === this.token.address;
+            const isActive = this.token && (token.address === this.token.address || token.symbol === this.token.symbol);
             if (isActive)
-                this.currentToken = token.address || '';
+                this.currentToken = token.address || token.symbol;
             const tokenElm = (this.$render("i-hstack", { width: '100%', class: `pointer token-item ${tokenSelect_css_1.tokenStyle} ${isActive ? ' is-selected' : ''}`, verticalAlignment: 'center', padding: { top: 5, bottom: 5, left: '0.75rem', right: '0.75rem' }, gap: '0.5rem', onClick: () => this.onSelect(token) },
                 this.$render("i-vstack", { width: '100%' },
                     this.$render("i-hstack", { gap: '0.5rem', verticalAlignment: 'center' },
                         this.$render("i-hstack", { gap: '0.5rem', verticalAlignment: 'center' },
                             this.$render("i-image", { width: 24, height: 24, url: tokenIconPath, fallbackUrl: scom_token_list_1.assets.fallbackUrl }),
                             this.$render("i-label", { class: "token-symbol", caption: token.symbol }))))));
-            this.tokenMap.set(token.address, tokenElm);
+            this.tokenMap.set(token.address || token.symbol, tokenElm);
             return tokenElm;
         }
         clearTokenList() {
@@ -351,6 +345,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             var _a;
             if (!this.gridTokenList)
                 return;
+            this.tokenMap = new Map();
             this.gridTokenList.clearInnerHTML();
             if ((_a = this.tokenList) === null || _a === void 0 ? void 0 : _a.length) {
                 const tokenItems = this.tokenList.map((token) => this.renderToken(token));
@@ -363,8 +358,37 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         showModal() {
             if (!this.enabled)
                 return;
+            const child = this.mdCbToken.querySelector('.modal-wrapper');
+            const isVisible = this.mdCbToken.visible;
+            if (child) {
+                child.style.position = isVisible ? 'unset' : 'relative';
+                child.style.display = isVisible ? 'none' : 'block';
+            }
+            if (!isVisible) {
+                const { x, y } = this.wrapper.getBoundingClientRect();
+                const mdClientRect = this.mdCbToken.getBoundingClientRect();
+                const { innerHeight, innerWidth } = window;
+                const elmHeight = mdClientRect.height + 20;
+                const elmWidth = mdClientRect.width;
+                let totalScrollY = 0;
+                for (const key in this.mapScrollTop) {
+                    totalScrollY += this.mapScrollTop[key];
+                }
+                if ((y + elmHeight) > innerHeight) {
+                    const elmTop = y - elmHeight + totalScrollY;
+                    this.mdCbToken.style.top = `${elmTop < 0 ? 0 : y - elmHeight + totalScrollY}px`;
+                }
+                else {
+                    this.mdCbToken.style.top = `${y + totalScrollY}px`;
+                }
+                if ((x + elmWidth) > innerWidth) {
+                    this.mdCbToken.style.left = `${innerWidth - elmWidth}px`;
+                }
+                else {
+                    this.mdCbToken.style.left = `${x}px`;
+                }
+            }
             this.mdCbToken.visible = !this.mdCbToken.visible;
-            this.gridTokenList.scrollTop = 0;
         }
         hideModal() {
             this.mdCbToken.visible = false;
@@ -372,9 +396,10 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         setActive(token) {
             if (this.currentToken && this.tokenMap.has(this.currentToken))
                 this.tokenMap.get(this.currentToken).classList.remove('is-selected');
-            if (this.tokenMap.has(token.address))
-                this.tokenMap.get(token.address).classList.add('is-selected');
-            this.currentToken = token.address;
+            const newToken = token.address || token.symbol;
+            if (this.tokenMap.has(newToken))
+                this.tokenMap.get(newToken).classList.add('is-selected');
+            this.currentToken = newToken;
         }
         async onSelect(token) {
             this.token = token;
@@ -383,21 +408,55 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
                 this.onSelectToken(Object.assign({}, token));
             this.hideModal();
         }
+        generateUUID() {
+            const uuid = 'xxxxxxxx-xxxx-xxxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                let r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+            return uuid;
+        }
         init() {
             this.classList.add(tokenSelect_css_1.default);
             super.init();
             this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken;
-            const chainId = this.getAttribute('chainId', true);
-            if (chainId)
-                this.targetChainId = chainId;
             this.token = this.getAttribute('token', true);
             const tokens = this.getAttribute('tokenList', true);
             if (tokens)
                 this.tokenList = tokens;
+            this.mdCbToken.visible = false;
+            this.mdCbToken.style.position = "fixed";
+            this.mdCbToken.zIndex = 999;
+            const getScrollY = (elm) => {
+                let scrollID = elm.getAttribute('scroll-id');
+                if (!scrollID) {
+                    scrollID = this.generateUUID();
+                    elm.setAttribute('scroll-id', scrollID);
+                }
+                this.mapScrollTop[scrollID] = elm.scrollTop;
+            };
+            const onParentScroll = (e) => {
+                if (this.mdCbToken.visible)
+                    this.mdCbToken.visible = false;
+                if (e && !e.target.offsetParent && e.target.getAttribute) {
+                    getScrollY(e.target);
+                }
+            };
+            let parentElement = this.mdCbToken.parentNode;
+            while (parentElement) {
+                parentElement.addEventListener('scroll', (e) => onParentScroll(e));
+                parentElement = parentElement.parentNode;
+                if (parentElement === document.body) {
+                    document.addEventListener('scroll', (e) => onParentScroll(e));
+                    break;
+                }
+                else if (parentElement && !parentElement.offsetParent && parentElement.scrollTop && typeof parentElement.getAttribute === 'function') {
+                    getScrollY(parentElement);
+                }
+            }
         }
         render() {
-            return (this.$render("i-panel", null,
-                this.$render("i-modal", { id: "mdCbToken", showBackdrop: false, width: '100%', popupPlacement: 'bottom', class: `full-width box-shadow ${tokenSelect_css_1.modalStyle}` },
+            return (this.$render("i-panel", { id: "wrapper" },
+                this.$render("i-modal", { id: "mdCbToken", showBackdrop: false, width: '100%', minWidth: 230, maxWidth: 300, closeOnBackdropClick: true, popupPlacement: 'bottomRight', class: `full-width box-shadow ${tokenSelect_css_1.modalStyle}` },
                     this.$render("i-panel", { margin: { top: '0.25rem' }, padding: { top: 5, bottom: 5 }, overflow: { y: 'auto', x: 'hidden' }, maxWidth: '100%', maxHeight: 300, border: { radius: 2 }, class: tokenSelect_css_1.scrollbarStyle },
                         this.$render("i-grid-layout", { id: 'gridTokenList', width: '100%', columnsPerRow: 1, templateRows: ['max-content'], class: 'is-combobox' })))));
         }
@@ -407,7 +466,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
     ], TokenSelect);
     exports.TokenSelect = TokenSelect;
 });
-define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "@scom/scom-token-input/index.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-list", "@scom/scom-token-input/store/index.ts"], function (require, exports, components_4, index_css_1, index_2, scom_token_list_2, index_3) {
+define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "@scom/scom-token-input/index.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-list", "@scom/scom-token-input/store/index.ts", "@ijstech/eth-wallet"], function (require, exports, components_4, index_css_1, index_2, scom_token_list_2, index_3, eth_wallet_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_4.Styles.Theme.ThemeVars;
@@ -473,15 +532,15 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         async onUpdateData(onPaid) {
             const rpcWallet = (0, index_3.getRpcWallet)();
-            if (rpcWallet)
-                this.tokenBalancesMap = onPaid ? scom_token_list_2.tokenStore.tokenBalances : await scom_token_list_2.tokenStore.updateAllTokenBalances(rpcWallet);
-            else
-                this.tokenBalancesMap = {};
+            this.tokenBalancesMap = onPaid ? scom_token_list_2.tokenStore.tokenBalances : await scom_token_list_2.tokenStore.updateAllTokenBalances(rpcWallet);
             this.onRefresh();
         }
         registerEvent() {
-            this.clientEvents.push(this.$eventBus.register(this, "isWalletConnected" /* EventId.IsWalletConnected */, this.onUpdateData));
-            this.clientEvents.push(this.$eventBus.register(this, "chainChanged" /* EventId.chainChanged */, this.onUpdateData));
+            const clientWallet = eth_wallet_3.Wallet.getClientInstance();
+            this.walletEvents.push(clientWallet.registerWalletEvent(this, eth_wallet_3.Constants.ClientWalletEvent.AccountsChanged, async (payload) => {
+                this.onUpdateData();
+            }));
+            this.walletEvents.push(this.$eventBus.register(this, "chainChanged" /* EventId.chainChanged */, this.onUpdateData));
             this.clientEvents.push(this.$eventBus.register(this, "Paid" /* EventId.Paid */, () => this.onUpdateData(true)));
             this.clientEvents.push(this.$eventBus.register(this, "EmitNewToken" /* EventId.EmitNewToken */, this.updateDataByNewToken));
         }
@@ -604,18 +663,6 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.mdToken.token = value;
             this.updateTokenUI();
         }
-        // get targetChainId() {
-        //   return this._targetChainId;
-        // }
-        // set targetChainId(value: number) {
-        //   this._targetChainId = value;
-        //   if (typeof value === 'number') {
-        //     if (this.cbToken)
-        //       this.cbToken.targetChainId = value
-        //     if (this.mdToken)
-        //       this.mdToken.targetChainId = value
-        //   }
-        // }
         get chainId() {
             return (0, index_3.getChainId)();
         }
@@ -856,7 +903,6 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             const token = this.getAttribute('token', true);
             if (token)
                 this.token = token;
-            // this.targetChainId = this.getAttribute('chainId', true)
             this.readOnly = this.getAttribute('readOnly', true, false);
             this.tokenReadOnly = this.getAttribute('tokenReadOnly', true, false);
             this.inputReadOnly = this.getAttribute('inputReadOnly', true, false);

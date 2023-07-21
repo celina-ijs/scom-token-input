@@ -65,19 +65,18 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
     export class TokenSelect extends Module {
         private _token?;
         private _tokenList;
-        private _targetChainId;
         private tokenMap;
         private currentToken;
+        private mapScrollTop;
         private mdCbToken;
         private gridTokenList;
+        private wrapper;
         onSelectToken: (token: ITokenObject | undefined) => void;
         constructor(parent?: Container, options?: any);
         get token(): ITokenObject | undefined;
         set token(value: ITokenObject | undefined);
         get tokenList(): Array<ITokenObject>;
         set tokenList(value: Array<ITokenObject>);
-        get targetChainId(): number;
-        set targetChainId(value: number);
         get chainId(): number;
         private renderToken;
         private clearTokenList;
@@ -86,6 +85,7 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         hideModal(): void;
         private setActive;
         private onSelect;
+        private generateUUID;
         init(): void;
         render(): any;
     }
