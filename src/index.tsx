@@ -143,7 +143,7 @@ export default class ScomTokenInput extends Module {
     this.walletEvents.push(clientWallet.registerWalletEvent(this, Constants.ClientWalletEvent.AccountsChanged, async (payload: Record<string, any>) => {
       this.onUpdateData();
     }));
-    this.walletEvents.push(this.$eventBus.register(this, EventId.chainChanged, this.onUpdateData))
+    this.clientEvents.push(this.$eventBus.register(this, EventId.chainChanged, () => this.onUpdateData(false)))
     this.clientEvents.push(this.$eventBus.register(this, EventId.Paid, () => this.onUpdateData(true)))
     this.clientEvents.push(this.$eventBus.register(this, EventId.EmitNewToken, this.updateDataByNewToken))
   }
@@ -434,11 +434,13 @@ export default class ScomTokenInput extends Module {
 
   private async renderTokenList() {
     if (this.type === 'combobox') {
+      if (!this.cbToken) return;
       if (!this.cbToken.isConnected)
         await this.cbToken.ready();
       this.cbToken.visible = true;
       this.cbToken.tokenList = [...this.tokenDataList]
     } else {
+      if (!this.mdToken) return;
       if (!this.mdToken.isConnected)
         await this.mdToken.ready()
       this.cbToken.visible = false;
@@ -458,6 +460,7 @@ export default class ScomTokenInput extends Module {
   }
 
   private async updateBalance() {
+    if (!this.lbBalance) return;
     if (!this.lbBalance.isConnected) await this.lbBalance.ready();
     if (this.token) {
       const symbol = this.token?.symbol || ''

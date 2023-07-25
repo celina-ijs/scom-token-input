@@ -169,6 +169,10 @@ export class TokenSelect extends Module {
 
   hideModal() {
     this.mdCbToken.visible = false;
+    const child = this.mdCbToken.querySelector('.modal-wrapper') as HTMLElement;
+    if (child) {
+      child.style.display = 'none';
+    }
   }
 
   private setActive(token: ITokenObject) {
