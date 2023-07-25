@@ -384,7 +384,7 @@ export default class ScomTokenInput extends Module {
     updateStore({ rpcWalletId: value })
     if (this.mdToken)
       this.mdToken.rpcWalletId = value
-    this.onUpdateData()
+    // this.onUpdateData()
   }
 
   get placeholder() {

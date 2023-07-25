@@ -760,7 +760,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             (0, index_3.updateStore)({ rpcWalletId: value });
             if (this.mdToken)
                 this.mdToken.rpcWalletId = value;
-            this.onUpdateData();
+            // this.onUpdateData()
         }
         get placeholder() {
             var _a, _b;
