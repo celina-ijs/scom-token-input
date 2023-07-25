@@ -166,7 +166,7 @@ export default class ScomTokenInput extends Module {
 
   set tokenDataListProp(value: Array<ITokenObject>) {
     this._tokenDataListProp = value ?? [];
-    this.renderTokenList();
+    // this.renderTokenList();
   }
 
   private get tokenListByChainId() {
@@ -243,7 +243,7 @@ export default class ScomTokenInput extends Module {
     this._type = value
     if (this.btnToken)
       this.btnToken.width = value === 'button' ? "auto" : '100%'
-    this.onRefresh()
+    // this.onRefresh()
   }
 
   get title(): any {
@@ -510,8 +510,10 @@ export default class ScomTokenInput extends Module {
     // this.onRefresh();
     if (this.type === 'combobox')
       this.cbToken.showModal()
-    else
-      this.mdToken.showModal()
+    else {
+      this.mdToken.tokenDataListProp = this.tokenDataListProp;
+      this.mdToken.showModal();
+    }
   }
 
   private async onSelectFn(token: ITokenObject | undefined) {

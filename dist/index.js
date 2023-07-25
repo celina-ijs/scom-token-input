@@ -565,7 +565,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         set tokenDataListProp(value) {
             this._tokenDataListProp = value !== null && value !== void 0 ? value : [];
-            this.renderTokenList();
+            // this.renderTokenList();
         }
         get tokenListByChainId() {
             var _a, _b;
@@ -632,7 +632,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this._type = value;
             if (this.btnToken)
                 this.btnToken.width = value === 'button' ? "auto" : '100%';
-            this.onRefresh();
+            // this.onRefresh()
         }
         get title() {
             var _a;
@@ -891,8 +891,10 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             // this.onRefresh();
             if (this.type === 'combobox')
                 this.cbToken.showModal();
-            else
+            else {
+                this.mdToken.tokenDataListProp = this.tokenDataListProp;
                 this.mdToken.showModal();
+            }
         }
         async onSelectFn(token) {
             this._token = token;
