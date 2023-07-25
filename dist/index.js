@@ -392,6 +392,10 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         }
         hideModal() {
             this.mdCbToken.visible = false;
+            const child = this.mdCbToken.querySelector('.modal-wrapper');
+            if (child) {
+                child.style.display = 'none';
+            }
         }
         setActive(token) {
             if (this.currentToken && this.tokenMap.has(this.currentToken))
@@ -540,7 +544,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.walletEvents.push(clientWallet.registerWalletEvent(this, eth_wallet_3.Constants.ClientWalletEvent.AccountsChanged, async (payload) => {
                 this.onUpdateData();
             }));
-            this.walletEvents.push(this.$eventBus.register(this, "chainChanged" /* EventId.chainChanged */, this.onUpdateData));
+            this.clientEvents.push(this.$eventBus.register(this, "chainChanged" /* EventId.chainChanged */, () => this.onUpdateData(false)));
             this.clientEvents.push(this.$eventBus.register(this, "Paid" /* EventId.Paid */, () => this.onUpdateData(true)));
             this.clientEvents.push(this.$eventBus.register(this, "EmitNewToken" /* EventId.EmitNewToken */, this.updateDataByNewToken));
         }
@@ -806,12 +810,16 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         async renderTokenList() {
             if (this.type === 'combobox') {
+                if (!this.cbToken)
+                    return;
                 if (!this.cbToken.isConnected)
                     await this.cbToken.ready();
                 this.cbToken.visible = true;
                 this.cbToken.tokenList = [...this.tokenDataList];
             }
             else {
+                if (!this.mdToken)
+                    return;
                 if (!this.mdToken.isConnected)
                     await this.mdToken.ready();
                 this.cbToken.visible = false;
@@ -831,6 +839,8 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         async updateBalance() {
             var _a;
+            if (!this.lbBalance)
+                return;
             if (!this.lbBalance.isConnected)
                 await this.lbBalance.ready();
             if (this.token) {
