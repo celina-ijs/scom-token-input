@@ -166,6 +166,9 @@ export default class ScomTokenInput extends Module {
 
   set tokenDataListProp(value: Array<ITokenObject>) {
     this._tokenDataListProp = value ?? [];
+    if (this.type === 'button') {
+      if (this.mdToken) this.mdToken.tokenDataListProp = this.tokenDataListProp;
+    }
     // this.renderTokenList();
   }
 

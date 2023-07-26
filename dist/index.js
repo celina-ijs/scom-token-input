@@ -565,6 +565,10 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         set tokenDataListProp(value) {
             this._tokenDataListProp = value !== null && value !== void 0 ? value : [];
+            if (this.type === 'button') {
+                if (this.mdToken)
+                    this.mdToken.tokenDataListProp = this.tokenDataListProp;
+            }
             // this.renderTokenList();
         }
         get tokenListByChainId() {
