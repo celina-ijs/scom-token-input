@@ -139,13 +139,13 @@ export default class ScomTokenInput extends Module {
   }
 
   private registerEvent() {
-    const clientWallet = Wallet.getClientInstance();
-    this.walletEvents.push(clientWallet.registerWalletEvent(this, Constants.ClientWalletEvent.AccountsChanged, async (payload: Record<string, any>) => {
-      this.onUpdateData();
-    }));
-    this.clientEvents.push(this.$eventBus.register(this, EventId.chainChanged, () => this.onUpdateData(false)))
-    this.clientEvents.push(this.$eventBus.register(this, EventId.Paid, () => this.onUpdateData(true)))
-    this.clientEvents.push(this.$eventBus.register(this, EventId.EmitNewToken, this.updateDataByNewToken))
+    // const clientWallet = Wallet.getClientInstance();
+    // this.walletEvents.push(clientWallet.registerWalletEvent(this, Constants.ClientWalletEvent.AccountsChanged, async (payload: Record<string, any>) => {
+    //   this.onUpdateData();
+    // }));
+    // this.clientEvents.push(this.$eventBus.register(this, EventId.chainChanged, () => this.onUpdateData(false)))
+    // this.clientEvents.push(this.$eventBus.register(this, EventId.Paid, () => this.onUpdateData(true)))
+    // this.clientEvents.push(this.$eventBus.register(this, EventId.EmitNewToken, this.updateDataByNewToken))
   }
 
   onHide() {

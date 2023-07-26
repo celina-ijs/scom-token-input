@@ -470,7 +470,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
     ], TokenSelect);
     exports.TokenSelect = TokenSelect;
 });
-define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "@scom/scom-token-input/index.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-list", "@scom/scom-token-input/store/index.ts", "@ijstech/eth-wallet"], function (require, exports, components_4, index_css_1, index_2, scom_token_list_2, index_3, eth_wallet_3) {
+define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "@scom/scom-token-input/index.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-list", "@scom/scom-token-input/store/index.ts"], function (require, exports, components_4, index_css_1, index_2, scom_token_list_2, index_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_4.Styles.Theme.ThemeVars;
@@ -540,13 +540,13 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.onRefresh();
         }
         registerEvent() {
-            const clientWallet = eth_wallet_3.Wallet.getClientInstance();
-            this.walletEvents.push(clientWallet.registerWalletEvent(this, eth_wallet_3.Constants.ClientWalletEvent.AccountsChanged, async (payload) => {
-                this.onUpdateData();
-            }));
-            this.clientEvents.push(this.$eventBus.register(this, "chainChanged" /* EventId.chainChanged */, () => this.onUpdateData(false)));
-            this.clientEvents.push(this.$eventBus.register(this, "Paid" /* EventId.Paid */, () => this.onUpdateData(true)));
-            this.clientEvents.push(this.$eventBus.register(this, "EmitNewToken" /* EventId.EmitNewToken */, this.updateDataByNewToken));
+            // const clientWallet = Wallet.getClientInstance();
+            // this.walletEvents.push(clientWallet.registerWalletEvent(this, Constants.ClientWalletEvent.AccountsChanged, async (payload: Record<string, any>) => {
+            //   this.onUpdateData();
+            // }));
+            // this.clientEvents.push(this.$eventBus.register(this, EventId.chainChanged, () => this.onUpdateData(false)))
+            // this.clientEvents.push(this.$eventBus.register(this, EventId.Paid, () => this.onUpdateData(true)))
+            // this.clientEvents.push(this.$eventBus.register(this, EventId.EmitNewToken, this.updateDataByNewToken))
         }
         onHide() {
             const rpcWallet = (0, index_3.getRpcWallet)();
