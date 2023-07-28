@@ -812,14 +812,24 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.onToggleFocus(true);
             return super._handleFocus(event);
         }
-        async renderTokenList() {
+        async renderTokenList(init) {
+            var _a;
             if (this.type === 'combobox') {
                 if (!this.cbToken)
                     return;
                 if (!this.cbToken.isConnected)
                     await this.cbToken.ready();
                 this.cbToken.visible = true;
-                this.cbToken.tokenList = [...this.tokenDataList];
+                if (init && ((_a = this.cbToken.tokenList) === null || _a === void 0 ? void 0 : _a.length) && this.tokenDataList.length) {
+                    const token = this.cbToken.tokenList[0];
+                    const tokenData = this.tokenDataList[0];
+                    if (JSON.stringify(token) !== JSON.stringify(tokenData) || this.cbToken.tokenList.length !== this.tokenDataList.length) {
+                        this.cbToken.tokenList = [...this.tokenDataList];
+                    }
+                }
+                else {
+                    this.cbToken.tokenList = [...this.tokenDataList];
+                }
             }
             else {
                 if (!this.mdToken)
@@ -891,10 +901,12 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.btnMax.visible = false;
             }
         }
-        onButtonClicked() {
+        async onButtonClicked() {
             // this.onRefresh();
-            if (this.type === 'combobox')
+            if (this.type === 'combobox') {
+                await this.renderTokenList();
                 this.cbToken.showModal();
+            }
             else {
                 this.mdToken.tokenDataListProp = this.tokenDataListProp;
                 this.mdToken.showModal();

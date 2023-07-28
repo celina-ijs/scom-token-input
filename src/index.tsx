@@ -435,13 +435,21 @@ export default class ScomTokenInput extends Module {
     return super._handleFocus(event)
   }
 
-  private async renderTokenList() {
+  private async renderTokenList(init?: boolean) {
     if (this.type === 'combobox') {
       if (!this.cbToken) return;
       if (!this.cbToken.isConnected)
         await this.cbToken.ready();
       this.cbToken.visible = true;
-      this.cbToken.tokenList = [...this.tokenDataList]
+      if (init && this.cbToken.tokenList?.length && this.tokenDataList.length) {
+        const token = this.cbToken.tokenList[0];
+        const tokenData = this.tokenDataList[0];
+        if (JSON.stringify(token) !== JSON.stringify(tokenData) || this.cbToken.tokenList.length !== this.tokenDataList.length) {
+          this.cbToken.tokenList = [...this.tokenDataList];
+        }
+      } else {
+        this.cbToken.tokenList = [...this.tokenDataList]
+      }
     } else {
       if (!this.mdToken) return;
       if (!this.mdToken.isConnected)
@@ -509,11 +517,12 @@ export default class ScomTokenInput extends Module {
     }
   }
 
-  private onButtonClicked() {
+  private async onButtonClicked() {
     // this.onRefresh();
-    if (this.type === 'combobox')
-      this.cbToken.showModal()
-    else {
+    if (this.type === 'combobox') {
+      await this.renderTokenList(true);
+      this.cbToken.showModal();
+    } else {
       this.mdToken.tokenDataListProp = this.tokenDataListProp;
       this.mdToken.showModal();
     }
