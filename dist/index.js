@@ -904,7 +904,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         async onButtonClicked() {
             // this.onRefresh();
             if (this.type === 'combobox') {
-                await this.renderTokenList();
+                await this.renderTokenList(true);
                 this.cbToken.showModal();
             }
             else {
