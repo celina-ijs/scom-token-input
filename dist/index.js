@@ -529,6 +529,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.updateTokenUI();
             this.renderTokenList();
             this.updateStatusButton();
+            this.pnlTopSection.visible = this.isBalanceShown && !!this.title;
         }
         async updateDataByNewToken() {
             this.tokenBalancesMap = scom_token_list_2.tokenStore.tokenBalances || {};
@@ -860,7 +861,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             if (this.token) {
                 const symbol = ((_a = this.token) === null || _a === void 0 ? void 0 : _a.symbol) || '';
                 const balance = this.getBalance(this.token);
-                this.lbBalance.caption = `${(0, index_2.formatNumber)(balance, 2)} ${symbol}`;
+                this.lbBalance.caption = `${(0, index_2.formatNumber)(balance, 6)} ${symbol}`;
             }
             else {
                 this.lbBalance.caption = '0.00';
@@ -950,6 +951,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             const value = this.getAttribute('value', true);
             if (value !== undefined)
                 this.value = value;
+            this.pnlTopSection.visible = this.isBalanceShown && !!this.title;
             document.addEventListener('click', (event) => {
                 const target = event.target;
                 const tokenInput = target.closest('#gridTokenInput');
@@ -961,8 +963,8 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         render() {
             return (this.$render("i-hstack", { class: "custom-border", width: '100%', verticalAlignment: "center" },
-                this.$render("i-vstack", { gap: '0.5rem', width: '100%', class: "custom-border" },
-                    this.$render("i-hstack", { horizontalAlignment: 'space-between', verticalAlignment: 'center' },
+                this.$render("i-vstack", { gap: '0.5rem', width: '100%', class: "custom-border", margin: { top: '0.5rem', bottom: '0.5rem' } },
+                    this.$render("i-hstack", { id: "pnlTopSection", horizontalAlignment: 'space-between', verticalAlignment: 'center' },
                         this.$render("i-hstack", { id: "pnlTitle", gap: "4px" }),
                         this.$render("i-hstack", { id: "pnlBalance", horizontalAlignment: 'end', verticalAlignment: 'center', gap: '0.5rem', margin: { bottom: '0.5rem' }, opacity: 0.6 },
                             this.$render("i-label", { caption: 'Balance:', font: { size: '0.875rem' } }),

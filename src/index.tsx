@@ -69,6 +69,7 @@ export default class ScomTokenInput extends Module {
   private cbToken: TokenSelect
   private btnMax: Button
   private btnToken: Button;
+  private pnlTopSection: HStack;
 
   private $eventBus: IEventBus;
 
@@ -125,6 +126,7 @@ export default class ScomTokenInput extends Module {
     this.updateTokenUI();
     this.renderTokenList();
     this.updateStatusButton();
+    this.pnlTopSection.visible = this.isBalanceShown && !!this.title;
   }
 
   private async updateDataByNewToken() {
@@ -476,7 +478,7 @@ export default class ScomTokenInput extends Module {
     if (this.token) {
       const symbol = this.token?.symbol || ''
       const balance = this.getBalance(this.token);
-      this.lbBalance.caption = `${formatNumber(balance, 2)} ${symbol}`;
+      this.lbBalance.caption = `${formatNumber(balance, 6)} ${symbol}`;
     } else {
       this.lbBalance.caption = '0.00';
     }
@@ -563,7 +565,7 @@ export default class ScomTokenInput extends Module {
     this.placeholder = this.getAttribute('placeholder', true);
     const value = this.getAttribute('value', true);
     if (value !== undefined) this.value = value;
-
+    this.pnlTopSection.visible = this.isBalanceShown && !!this.title;
     document.addEventListener('click', (event) => {
       const target = event.target as Control
       const tokenInput = target.closest('#gridTokenInput')
@@ -577,8 +579,9 @@ export default class ScomTokenInput extends Module {
   render() {
     return (
       <i-hstack class="custom-border" width='100%' verticalAlignment="center">
-        <i-vstack gap='0.5rem' width='100%' class="custom-border">
+        <i-vstack gap='0.5rem' width='100%' class="custom-border" margin={{top: '0.5rem', bottom: '0.5rem'}}>
           <i-hstack
+            id="pnlTopSection"
             horizontalAlignment='space-between'
             verticalAlignment='center'
           >

@@ -134,6 +134,7 @@ declare module "@scom/scom-token-input" {
         private cbToken;
         private btnMax;
         private btnToken;
+        private pnlTopSection;
         private $eventBus;
         private _type;
         private _token;
