@@ -43,6 +43,8 @@ interface ScomTokenInputElement extends ControlElement {
   isBalanceShown?: boolean;
   value?: any;
   placeholder?: string;
+  address?: string;
+  targetChainId?: number;
   onInputAmountChanged?: (target: Control, event: Event) => void;
   onSelectToken?: (token: ITokenObject | undefined) => void;
   onSetMaxBalance?: () => void;
@@ -75,7 +77,7 @@ export default class ScomTokenInput extends Module {
 
   private _type: IType
   // private _targetChainId: number
-  private _token: ITokenObject
+  private _token: ITokenObject;
   private _title: string | Control
   private _isCommonShown: boolean = false
   private _isSortBalanceShown: boolean = true
@@ -89,7 +91,9 @@ export default class ScomTokenInput extends Module {
   private _tokenDataListProp: ITokenObject[] = []
   private _withoutConnected: boolean = false;
   private _rpcWalletId: string = '';
-  private tokenBalancesMap: any
+  private _targetChainId: number; 
+  private tokenBalancesMap: any;
+  public onChanged: (token?: ITokenObject) => void;
 
   private walletEvents: IEventBusRegistry[] = [];
   private clientEvents: any[] = [];
@@ -98,7 +102,7 @@ export default class ScomTokenInput extends Module {
   private _onSelectToken: (token: ITokenObject | undefined) => void;
   onSetMaxBalance: () => void
 
-  constructor(parent?: Container, options?: any) {
+  constructor(parent?: Container, options?: ScomTokenInputElement) {
     super(parent, options);
     this.$eventBus = application.EventBus;
     this.registerEvent();
@@ -283,8 +287,24 @@ export default class ScomTokenInput extends Module {
     this.updateTokenUI();
   }
 
+  set address(value: string) {
+    if (!value) {
+      this.token = null;
+      return;
+    }
+    const tokenAddress = value.toLowerCase();
+    let tokenObj = null;
+    if (tokenAddress.startsWith('0x')) {
+      tokenObj = DefaultERC20Tokens[this.chainId]?.find(v => v.address?.toLowerCase() === tokenAddress);
+    } else {
+      const nativeToken = ChainNativeTokenByChainId[this.chainId];
+      tokenObj = nativeToken?.symbol?.toLowerCase() === tokenAddress ? nativeToken : null;
+    }
+    this.token = tokenObj;
+  }
+
   get chainId() {
-    return getChainId();
+    return this.targetChainId || getChainId();
   }
 
   get isCommonShown(): boolean {
@@ -407,6 +427,15 @@ export default class ScomTokenInput extends Module {
       this.inputAmount.value = value
   }
 
+  get targetChainId() {
+    return this._targetChainId;
+  }
+
+  set targetChainId(value: number) {
+    this._targetChainId = value;
+    this.renderTokenList();
+  }
+
   private getBalance(token?: ITokenObject) {
     if (token && tokenStore?.tokenBalances && Object.keys(tokenStore.tokenBalances).length) {
       const address = (token.address || '').toLowerCase();
@@ -442,6 +471,10 @@ export default class ScomTokenInput extends Module {
       if (!this.cbToken) return;
       if (!this.cbToken.isConnected)
         await this.cbToken.ready();
+      if (this.cbToken.targetChainId !== this.targetChainId) {
+        this.cbToken.targetChainId = this.targetChainId;
+        this.token = null;
+      }
       this.cbToken.visible = true;
       if (init && this.cbToken.tokenList?.length && this.tokenDataList.length) {
         const token = this.cbToken.tokenList[0];
@@ -456,9 +489,9 @@ export default class ScomTokenInput extends Module {
       if (!this.mdToken) return;
       if (!this.mdToken.isConnected)
         await this.mdToken.ready()
-      this.cbToken.visible = false;
+      if (this.cbToken) this.cbToken.visible = false
       this.mdToken.tokenDataListProp = this.tokenDataListProp
-      this.mdToken.onRefresh()
+      if (this.mdToken.onRefresh) this.mdToken.onRefresh()
     }
   }
 
@@ -531,6 +564,9 @@ export default class ScomTokenInput extends Module {
   }
 
   private async onSelectFn(token: ITokenObject | undefined) {
+    if (this.onChanged) {
+      this.onChanged(token)
+    }
     this._token = token
     this.updateTokenUI()
     this.onSelectToken && this.onSelectToken(token)
@@ -544,6 +580,9 @@ export default class ScomTokenInput extends Module {
     this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken
     this.title = this.getAttribute('title', true, '')
     this._withoutConnected = this.getAttribute('withoutConnected', true, false)
+    this.targetChainId = this.getAttribute('targetChainId', true)
+    const address = this.getAttribute('address', true)
+    if (address) this.address = address
     const tokenDataListProp = this.getAttribute('tokenDataListProp', true)
     if (tokenDataListProp) this.tokenDataListProp = tokenDataListProp;
     const token = this.getAttribute('token', true)

@@ -321,7 +321,13 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             this.renderTokenList();
         }
         get chainId() {
-            return (0, index_1.getChainId)();
+            return this.targetChainId || (0, index_1.getChainId)();
+        }
+        get targetChainId() {
+            return this._targetChainId;
+        }
+        set targetChainId(value) {
+            this._targetChainId = value;
         }
         renderToken(token) {
             const tokenIconPath = scom_token_list_1.assets.tokenPath(token, this.chainId);
@@ -672,8 +678,25 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.mdToken.token = value;
             this.updateTokenUI();
         }
+        set address(value) {
+            var _a, _b;
+            if (!value) {
+                this.token = null;
+                return;
+            }
+            const tokenAddress = value.toLowerCase();
+            let tokenObj = null;
+            if (tokenAddress.startsWith('0x')) {
+                tokenObj = (_a = scom_token_list_2.DefaultERC20Tokens[this.chainId]) === null || _a === void 0 ? void 0 : _a.find(v => { var _a; return ((_a = v.address) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === tokenAddress; });
+            }
+            else {
+                const nativeToken = scom_token_list_2.ChainNativeTokenByChainId[this.chainId];
+                tokenObj = ((_b = nativeToken === null || nativeToken === void 0 ? void 0 : nativeToken.symbol) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === tokenAddress ? nativeToken : null;
+            }
+            this.token = tokenObj;
+        }
         get chainId() {
-            return (0, index_3.getChainId)();
+            return this.targetChainId || (0, index_3.getChainId)();
         }
         get isCommonShown() {
             return this._isCommonShown;
@@ -785,6 +808,13 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             if (this.inputAmount)
                 this.inputAmount.value = value;
         }
+        get targetChainId() {
+            return this._targetChainId;
+        }
+        set targetChainId(value) {
+            this._targetChainId = value;
+            this.renderTokenList();
+        }
         getBalance(token) {
             var _a;
             if (token && (scom_token_list_2.tokenStore === null || scom_token_list_2.tokenStore === void 0 ? void 0 : scom_token_list_2.tokenStore.tokenBalances) && Object.keys(scom_token_list_2.tokenStore.tokenBalances).length) {
@@ -820,6 +850,10 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                     return;
                 if (!this.cbToken.isConnected)
                     await this.cbToken.ready();
+                if (this.cbToken.targetChainId !== this.targetChainId) {
+                    this.cbToken.targetChainId = this.targetChainId;
+                    this.token = null;
+                }
                 this.cbToken.visible = true;
                 if (init && ((_a = this.cbToken.tokenList) === null || _a === void 0 ? void 0 : _a.length) && this.tokenDataList.length) {
                     const token = this.cbToken.tokenList[0];
@@ -837,9 +871,11 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                     return;
                 if (!this.mdToken.isConnected)
                     await this.mdToken.ready();
-                this.cbToken.visible = false;
+                if (this.cbToken)
+                    this.cbToken.visible = false;
                 this.mdToken.tokenDataListProp = this.tokenDataListProp;
-                this.mdToken.onRefresh();
+                if (this.mdToken.onRefresh)
+                    this.mdToken.onRefresh();
             }
         }
         async updateTokenUI() {
@@ -914,6 +950,9 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             }
         }
         async onSelectFn(token) {
+            if (this.onChanged) {
+                this.onChanged(token);
+            }
             this._token = token;
             this.updateTokenUI();
             this.onSelectToken && this.onSelectToken(token);
@@ -926,6 +965,10 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken;
             this.title = this.getAttribute('title', true, '');
             this._withoutConnected = this.getAttribute('withoutConnected', true, false);
+            this.targetChainId = this.getAttribute('targetChainId', true);
+            const address = this.getAttribute('address', true);
+            if (address)
+                this.address = address;
             const tokenDataListProp = this.getAttribute('tokenDataListProp', true);
             if (tokenDataListProp)
                 this.tokenDataListProp = tokenDataListProp;
