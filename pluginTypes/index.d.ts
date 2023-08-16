@@ -86,6 +86,7 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         private renderTokenList;
         showModal(): void;
         hideModal(): void;
+        private hideModalWrapper;
         private setActive;
         private onSelect;
         private generateUUID;
