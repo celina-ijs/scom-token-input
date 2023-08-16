@@ -178,9 +178,13 @@ export class TokenSelect extends Module {
 
   hideModal() {
     this.mdCbToken.visible = false;
-    const child = this.mdCbToken.querySelector('.modal-wrapper') as HTMLElement;
-    if (child) {
-      child.style.display = 'none';
+    this.hideModalWrapper();
+  }
+
+  private hideModalWrapper() {
+    const modalWrapper = this.mdCbToken?.querySelector('.modal-wrapper') as HTMLElement;
+    if (modalWrapper) {
+      modalWrapper.style.display = 'none';
     }
   }
 
@@ -257,6 +261,7 @@ export class TokenSelect extends Module {
           minWidth={230}
           maxWidth={300}
           closeOnBackdropClick={true}
+          onClose={this.hideModalWrapper}
           popupPlacement='bottomRight'
           class={`full-width box-shadow ${modalStyle}`}
         >
