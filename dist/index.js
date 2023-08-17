@@ -364,6 +364,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         showModal() {
             if (!this.enabled)
                 return;
+            this.mdCbToken.maxWidth = this.wrapper.offsetWidth;
             const child = this.mdCbToken.querySelector('.modal-wrapper');
             const isVisible = this.mdCbToken.visible;
             if (child) {
@@ -470,7 +471,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         }
         render() {
             return (this.$render("i-panel", { id: "wrapper" },
-                this.$render("i-modal", { id: "mdCbToken", showBackdrop: false, width: '100%', minWidth: 230, maxWidth: 300, closeOnBackdropClick: true, onClose: this.hideModalWrapper, popupPlacement: 'bottomRight', class: `full-width box-shadow ${tokenSelect_css_1.modalStyle}` },
+                this.$render("i-modal", { id: "mdCbToken", showBackdrop: false, width: '100%', minWidth: 230, closeOnBackdropClick: true, onClose: this.hideModalWrapper, popupPlacement: 'bottomRight', class: `full-width box-shadow ${tokenSelect_css_1.modalStyle}` },
                     this.$render("i-panel", { margin: { top: '0.25rem' }, padding: { top: 5, bottom: 5 }, overflow: { y: 'auto', x: 'hidden' }, maxWidth: '100%', maxHeight: 300, border: { radius: 2 }, class: tokenSelect_css_1.scrollbarStyle },
                         this.$render("i-grid-layout", { id: 'gridTokenList', width: '100%', columnsPerRow: 1, templateRows: ['max-content'], class: 'is-combobox' })))));
         }

@@ -145,6 +145,7 @@ export class TokenSelect extends Module {
 
   showModal() {
     if (!this.enabled) return;
+    this.mdCbToken.maxWidth = this.wrapper.offsetWidth;
     const child = this.mdCbToken.querySelector('.modal-wrapper') as HTMLElement;
     const isVisible = this.mdCbToken.visible;
     if (child) {
@@ -259,7 +260,6 @@ export class TokenSelect extends Module {
           showBackdrop={false}
           width='100%'
           minWidth={230}
-          maxWidth={300}
           closeOnBackdropClick={true}
           onClose={this.hideModalWrapper}
           popupPlacement='bottomRight'
