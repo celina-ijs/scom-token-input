@@ -364,7 +364,8 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         showModal() {
             if (!this.enabled)
                 return;
-            this.mdCbToken.maxWidth = this.wrapper.offsetWidth;
+            const wapperWidth = this.wrapper.offsetWidth;
+            this.mdCbToken.maxWidth = wapperWidth < 230 ? 230 : wapperWidth;
             const child = this.mdCbToken.querySelector('.modal-wrapper');
             const isVisible = this.mdCbToken.visible;
             if (child) {
