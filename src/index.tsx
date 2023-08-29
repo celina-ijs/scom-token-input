@@ -433,7 +433,6 @@ export default class ScomTokenInput extends Module {
 
   set targetChainId(value: number) {
     this._targetChainId = value;
-    this.renderTokenList();
   }
 
   private getBalance(token?: ITokenObject) {

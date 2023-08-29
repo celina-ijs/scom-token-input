@@ -819,7 +819,6 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         set targetChainId(value) {
             this._targetChainId = value;
-            this.renderTokenList();
         }
         getBalance(token) {
             var _a;
