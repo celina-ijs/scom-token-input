@@ -68,7 +68,6 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         private _targetChainId;
         private tokenMap;
         private currentToken;
-        private mapScrollTop;
         private mdCbToken;
         private gridTokenList;
         private wrapper;
@@ -86,10 +85,8 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         private renderTokenList;
         showModal(): void;
         hideModal(): void;
-        private hideModalWrapper;
         private setActive;
         private onSelect;
-        private generateUUID;
         init(): void;
         render(): any;
     }

@@ -303,7 +303,6 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             super(parent, options);
             this.tokenMap = new Map();
             this.currentToken = '';
-            this.mapScrollTop = {};
         }
         get token() {
             return this._token;
@@ -366,48 +365,10 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
                 return;
             const wapperWidth = this.wrapper.offsetWidth;
             this.mdCbToken.maxWidth = wapperWidth < 230 ? 230 : wapperWidth;
-            const child = this.mdCbToken.querySelector('.modal-wrapper');
-            const isVisible = this.mdCbToken.visible;
-            if (child) {
-                child.style.position = isVisible ? 'unset' : 'relative';
-                child.style.display = isVisible ? 'none' : 'block';
-            }
-            if (!isVisible) {
-                const { x, y } = this.wrapper.getBoundingClientRect();
-                const mdClientRect = this.mdCbToken.getBoundingClientRect();
-                const { innerHeight, innerWidth } = window;
-                const elmHeight = mdClientRect.height + 20;
-                const elmWidth = mdClientRect.width;
-                let totalScrollY = 0;
-                for (const key in this.mapScrollTop) {
-                    totalScrollY += this.mapScrollTop[key];
-                }
-                if ((y + elmHeight) > innerHeight) {
-                    const elmTop = y - elmHeight + totalScrollY;
-                    this.mdCbToken.style.top = `${elmTop < 0 ? 0 : y - elmHeight + totalScrollY}px`;
-                }
-                else {
-                    this.mdCbToken.style.top = `${y + totalScrollY}px`;
-                }
-                if ((x + elmWidth) > innerWidth) {
-                    this.mdCbToken.style.left = `${innerWidth - elmWidth}px`;
-                }
-                else {
-                    this.mdCbToken.style.left = `${x}px`;
-                }
-            }
             this.mdCbToken.visible = !this.mdCbToken.visible;
         }
         hideModal() {
             this.mdCbToken.visible = false;
-            this.hideModalWrapper();
-        }
-        hideModalWrapper() {
-            var _a;
-            const modalWrapper = (_a = this.mdCbToken) === null || _a === void 0 ? void 0 : _a.querySelector('.modal-wrapper');
-            if (modalWrapper) {
-                modalWrapper.style.display = 'none';
-            }
         }
         setActive(token) {
             if (this.currentToken && this.tokenMap.has(this.currentToken))
@@ -424,13 +385,6 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
                 this.onSelectToken(Object.assign({}, token));
             this.hideModal();
         }
-        generateUUID() {
-            const uuid = 'xxxxxxxx-xxxx-xxxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                let r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-            return uuid;
-        }
         init() {
             this.classList.add(tokenSelect_css_1.default);
             super.init();
@@ -440,39 +394,10 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             if (tokens)
                 this.tokenList = tokens;
             this.mdCbToken.visible = false;
-            this.mdCbToken.style.position = "fixed";
-            this.mdCbToken.zIndex = 999;
-            const getScrollY = (elm) => {
-                let scrollID = elm.getAttribute('scroll-id');
-                if (!scrollID) {
-                    scrollID = this.generateUUID();
-                    elm.setAttribute('scroll-id', scrollID);
-                }
-                this.mapScrollTop[scrollID] = elm.scrollTop;
-            };
-            const onParentScroll = (e) => {
-                if (this.mdCbToken.visible)
-                    this.mdCbToken.visible = false;
-                if (e && !e.target.offsetParent && e.target.getAttribute) {
-                    getScrollY(e.target);
-                }
-            };
-            let parentElement = this.mdCbToken.parentNode;
-            while (parentElement) {
-                parentElement.addEventListener('scroll', (e) => onParentScroll(e));
-                parentElement = parentElement.parentNode;
-                if (parentElement === document.body) {
-                    document.addEventListener('scroll', (e) => onParentScroll(e));
-                    break;
-                }
-                else if (parentElement && !parentElement.offsetParent && parentElement.scrollTop && typeof parentElement.getAttribute === 'function') {
-                    getScrollY(parentElement);
-                }
-            }
         }
         render() {
             return (this.$render("i-panel", { id: "wrapper" },
-                this.$render("i-modal", { id: "mdCbToken", showBackdrop: false, width: '100%', minWidth: 230, closeOnBackdropClick: true, onClose: this.hideModalWrapper, popupPlacement: 'bottomRight', class: `full-width box-shadow ${tokenSelect_css_1.modalStyle}` },
+                this.$render("i-modal", { id: "mdCbToken", showBackdrop: false, width: '100%', minWidth: 230, closeOnBackdropClick: true, closeOnScrollChildFixed: true, isChildFixed: true, popupPlacement: 'bottomRight', class: `full-width box-shadow ${tokenSelect_css_1.modalStyle}` },
                     this.$render("i-panel", { margin: { top: '0.25rem' }, padding: { top: 5, bottom: 5 }, overflow: { y: 'auto', x: 'hidden' }, maxWidth: '100%', maxHeight: 300, border: { radius: 2 }, class: tokenSelect_css_1.scrollbarStyle },
                         this.$render("i-grid-layout", { id: 'gridTokenList', width: '100%', columnsPerRow: 1, templateRows: ['max-content'], class: 'is-combobox' })))));
         }
