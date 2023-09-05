@@ -38,7 +38,6 @@ export class TokenSelect extends Module {
   private _targetChainId: number;
   private tokenMap: Map<string, HStack> = new Map()
   private currentToken: string = ''
-  private mapScrollTop: {[key: string]: number} = {};
 
   private mdCbToken: Modal
   private gridTokenList: GridLayout
@@ -147,47 +146,11 @@ export class TokenSelect extends Module {
     if (!this.enabled) return;
     const wapperWidth = this.wrapper.offsetWidth;
     this.mdCbToken.maxWidth = wapperWidth < 230 ? 230 : wapperWidth;
-    const child = this.mdCbToken.querySelector('.modal-wrapper') as HTMLElement;
-    const isVisible = this.mdCbToken.visible;
-    if (child) {
-      child.style.position = isVisible ? 'unset' : 'relative';
-      child.style.display = isVisible ? 'none' : 'block';
-    }
-    if (!isVisible) {
-      const { x, y } = this.wrapper.getBoundingClientRect();
-      const mdClientRect = this.mdCbToken.getBoundingClientRect();
-      const { innerHeight, innerWidth } = window;
-      const elmHeight = mdClientRect.height + 20;
-      const elmWidth = mdClientRect.width;
-      let totalScrollY = 0;
-      for (const key in this.mapScrollTop) {
-        totalScrollY += this.mapScrollTop[key];
-      }
-      if ((y + elmHeight) > innerHeight) {
-        const elmTop = y - elmHeight + totalScrollY;
-        this.mdCbToken.style.top = `${elmTop < 0 ? 0 : y - elmHeight + totalScrollY}px`;
-      } else {
-        this.mdCbToken.style.top = `${y + totalScrollY}px`;
-      }
-      if ((x + elmWidth) > innerWidth) {
-        this.mdCbToken.style.left = `${innerWidth - elmWidth}px`;
-      } else {
-        this.mdCbToken.style.left = `${x}px`;
-      }
-    }
     this.mdCbToken.visible = !this.mdCbToken.visible;
   }
 
   hideModal() {
     this.mdCbToken.visible = false;
-    this.hideModalWrapper();
-  }
-
-  private hideModalWrapper() {
-    const modalWrapper = this.mdCbToken?.querySelector('.modal-wrapper') as HTMLElement;
-    if (modalWrapper) {
-      modalWrapper.style.display = 'none';
-    }
   }
 
   private setActive(token: ITokenObject) {
@@ -206,14 +169,6 @@ export class TokenSelect extends Module {
     this.hideModal()
   }
 
-  private generateUUID() {
-    const uuid = 'xxxxxxxx-xxxx-xxxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      let r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-    return uuid;
-  }
-
   init() {
     this.classList.add(customStyle)
     super.init()
@@ -222,35 +177,6 @@ export class TokenSelect extends Module {
     const tokens = this.getAttribute('tokenList', true)
     if (tokens) this.tokenList = tokens
     this.mdCbToken.visible = false
-    this.mdCbToken.style.position = "fixed"
-    this.mdCbToken.zIndex = 999
-
-    const getScrollY = (elm: HTMLElement) => {
-      let scrollID = elm.getAttribute('scroll-id');
-      if (!scrollID) {
-        scrollID = this.generateUUID();
-        elm.setAttribute('scroll-id', scrollID);
-      }
-      this.mapScrollTop[scrollID] = elm.scrollTop;
-    }
-    const onParentScroll = (e: any) => {
-      if (this.mdCbToken.visible)
-        this.mdCbToken.visible = false;
-      if (e && !e.target.offsetParent && e.target.getAttribute) {
-        getScrollY(e.target);
-      }
-    }
-    let parentElement = this.mdCbToken.parentNode as HTMLElement;
-    while (parentElement) {
-      parentElement.addEventListener('scroll', (e) => onParentScroll(e));
-      parentElement = parentElement.parentNode as HTMLElement;
-      if (parentElement === document.body) {
-        document.addEventListener('scroll', (e) => onParentScroll(e));
-        break;
-      } else if (parentElement && !parentElement.offsetParent && parentElement.scrollTop && typeof parentElement.getAttribute === 'function') {
-        getScrollY(parentElement);
-      }
-    }
   }
 
   render() {
@@ -262,7 +188,8 @@ export class TokenSelect extends Module {
           width='100%'
           minWidth={230}
           closeOnBackdropClick={true}
-          onClose={this.hideModalWrapper}
+          closeOnScrollChildFixed={true}
+          isChildFixed={true}
           popupPlacement='bottomRight'
           class={`full-width box-shadow ${modalStyle}`}
         >
