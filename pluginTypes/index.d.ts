@@ -65,7 +65,7 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
     export class TokenSelect extends Module {
         private _token?;
         private _tokenList;
-        private _targetChainId;
+        private _chainId;
         private tokenMap;
         private currentToken;
         private mdCbToken;
@@ -78,8 +78,7 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         get tokenList(): Array<ITokenObject>;
         set tokenList(value: Array<ITokenObject>);
         get chainId(): number;
-        get targetChainId(): number;
-        set targetChainId(value: number);
+        set chainId(value: number | undefined);
         private renderToken;
         private clearTokenList;
         private renderTokenList;
@@ -115,8 +114,8 @@ declare module "@scom/scom-token-input" {
         value?: any;
         placeholder?: string;
         address?: string;
-        targetChainId?: number;
-        targetTokenBalancesMap?: Record<string, string>;
+        chainId?: number;
+        tokenBalancesMapProp?: Record<string, string>;
         onInputAmountChanged?: (target: Control, event: Event) => void;
         onSelectToken?: (token: ITokenObject | undefined) => void;
         onSetMaxBalance?: () => void;
@@ -155,8 +154,8 @@ declare module "@scom/scom-token-input" {
         private _tokenDataListProp;
         private _withoutConnected;
         private _rpcWalletId;
-        private _targetChainId;
-        private _targetTokenBalancesMap;
+        private _chainId;
+        private _tokenBalancesMapProp;
         private tokenBalancesMap;
         onChanged: (token?: ITokenObject) => void;
         private walletEvents;
@@ -185,7 +184,8 @@ declare module "@scom/scom-token-input" {
         get token(): ITokenObject | undefined;
         set token(value: ITokenObject | undefined);
         set address(value: string);
-        get chainId(): number;
+        get chainId(): number | undefined;
+        set chainId(value: number | undefined);
         get isCommonShown(): boolean;
         set isCommonShown(value: boolean);
         get isSortBalanceShown(): boolean;
@@ -211,10 +211,8 @@ declare module "@scom/scom-token-input" {
         set placeholder(value: string);
         get value(): any;
         set value(value: any);
-        get targetChainId(): number;
-        set targetChainId(value: number);
-        get targetTokenBalancesMap(): Record<string, string>;
-        set targetTokenBalancesMap(value: Record<string, string>);
+        get tokenBalancesMapProp(): Record<string, string>;
+        set tokenBalancesMapProp(value: Record<string, string>);
         private getBalance;
         private onSetMax;
         private onAmountChanged;

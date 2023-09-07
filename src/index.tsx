@@ -44,8 +44,8 @@ interface ScomTokenInputElement extends ControlElement {
   value?: any;
   placeholder?: string;
   address?: string;
-  targetChainId?: number;
-  targetTokenBalancesMap?: Record<string, string>;
+  chainId?: number;
+  tokenBalancesMapProp?: Record<string, string>;
   onInputAmountChanged?: (target: Control, event: Event) => void;
   onSelectToken?: (token: ITokenObject | undefined) => void;
   onSetMaxBalance?: () => void;
@@ -77,7 +77,6 @@ export default class ScomTokenInput extends Module {
   private $eventBus: IEventBus;
 
   private _type: IType
-  // private _targetChainId: number
   private _token: ITokenObject;
   private _title: string | Control
   private _isCommonShown: boolean = false
@@ -92,8 +91,8 @@ export default class ScomTokenInput extends Module {
   private _tokenDataListProp: ITokenObject[] = []
   private _withoutConnected: boolean = false;
   private _rpcWalletId: string = '';
-  private _targetChainId: number;
-  private _targetTokenBalancesMap: Record<string, string>;
+  private _chainId: number;
+  private _tokenBalancesMapProp: Record<string, string>;
   private tokenBalancesMap: any;
   public onChanged: (token?: ITokenObject) => void;
 
@@ -306,7 +305,11 @@ export default class ScomTokenInput extends Module {
   }
 
   get chainId() {
-    return this.targetChainId || getChainId();
+    return this._chainId || getChainId();
+  }
+
+  set chainId(value: number | undefined) {
+    this._chainId = value;
   }
 
   get isCommonShown(): boolean {
@@ -429,20 +432,12 @@ export default class ScomTokenInput extends Module {
       this.inputAmount.value = value
   }
 
-  get targetChainId() {
-    return this._targetChainId;
+  get tokenBalancesMapProp() {
+    return this._tokenBalancesMapProp;
   }
 
-  set targetChainId(value: number) {
-    this._targetChainId = value;
-  }
-
-  get targetTokenBalancesMap() {
-    return this._targetTokenBalancesMap;
-  }
-
-  set targetTokenBalancesMap(value: Record<string, string>) {
-    this._targetTokenBalancesMap = value;
+  set tokenBalancesMapProp(value: Record<string, string>) {
+    this._tokenBalancesMapProp = value;
   }
 
   private getBalance(token?: ITokenObject) {
@@ -480,8 +475,8 @@ export default class ScomTokenInput extends Module {
       if (!this.cbToken) return;
       if (!this.cbToken.isConnected)
         await this.cbToken.ready();
-      if (this.cbToken.targetChainId !== this.targetChainId) {
-        this.cbToken.targetChainId = this.targetChainId;
+      if (this.cbToken.chainId !== this.chainId) {
+        this.cbToken.chainId = this.chainId;
         this.token = null;
       }
       this.cbToken.visible = true;
@@ -567,11 +562,11 @@ export default class ScomTokenInput extends Module {
       await this.renderTokenList(true);
       this.cbToken.showModal();
     } else {
-      if (this.mdToken.targetChainId !== this.targetChainId) {
-        this.mdToken.targetChainId = this.targetChainId;
+      if (this.mdToken.chainId !== this.chainId) {
+        this.mdToken.chainId = this.chainId;
       }
-      if (this.mdToken.targetTokenBalancesMap !== this.targetTokenBalancesMap) {
-        this.mdToken.targetTokenBalancesMap = this.targetTokenBalancesMap;
+      if (this.mdToken.tokenBalancesMapProp !== this.tokenBalancesMapProp) {
+        this.mdToken.tokenBalancesMapProp = this.tokenBalancesMapProp;
       }
       this.mdToken.tokenDataListProp = this.tokenDataListProp;
       this.mdToken.showModal();
@@ -595,8 +590,8 @@ export default class ScomTokenInput extends Module {
     this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken
     this.title = this.getAttribute('title', true, '')
     this._withoutConnected = this.getAttribute('withoutConnected', true, false)
-    this.targetChainId = this.getAttribute('targetChainId', true)
-    this.targetTokenBalancesMap = this.getAttribute('targetTokenBalancesMap', true)
+    this.chainId = this.getAttribute('chainId', true)
+    this.tokenBalancesMapProp = this.getAttribute('tokenBalancesMapProp', true)
     const address = this.getAttribute('address', true)
     if (address) this.address = address
     const tokenDataListProp = this.getAttribute('tokenDataListProp', true)

@@ -320,13 +320,10 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             this.renderTokenList();
         }
         get chainId() {
-            return this.targetChainId || (0, index_1.getChainId)();
+            return this._chainId || (0, index_1.getChainId)();
         }
-        get targetChainId() {
-            return this._targetChainId;
-        }
-        set targetChainId(value) {
-            this._targetChainId = value;
+        set chainId(value) {
+            this._chainId = value;
         }
         renderToken(token) {
             const tokenIconPath = scom_token_list_1.assets.tokenPath(token, this.chainId);
@@ -627,7 +624,10 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.token = tokenObj;
         }
         get chainId() {
-            return this.targetChainId || (0, index_3.getChainId)();
+            return this._chainId || (0, index_3.getChainId)();
+        }
+        set chainId(value) {
+            this._chainId = value;
         }
         get isCommonShown() {
             return this._isCommonShown;
@@ -739,17 +739,11 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             if (this.inputAmount)
                 this.inputAmount.value = value;
         }
-        get targetChainId() {
-            return this._targetChainId;
+        get tokenBalancesMapProp() {
+            return this._tokenBalancesMapProp;
         }
-        set targetChainId(value) {
-            this._targetChainId = value;
-        }
-        get targetTokenBalancesMap() {
-            return this._targetTokenBalancesMap;
-        }
-        set targetTokenBalancesMap(value) {
-            this._targetTokenBalancesMap = value;
+        set tokenBalancesMapProp(value) {
+            this._tokenBalancesMapProp = value;
         }
         getBalance(token) {
             var _a;
@@ -786,8 +780,8 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                     return;
                 if (!this.cbToken.isConnected)
                     await this.cbToken.ready();
-                if (this.cbToken.targetChainId !== this.targetChainId) {
-                    this.cbToken.targetChainId = this.targetChainId;
+                if (this.cbToken.chainId !== this.chainId) {
+                    this.cbToken.chainId = this.chainId;
                     this.token = null;
                 }
                 this.cbToken.visible = true;
@@ -881,11 +875,11 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.cbToken.showModal();
             }
             else {
-                if (this.mdToken.targetChainId !== this.targetChainId) {
-                    this.mdToken.targetChainId = this.targetChainId;
+                if (this.mdToken.chainId !== this.chainId) {
+                    this.mdToken.chainId = this.chainId;
                 }
-                if (this.mdToken.targetTokenBalancesMap !== this.targetTokenBalancesMap) {
-                    this.mdToken.targetTokenBalancesMap = this.targetTokenBalancesMap;
+                if (this.mdToken.tokenBalancesMapProp !== this.tokenBalancesMapProp) {
+                    this.mdToken.tokenBalancesMapProp = this.tokenBalancesMapProp;
                 }
                 this.mdToken.tokenDataListProp = this.tokenDataListProp;
                 this.mdToken.showModal();
@@ -907,8 +901,8 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken;
             this.title = this.getAttribute('title', true, '');
             this._withoutConnected = this.getAttribute('withoutConnected', true, false);
-            this.targetChainId = this.getAttribute('targetChainId', true);
-            this.targetTokenBalancesMap = this.getAttribute('targetTokenBalancesMap', true);
+            this.chainId = this.getAttribute('chainId', true);
+            this.tokenBalancesMapProp = this.getAttribute('tokenBalancesMapProp', true);
             const address = this.getAttribute('address', true);
             if (address)
                 this.address = address;
