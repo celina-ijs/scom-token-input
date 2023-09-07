@@ -35,7 +35,7 @@ declare global {
 export class TokenSelect extends Module {
   private _token?: ITokenObject
   private _tokenList: Array<ITokenObject>
-  private _targetChainId: number;
+  private _chainId: number;
   private tokenMap: Map<string, HStack> = new Map()
   private currentToken: string = ''
 
@@ -66,15 +66,11 @@ export class TokenSelect extends Module {
   }
 
   get chainId(): number {
-    return this.targetChainId || getChainId()
+    return this._chainId || getChainId()
   }
 
-  get targetChainId() {
-    return this._targetChainId;
-  }
-
-  set targetChainId(value: number) {
-    this._targetChainId = value;
+  set chainId(value: number | undefined) {
+    this._chainId = value;
   }
 
   private renderToken(token: ITokenObject) {
