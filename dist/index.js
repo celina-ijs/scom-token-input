@@ -745,6 +745,12 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         set targetChainId(value) {
             this._targetChainId = value;
         }
+        get targetTokenBalancesMap() {
+            return this._targetTokenBalancesMap;
+        }
+        set targetTokenBalancesMap(value) {
+            this._targetTokenBalancesMap = value;
+        }
         getBalance(token) {
             var _a;
             if (token && (scom_token_list_2.tokenStore === null || scom_token_list_2.tokenStore === void 0 ? void 0 : scom_token_list_2.tokenStore.tokenBalances) && Object.keys(scom_token_list_2.tokenStore.tokenBalances).length) {
@@ -875,6 +881,12 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.cbToken.showModal();
             }
             else {
+                if (this.mdToken.targetChainId !== this.targetChainId) {
+                    this.mdToken.targetChainId = this.targetChainId;
+                }
+                if (this.mdToken.targetTokenBalancesMap !== this.targetTokenBalancesMap) {
+                    this.mdToken.targetTokenBalancesMap = this.targetTokenBalancesMap;
+                }
                 this.mdToken.tokenDataListProp = this.tokenDataListProp;
                 this.mdToken.showModal();
             }
@@ -896,6 +908,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.title = this.getAttribute('title', true, '');
             this._withoutConnected = this.getAttribute('withoutConnected', true, false);
             this.targetChainId = this.getAttribute('targetChainId', true);
+            this.targetTokenBalancesMap = this.getAttribute('targetTokenBalancesMap', true);
             const address = this.getAttribute('address', true);
             if (address)
                 this.address = address;

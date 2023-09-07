@@ -116,6 +116,7 @@ declare module "@scom/scom-token-input" {
         placeholder?: string;
         address?: string;
         targetChainId?: number;
+        targetTokenBalancesMap?: Record<string, string>;
         onInputAmountChanged?: (target: Control, event: Event) => void;
         onSelectToken?: (token: ITokenObject | undefined) => void;
         onSetMaxBalance?: () => void;
@@ -155,6 +156,7 @@ declare module "@scom/scom-token-input" {
         private _withoutConnected;
         private _rpcWalletId;
         private _targetChainId;
+        private _targetTokenBalancesMap;
         private tokenBalancesMap;
         onChanged: (token?: ITokenObject) => void;
         private walletEvents;
@@ -211,6 +213,8 @@ declare module "@scom/scom-token-input" {
         set value(value: any);
         get targetChainId(): number;
         set targetChainId(value: number);
+        get targetTokenBalancesMap(): Record<string, string>;
+        set targetTokenBalancesMap(value: Record<string, string>);
         private getBalance;
         private onSetMax;
         private onAmountChanged;
