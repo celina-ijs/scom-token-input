@@ -45,6 +45,7 @@ interface ScomTokenInputElement extends ControlElement {
   placeholder?: string;
   address?: string;
   targetChainId?: number;
+  targetTokenBalancesMap?: Record<string, string>;
   onInputAmountChanged?: (target: Control, event: Event) => void;
   onSelectToken?: (token: ITokenObject | undefined) => void;
   onSetMaxBalance?: () => void;
@@ -91,7 +92,8 @@ export default class ScomTokenInput extends Module {
   private _tokenDataListProp: ITokenObject[] = []
   private _withoutConnected: boolean = false;
   private _rpcWalletId: string = '';
-  private _targetChainId: number; 
+  private _targetChainId: number;
+  private _targetTokenBalancesMap: Record<string, string>;
   private tokenBalancesMap: any;
   public onChanged: (token?: ITokenObject) => void;
 
@@ -435,6 +437,14 @@ export default class ScomTokenInput extends Module {
     this._targetChainId = value;
   }
 
+  get targetTokenBalancesMap() {
+    return this._targetTokenBalancesMap;
+  }
+
+  set targetTokenBalancesMap(value: Record<string, string>) {
+    this._targetTokenBalancesMap = value;
+  }
+
   private getBalance(token?: ITokenObject) {
     if (token && tokenStore?.tokenBalances && Object.keys(tokenStore.tokenBalances).length) {
       const address = (token.address || '').toLowerCase();
@@ -557,6 +567,12 @@ export default class ScomTokenInput extends Module {
       await this.renderTokenList(true);
       this.cbToken.showModal();
     } else {
+      if (this.mdToken.targetChainId !== this.targetChainId) {
+        this.mdToken.targetChainId = this.targetChainId;
+      }
+      if (this.mdToken.targetTokenBalancesMap !== this.targetTokenBalancesMap) {
+        this.mdToken.targetTokenBalancesMap = this.targetTokenBalancesMap;
+      }
       this.mdToken.tokenDataListProp = this.tokenDataListProp;
       this.mdToken.showModal();
     }
@@ -580,6 +596,7 @@ export default class ScomTokenInput extends Module {
     this.title = this.getAttribute('title', true, '')
     this._withoutConnected = this.getAttribute('withoutConnected', true, false)
     this.targetChainId = this.getAttribute('targetChainId', true)
+    this.targetTokenBalancesMap = this.getAttribute('targetTokenBalancesMap', true)
     const address = this.getAttribute('address', true)
     if (address) this.address = address
     const tokenDataListProp = this.getAttribute('tokenDataListProp', true)
