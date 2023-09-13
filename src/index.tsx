@@ -117,7 +117,7 @@ export default class ScomTokenInput extends Module {
 
   private async onRefresh() {
     if (isWalletConnected()) {
-      this.tokenBalancesMap = tokenStore.tokenBalances || {};
+      this.tokenBalancesMap = tokenStore.getTokenBalancesByChainId(this._chainId) || {};
       if (this.token) {
         const token = this.tokenDataList.find(
           (t) =>
@@ -135,13 +135,13 @@ export default class ScomTokenInput extends Module {
   }
 
   private async updateDataByNewToken() {
-    this.tokenBalancesMap = tokenStore.tokenBalances || {};
+    this.tokenBalancesMap = tokenStore.getTokenBalancesByChainId(this._chainId) || {};
     this.renderTokenList();
   }
 
   private async onUpdateData(onPaid?: boolean) {
     const rpcWallet = getRpcWallet()
-    this.tokenBalancesMap = onPaid ? tokenStore.tokenBalances : await tokenStore.updateAllTokenBalances(rpcWallet);
+    this.tokenBalancesMap = onPaid ? tokenStore.getTokenBalancesByChainId(this._chainId) : await tokenStore.updateAllTokenBalances(rpcWallet);
     this.onRefresh()
   }
 
@@ -202,7 +202,7 @@ export default class ScomTokenInput extends Module {
       tokenList = this.tokenDataListProp;
     }
     if (!this.tokenBalancesMap || !Object.keys(this.tokenBalancesMap).length) {
-      this.tokenBalancesMap = tokenStore.tokenBalances || {};
+      this.tokenBalancesMap = tokenStore.getTokenBalancesByChainId(this._chainId) || {};
     }
     return tokenList.map((token: ITokenObject) => {
       const tokenObject = { ...token };
@@ -441,9 +441,10 @@ export default class ScomTokenInput extends Module {
   }
 
   private getBalance(token?: ITokenObject) {
-    if (token && tokenStore?.tokenBalances && Object.keys(tokenStore.tokenBalances).length) {
+    let tokenBalances = tokenStore?.getTokenBalancesByChainId(this._chainId)
+    if (token && tokenBalances && Object.keys(tokenBalances).length) {
       const address = (token.address || '').toLowerCase();
-      let balance = address ? (tokenStore.tokenBalances[address] ?? 0) : (tokenStore.tokenBalances[token.symbol] || 0);
+      let balance = address ? (tokenBalances[address] ?? 0) : (tokenBalances[token.symbol] || 0);
       return balance
     }
     return 0;

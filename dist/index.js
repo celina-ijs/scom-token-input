@@ -447,7 +447,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         async onRefresh() {
             if ((0, scom_token_list_2.isWalletConnected)()) {
-                this.tokenBalancesMap = scom_token_list_2.tokenStore.tokenBalances || {};
+                this.tokenBalancesMap = scom_token_list_2.tokenStore.getTokenBalancesByChainId(this._chainId) || {};
                 if (this.token) {
                     const token = this.tokenDataList.find((t) => {
                         var _a, _b;
@@ -466,12 +466,12 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.pnlTopSection.visible = this.isBalanceShown && !!this.title;
         }
         async updateDataByNewToken() {
-            this.tokenBalancesMap = scom_token_list_2.tokenStore.tokenBalances || {};
+            this.tokenBalancesMap = scom_token_list_2.tokenStore.getTokenBalancesByChainId(this._chainId) || {};
             this.renderTokenList();
         }
         async onUpdateData(onPaid) {
             const rpcWallet = (0, index_3.getRpcWallet)();
-            this.tokenBalancesMap = onPaid ? scom_token_list_2.tokenStore.tokenBalances : await scom_token_list_2.tokenStore.updateAllTokenBalances(rpcWallet);
+            this.tokenBalancesMap = onPaid ? scom_token_list_2.tokenStore.getTokenBalancesByChainId(this._chainId) : await scom_token_list_2.tokenStore.updateAllTokenBalances(rpcWallet);
             this.onRefresh();
         }
         registerEvent() {
@@ -533,7 +533,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 tokenList = this.tokenDataListProp;
             }
             if (!this.tokenBalancesMap || !Object.keys(this.tokenBalancesMap).length) {
-                this.tokenBalancesMap = scom_token_list_2.tokenStore.tokenBalances || {};
+                this.tokenBalancesMap = scom_token_list_2.tokenStore.getTokenBalancesByChainId(this._chainId) || {};
             }
             return tokenList.map((token) => {
                 var _a;
@@ -747,9 +747,10 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         getBalance(token) {
             var _a;
-            if (token && (scom_token_list_2.tokenStore === null || scom_token_list_2.tokenStore === void 0 ? void 0 : scom_token_list_2.tokenStore.tokenBalances) && Object.keys(scom_token_list_2.tokenStore.tokenBalances).length) {
+            let tokenBalances = scom_token_list_2.tokenStore === null || scom_token_list_2.tokenStore === void 0 ? void 0 : scom_token_list_2.tokenStore.getTokenBalancesByChainId(this._chainId);
+            if (token && tokenBalances && Object.keys(tokenBalances).length) {
                 const address = (token.address || '').toLowerCase();
-                let balance = address ? ((_a = scom_token_list_2.tokenStore.tokenBalances[address]) !== null && _a !== void 0 ? _a : 0) : (scom_token_list_2.tokenStore.tokenBalances[token.symbol] || 0);
+                let balance = address ? ((_a = tokenBalances[address]) !== null && _a !== void 0 ? _a : 0) : (tokenBalances[token.symbol] || 0);
                 return balance;
             }
             return 0;
