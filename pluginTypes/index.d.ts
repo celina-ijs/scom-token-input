@@ -24,9 +24,8 @@ declare module "@scom/scom-token-input/global/index.ts" {
 }
 /// <amd-module name="@scom/scom-token-input/utils/index.ts" />
 declare module "@scom/scom-token-input/utils/index.ts" {
-    export const formatNumber: (value: any, decimals?: number) => string;
-    export const formatNumberWithSeparators: (value: number, precision?: number) => string;
-    export const limitDecimals: (value: any, decimals: number) => any;
+    import { BigNumber } from "@ijstech/eth-wallet";
+    export const formatNumber: (value: number | string | BigNumber, decimals?: number) => string;
 }
 /// <amd-module name="@scom/scom-token-input/tokenSelect.css.ts" />
 declare module "@scom/scom-token-input/tokenSelect.css.ts" {

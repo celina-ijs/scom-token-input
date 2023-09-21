@@ -70,78 +70,75 @@ define("@scom/scom-token-input/global/index.ts", ["require", "exports"], functio
     Object.defineProperty(exports, "__esModule", { value: true });
     ;
 });
-define("@scom/scom-token-input/utils/index.ts", ["require", "exports", "@ijstech/eth-wallet"], function (require, exports, eth_wallet_1) {
+define("@scom/scom-token-input/utils/index.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.limitDecimals = exports.formatNumberWithSeparators = exports.formatNumber = void 0;
+    exports.formatNumber = void 0;
     const formatNumber = (value, decimals) => {
-        let val = value;
+        // let val = value;
+        // const minValue = '0.0000001';
+        // if (typeof value === 'string') {
+        //   val = new BigNumber(value).toNumber();
+        // } else if (typeof value === 'object') {
+        //   val = value.toNumber();
+        // }
+        // if (val != 0 && new BigNumber(val).lt(minValue)) {
+        //   return `<${minValue}`;
+        // }
+        // return formatNumberWithSeparators(val, decimals || 4);
         const minValue = '0.0000001';
-        if (typeof value === 'string') {
-            val = new eth_wallet_1.BigNumber(value).toNumber();
-        }
-        else if (typeof value === 'object') {
-            val = value.toNumber();
-        }
-        if (val != 0 && new eth_wallet_1.BigNumber(val).lt(minValue)) {
-            return `<${minValue}`;
-        }
-        return (0, exports.formatNumberWithSeparators)(val, decimals || 4);
+        const newValue = typeof value === 'object' ? value.toString() : value;
+        return components_2.FormatUtils.formatNumber(newValue, { decimalFigures: decimals || 4, minValue });
     };
     exports.formatNumber = formatNumber;
-    const formatNumberWithSeparators = (value, precision) => {
-        if (!value)
-            value = 0;
-        if (precision) {
-            let outputStr = '';
-            if (value >= 1) {
-                const unit = Math.pow(10, precision);
-                const rounded = Math.floor(value * unit) / unit;
-                outputStr = rounded.toLocaleString('en-US', { maximumFractionDigits: precision });
-            }
-            else {
-                outputStr = value.toLocaleString('en-US', { maximumSignificantDigits: precision });
-            }
-            if (outputStr.length > 18) {
-                outputStr = outputStr.substr(0, 18) + '...';
-            }
-            return outputStr;
-        }
-        else {
-            return value.toLocaleString('en-US');
-        }
-    };
-    exports.formatNumberWithSeparators = formatNumberWithSeparators;
-    const limitDecimals = (value, decimals) => {
-        let val = value;
-        if (typeof value !== 'string') {
-            val = val.toString();
-        }
-        let chart;
-        if (val.includes('.')) {
-            chart = '.';
-        }
-        else if (val.includes(',')) {
-            chart = ',';
-        }
-        else {
-            return value;
-        }
-        const parts = val.split(chart);
-        let decimalsPart = parts[1];
-        if (decimalsPart && decimalsPart.length > decimals) {
-            parts[1] = decimalsPart.substr(0, decimals);
-        }
-        return parts.join(chart);
-    };
-    exports.limitDecimals = limitDecimals;
 });
-define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
+// export const formatNumberWithSeparators = (value: number, precision?: number) => {
+//   if (!value) value = 0;
+//   if (precision) {
+//     let outputStr = '';
+//     if (value >= 1) {
+//       const unit = Math.pow(10, precision);
+//       const rounded = Math.floor(value * unit) / unit;
+//       outputStr = rounded.toLocaleString('en-US', { maximumFractionDigits: precision });
+//     }
+//     else {
+//       outputStr = value.toLocaleString('en-US', { maximumSignificantDigits: precision });
+//     }
+//     if (outputStr.length > 18) {
+//       outputStr = outputStr.substr(0, 18) + '...'
+//     }
+//     return outputStr;
+//   }
+//   else {
+//     return value.toLocaleString('en-US');
+//   }
+// }
+// export const limitDecimals = (value: any, decimals: number) => {
+//   let val = value;
+//   if (typeof value !== 'string') {
+//     val = val.toString();
+//   }
+//   let chart;
+//   if (val.includes('.')) {
+//     chart = '.';
+//   } else if (val.includes(',')) {
+//     chart = ',';
+//   } else {
+//     return value;
+//   }
+//   const parts = val.split(chart);
+//   let decimalsPart = parts[1];
+//   if (decimalsPart && decimalsPart.length > decimals) {
+//     parts[1] = decimalsPart.substr(0, decimals);
+//   }
+//   return parts.join(chart);
+// }
+define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.modalStyle = exports.tokenStyle = exports.scrollbarStyle = void 0;
-    const Theme = components_2.Styles.Theme.ThemeVars;
-    exports.scrollbarStyle = components_2.Styles.style({
+    const Theme = components_3.Styles.Theme.ThemeVars;
+    exports.scrollbarStyle = components_3.Styles.style({
         $nest: {
             '&::-webkit-scrollbar-track': {
                 borderRadius: '12px',
@@ -161,7 +158,7 @@ define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijs
             }
         }
     });
-    exports.tokenStyle = components_2.Styles.style({
+    exports.tokenStyle = components_3.Styles.style({
         $nest: {
             '&:hover': {
                 background: Theme.action.hover
@@ -176,14 +173,14 @@ define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijs
             }
         }
     });
-    exports.modalStyle = components_2.Styles.style({
+    exports.modalStyle = components_3.Styles.style({
         $nest: {
             '.modal': {
                 minWidth: 'auto'
             }
         }
     });
-    exports.default = components_2.Styles.style({
+    exports.default = components_3.Styles.style({
         $nest: {
             '.full-width': {
                 width: '100%',
@@ -253,7 +250,7 @@ define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijs
         }
     });
 });
-define("@scom/scom-token-input/store/index.ts", ["require", "exports", "@ijstech/eth-wallet"], function (require, exports, eth_wallet_2) {
+define("@scom/scom-token-input/store/index.ts", ["require", "exports", "@ijstech/eth-wallet"], function (require, exports, eth_wallet_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getChainId = exports.isRpcWalletConnected = exports.getRpcWallet = exports.updateStore = exports.viewOnExplorerByAddress = exports.getNetworkInfo = void 0;
@@ -261,7 +258,7 @@ define("@scom/scom-token-input/store/index.ts", ["require", "exports", "@ijstech
         rpcWalletId: "",
     };
     const getNetworkInfo = (chainId) => {
-        return eth_wallet_2.Wallet.getClientInstance().getNetworkInfo(chainId);
+        return eth_wallet_1.Wallet.getClientInstance().getNetworkInfo(chainId);
     };
     exports.getNetworkInfo = getNetworkInfo;
     const viewOnExplorerByAddress = (chainId, address) => {
@@ -279,7 +276,7 @@ define("@scom/scom-token-input/store/index.ts", ["require", "exports", "@ijstech
     };
     exports.updateStore = updateStore;
     const getRpcWallet = () => {
-        return eth_wallet_2.Wallet.getRpcWalletInstance(state.rpcWalletId);
+        return eth_wallet_1.Wallet.getRpcWalletInstance(state.rpcWalletId);
     };
     exports.getRpcWallet = getRpcWallet;
     function isRpcWalletConnected() {
@@ -294,11 +291,11 @@ define("@scom/scom-token-input/store/index.ts", ["require", "exports", "@ijstech
     exports.getChainId = getChainId;
     ;
 });
-define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-token-list", "@scom/scom-token-input/tokenSelect.css.ts", "@scom/scom-token-input/store/index.ts"], function (require, exports, components_3, scom_token_list_1, tokenSelect_css_1, index_1) {
+define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-token-list", "@scom/scom-token-input/tokenSelect.css.ts", "@scom/scom-token-input/store/index.ts"], function (require, exports, components_4, scom_token_list_1, tokenSelect_css_1, index_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.TokenSelect = void 0;
-    let TokenSelect = class TokenSelect extends components_3.Module {
+    let TokenSelect = class TokenSelect extends components_4.Module {
         constructor(parent, options) {
             super(parent, options);
             this.tokenMap = new Map();
@@ -400,15 +397,15 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         }
     };
     TokenSelect = __decorate([
-        (0, components_3.customElements)('token-select')
+        (0, components_4.customElements)('token-select')
     ], TokenSelect);
     exports.TokenSelect = TokenSelect;
 });
-define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "@scom/scom-token-input/index.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-list", "@scom/scom-token-input/store/index.ts"], function (require, exports, components_4, index_css_1, index_2, scom_token_list_2, index_3) {
+define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "@ijstech/eth-contract", "@scom/scom-token-input/index.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-list", "@scom/scom-token-input/store/index.ts"], function (require, exports, components_5, eth_contract_1, index_css_1, index_2, scom_token_list_2, index_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const Theme = components_4.Styles.Theme.ThemeVars;
-    let ScomTokenInput = class ScomTokenInput extends components_4.Module {
+    const Theme = components_5.Styles.Theme.ThemeVars;
+    let ScomTokenInput = class ScomTokenInput extends components_5.Module {
         constructor(parent, options) {
             super(parent, options);
             this._isCommonShown = false;
@@ -437,7 +434,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 }
                 return 0;
             };
-            this.$eventBus = components_4.application.EventBus;
+            this.$eventBus = components_5.application.EventBus;
             this.registerEvent();
         }
         static async create(options, parent) {
@@ -581,7 +578,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this._title = value;
             let labelEl;
             if (typeof value === 'string') {
-                labelEl = new components_4.Label(undefined, {
+                labelEl = new components_5.Label(undefined, {
                     caption: value,
                     font: { color: Theme.colors.primary.main, size: '1rem', bold: true },
                 });
@@ -590,7 +587,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 labelEl = value;
             }
             if (!this.pnlTitle)
-                this.pnlTitle = new components_4.HStack();
+                this.pnlTitle = new components_5.HStack();
             this.pnlTitle.clearInnerHTML();
             this.pnlTitle.appendChild(labelEl);
         }
@@ -757,7 +754,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         async onSetMax() {
             const balance = this.getBalance(this.token);
-            this.inputAmount.value = (0, index_2.limitDecimals)(balance, 4);
+            this.inputAmount.value = new eth_contract_1.BigNumber(balance).dp(4, eth_contract_1.BigNumber.ROUND_DOWN).toString();
             if (this.onSetMaxBalance)
                 this.onSetMaxBalance();
         }
@@ -971,8 +968,8 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
     };
     ScomTokenInput = __decorate([
-        components_4.customModule,
-        (0, components_4.customElements)('i-scom-token-input')
+        components_5.customModule,
+        (0, components_5.customElements)('i-scom-token-input')
     ], ScomTokenInput);
     exports.default = ScomTokenInput;
 });

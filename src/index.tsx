@@ -15,15 +15,15 @@ import {
   HStack,
   IEventBus
 } from '@ijstech/components'
-import { } from '@ijstech/eth-contract'
+import { BigNumber } from '@ijstech/eth-contract'
 import customStyle, { buttonStyle, inputStyle, tokenSelectionStyle } from './index.css'
-import { EventId, IType } from './global/index'
-import { formatNumber, limitDecimals } from './utils/index'
+import { IType } from './global/index'
+import { formatNumber } from './utils/index'
 import { ChainNativeTokenByChainId, isWalletConnected, tokenStore, assets, DefaultERC20Tokens, ITokenObject } from '@scom/scom-token-list'
 import { TokenSelect } from './tokenSelect'
 import ScomTokenModal from '@scom/scom-token-modal'
 import { getChainId, getRpcWallet, isRpcWalletConnected, updateStore } from './store/index'
-import { Constants, IEventBusRegistry, Wallet } from '@ijstech/eth-wallet'
+import { IEventBusRegistry } from '@ijstech/eth-wallet'
 
 interface ScomTokenInputElement extends ControlElement {
   type?: IType;
@@ -452,11 +452,11 @@ export default class ScomTokenInput extends Module {
 
   private async onSetMax() {
     const balance = this.getBalance(this.token);
-    this.inputAmount.value = limitDecimals(balance, 4)
+    this.inputAmount.value = new BigNumber(balance).dp(4, BigNumber.ROUND_DOWN).toString();
     if (this.onSetMaxBalance) this.onSetMaxBalance();
   }
 
-  private async onAmountChanged(target: Control, event: Event) {
+  private async onAmountChanged(target: Input, event: Event) {
     if (this.onInputAmountChanged) this.onInputAmountChanged(target, event)
   }
 
