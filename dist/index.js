@@ -68,71 +68,18 @@ define("@scom/scom-token-input/index.css.ts", ["require", "exports", "@ijstech/c
 define("@scom/scom-token-input/global/index.ts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    ;
 });
 define("@scom/scom-token-input/utils/index.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.formatNumber = void 0;
     const formatNumber = (value, decimals) => {
-        // let val = value;
-        // const minValue = '0.0000001';
-        // if (typeof value === 'string') {
-        //   val = new BigNumber(value).toNumber();
-        // } else if (typeof value === 'object') {
-        //   val = value.toNumber();
-        // }
-        // if (val != 0 && new BigNumber(val).lt(minValue)) {
-        //   return `<${minValue}`;
-        // }
-        // return formatNumberWithSeparators(val, decimals || 4);
         const minValue = '0.0000001';
         const newValue = typeof value === 'object' ? value.toString() : value;
         return components_2.FormatUtils.formatNumber(newValue, { decimalFigures: decimals || 4, minValue });
     };
     exports.formatNumber = formatNumber;
 });
-// export const formatNumberWithSeparators = (value: number, precision?: number) => {
-//   if (!value) value = 0;
-//   if (precision) {
-//     let outputStr = '';
-//     if (value >= 1) {
-//       const unit = Math.pow(10, precision);
-//       const rounded = Math.floor(value * unit) / unit;
-//       outputStr = rounded.toLocaleString('en-US', { maximumFractionDigits: precision });
-//     }
-//     else {
-//       outputStr = value.toLocaleString('en-US', { maximumSignificantDigits: precision });
-//     }
-//     if (outputStr.length > 18) {
-//       outputStr = outputStr.substr(0, 18) + '...'
-//     }
-//     return outputStr;
-//   }
-//   else {
-//     return value.toLocaleString('en-US');
-//   }
-// }
-// export const limitDecimals = (value: any, decimals: number) => {
-//   let val = value;
-//   if (typeof value !== 'string') {
-//     val = val.toString();
-//   }
-//   let chart;
-//   if (val.includes('.')) {
-//     chart = '.';
-//   } else if (val.includes(',')) {
-//     chart = ',';
-//   } else {
-//     return value;
-//   }
-//   const parts = val.split(chart);
-//   let decimalsPart = parts[1];
-//   if (decimalsPart && decimalsPart.length > decimals) {
-//     parts[1] = decimalsPart.substr(0, decimals);
-//   }
-//   return parts.join(chart);
-// }
 define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -250,48 +197,7 @@ define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijs
         }
     });
 });
-define("@scom/scom-token-input/store/index.ts", ["require", "exports", "@ijstech/eth-wallet"], function (require, exports, eth_wallet_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.getChainId = exports.isRpcWalletConnected = exports.getRpcWallet = exports.updateStore = exports.viewOnExplorerByAddress = exports.getNetworkInfo = void 0;
-    const state = {
-        rpcWalletId: "",
-    };
-    const getNetworkInfo = (chainId) => {
-        return eth_wallet_1.Wallet.getClientInstance().getNetworkInfo(chainId);
-    };
-    exports.getNetworkInfo = getNetworkInfo;
-    const viewOnExplorerByAddress = (chainId, address) => {
-        let network = (0, exports.getNetworkInfo)(chainId);
-        if (network && network.blockExplorerUrls[0]) {
-            const url = `${network.blockExplorerUrls[0]}${address}`;
-            window.open(url);
-        }
-    };
-    exports.viewOnExplorerByAddress = viewOnExplorerByAddress;
-    const updateStore = (data) => {
-        if (data.rpcWalletId) {
-            state.rpcWalletId = data.rpcWalletId;
-        }
-    };
-    exports.updateStore = updateStore;
-    const getRpcWallet = () => {
-        return eth_wallet_1.Wallet.getRpcWalletInstance(state.rpcWalletId);
-    };
-    exports.getRpcWallet = getRpcWallet;
-    function isRpcWalletConnected() {
-        const wallet = (0, exports.getRpcWallet)();
-        return wallet === null || wallet === void 0 ? void 0 : wallet.isConnected;
-    }
-    exports.isRpcWalletConnected = isRpcWalletConnected;
-    function getChainId() {
-        const rpcWallet = (0, exports.getRpcWallet)();
-        return rpcWallet === null || rpcWallet === void 0 ? void 0 : rpcWallet.chainId;
-    }
-    exports.getChainId = getChainId;
-    ;
-});
-define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-token-list", "@scom/scom-token-input/tokenSelect.css.ts", "@scom/scom-token-input/store/index.ts"], function (require, exports, components_4, scom_token_list_1, tokenSelect_css_1, index_1) {
+define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-token-list", "@scom/scom-token-input/tokenSelect.css.ts"], function (require, exports, components_4, scom_token_list_1, tokenSelect_css_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.TokenSelect = void 0;
@@ -317,7 +223,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             this.renderTokenList();
         }
         get chainId() {
-            return this._chainId || (0, index_1.getChainId)();
+            return this._chainId;
         }
         set chainId(value) {
             this._chainId = value;
@@ -401,7 +307,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
     ], TokenSelect);
     exports.TokenSelect = TokenSelect;
 });
-define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "@ijstech/eth-contract", "@scom/scom-token-input/index.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-list", "@scom/scom-token-input/store/index.ts"], function (require, exports, components_5, eth_contract_1, index_css_1, index_2, scom_token_list_2, index_3) {
+define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "@ijstech/eth-contract", "@scom/scom-token-input/index.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-list"], function (require, exports, components_5, eth_contract_1, index_css_1, index_1, scom_token_list_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_5.Styles.Theme.ThemeVars;
@@ -419,9 +325,6 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this._isBalanceShown = true;
             this._tokenDataListProp = [];
             this._withoutConnected = false;
-            this._rpcWalletId = '';
-            this.walletEvents = [];
-            this.clientEvents = [];
             this.sortToken = (a, b, asc) => {
                 if (a.balance != b.balance) {
                     return asc ? a.balance - b.balance : b.balance - a.balance;
@@ -434,63 +337,30 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 }
                 return 0;
             };
-            this.$eventBus = components_5.application.EventBus;
-            this.registerEvent();
         }
         static async create(options, parent) {
             let self = new this(parent, options);
             await self.ready();
             return self;
         }
-        async onRefresh() {
-            if ((0, scom_token_list_2.isWalletConnected)()) {
-                this.tokenBalancesMap = scom_token_list_2.tokenStore.getTokenBalancesByChainId(this._chainId) || {};
-                if (this.token) {
-                    const token = this.tokenDataList.find((t) => {
-                        var _a, _b;
-                        return (t.address && t.address == ((_a = this.token) === null || _a === void 0 ? void 0 : _a.address)) ||
-                            t.symbol == ((_b = this.token) === null || _b === void 0 ? void 0 : _b.symbol);
-                    });
-                    if (!token)
-                        this.token = undefined;
-                    else
-                        this.token = token;
-                }
-            }
-            this.updateTokenUI();
-            this.renderTokenList();
-            this.updateStatusButton();
-            this.pnlTopSection.visible = this.isBalanceShown && !!this.title;
-        }
-        async updateDataByNewToken() {
-            this.tokenBalancesMap = scom_token_list_2.tokenStore.getTokenBalancesByChainId(this._chainId) || {};
-            this.renderTokenList();
-        }
-        async onUpdateData(onPaid) {
-            const rpcWallet = (0, index_3.getRpcWallet)();
-            this.tokenBalancesMap = onPaid ? scom_token_list_2.tokenStore.getTokenBalancesByChainId(this._chainId) : await scom_token_list_2.tokenStore.updateAllTokenBalances(rpcWallet);
-            this.onRefresh();
-        }
-        registerEvent() {
-            // const clientWallet = Wallet.getClientInstance();
-            // this.walletEvents.push(clientWallet.registerWalletEvent(this, Constants.ClientWalletEvent.AccountsChanged, async (payload: Record<string, any>) => {
-            //   this.onUpdateData();
-            // }));
-            // this.clientEvents.push(this.$eventBus.register(this, EventId.chainChanged, () => this.onUpdateData(false)))
-            // this.clientEvents.push(this.$eventBus.register(this, EventId.Paid, () => this.onUpdateData(true)))
-            // this.clientEvents.push(this.$eventBus.register(this, EventId.EmitNewToken, this.updateDataByNewToken))
-        }
-        onHide() {
-            const rpcWallet = (0, index_3.getRpcWallet)();
-            for (let event of this.walletEvents) {
-                rpcWallet.unregisterWalletEvent(event);
-            }
-            this.walletEvents = [];
-            for (let event of this.clientEvents) {
-                event.unregister();
-            }
-            this.clientEvents = [];
-        }
+        // private async onRefresh() {
+        //   if (isWalletConnected()) {
+        //     this.tokenBalancesMap = tokenStore.getTokenBalancesByChainId(this._chainId) || {};
+        //     if (this.token) {
+        //       const token = this.tokenDataList.find(
+        //         (t) =>
+        //           (t.address && t.address == this.token?.address) ||
+        //           t.symbol == this.token?.symbol
+        //       )
+        //       if (!token) this.token = undefined
+        //       else this.token = token;
+        //     }
+        //   }
+        //   this.updateTokenUI();
+        //   this.renderTokenList();
+        //   this.updateStatusButton();
+        //   this.pnlTopSection.visible = this.isBalanceShown && !!this.title;
+        // }
         get tokenDataListProp() {
             var _a;
             return (_a = this._tokenDataListProp) !== null && _a !== void 0 ? _a : [];
@@ -501,7 +371,6 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 if (this.mdToken)
                     this.mdToken.tokenDataListProp = this.tokenDataListProp;
             }
-            // this.renderTokenList();
         }
         get tokenListByChainId() {
             var _a, _b;
@@ -621,7 +490,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.token = tokenObj;
         }
         get chainId() {
-            return this._chainId || (0, index_3.getChainId)();
+            return this._chainId;
         }
         set chainId(value) {
             this._chainId = value;
@@ -712,16 +581,6 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         get amount() {
             return this.inputAmount.value;
         }
-        get rpcWalletId() {
-            return this._rpcWalletId;
-        }
-        set rpcWalletId(value) {
-            this._rpcWalletId = value;
-            (0, index_3.updateStore)({ rpcWalletId: value });
-            if (this.mdToken)
-                this.mdToken.rpcWalletId = value;
-            // this.onUpdateData()
-        }
         get placeholder() {
             var _a, _b;
             return (_b = (_a = this.inputAmount) === null || _a === void 0 ? void 0 : _a.placeholder) !== null && _b !== void 0 ? _b : 'Enter an amount';
@@ -807,12 +666,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             }
         }
         async updateTokenUI() {
-            var _a;
             this.value = '';
-            if (((_a = this._token) === null || _a === void 0 ? void 0 : _a.isNew) && (0, index_3.isRpcWalletConnected)()) {
-                const rpcWallet = (0, index_3.getRpcWallet)();
-                await scom_token_list_2.tokenStore.updateAllTokenBalances(rpcWallet);
-            }
             this.updateBalance();
             this.updateTokenButton();
         }
@@ -825,22 +679,22 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             if (this.token) {
                 const symbol = ((_a = this.token) === null || _a === void 0 ? void 0 : _a.symbol) || '';
                 const balance = this.getBalance(this.token);
-                this.lbBalance.caption = `${(0, index_2.formatNumber)(balance, 6)} ${symbol}`;
+                this.lbBalance.caption = `${(0, index_1.formatNumber)(balance, 6)} ${symbol}`;
             }
             else {
                 this.lbBalance.caption = '0.00';
             }
         }
-        updateStatusButton() {
-            const status = (0, scom_token_list_2.isWalletConnected)();
-            const value = !this.readOnly && (status || this._withoutConnected);
-            if (this.btnToken) {
-                this.btnToken.enabled = value && !this.tokenReadOnly;
-            }
-            if (this.btnMax) {
-                this.btnMax.enabled = value;
-            }
-        }
+        // private updateStatusButton() {
+        //   const status = isWalletConnected()
+        //   const value = !this.readOnly && (status || this._withoutConnected)
+        //   if (this.btnToken) {
+        //     this.btnToken.enabled = value && !this.tokenReadOnly
+        //   }
+        //   if (this.btnMax) {
+        //     this.btnMax.enabled = value
+        //   }
+        // }
         updateTokenButton() {
             if (!this.btnToken)
                 return;
@@ -922,14 +776,11 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             }
             this.isInputShown = this.getAttribute('isInputShown', true, true);
             this.isBalanceShown = this.getAttribute('isBalanceShown', true, true);
-            const rpcWalletId = this.getAttribute('rpcWalletId', true);
-            if (rpcWalletId)
-                this.rpcWalletId = rpcWalletId;
             this.placeholder = this.getAttribute('placeholder', true);
             const value = this.getAttribute('value', true);
             if (value !== undefined)
                 this.value = value;
-            this.pnlTopSection.visible = this.isBalanceShown && !!this.title;
+            this.pnlTopSection.visible = this.isBalanceShown;
             document.addEventListener('click', (event) => {
                 const target = event.target;
                 const tokenInput = target.closest('#gridTokenInput');

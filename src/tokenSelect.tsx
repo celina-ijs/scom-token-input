@@ -14,7 +14,6 @@ import customStyle, {
   scrollbarStyle,
   modalStyle,
 } from './tokenSelect.css'
-import { getChainId } from './store/index';
 
 interface TokenSelectElement extends ControlElement {
   chainId?: number;
@@ -66,7 +65,7 @@ export class TokenSelect extends Module {
   }
 
   get chainId(): number {
-    return this._chainId || getChainId()
+    return this._chainId
   }
 
   set chainId(value: number | undefined) {

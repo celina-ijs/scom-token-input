@@ -12,8 +12,7 @@ import {
   Panel,
   Button,
   application,
-  HStack,
-  IEventBus
+  HStack
 } from '@ijstech/components'
 import { BigNumber } from '@ijstech/eth-contract'
 import customStyle, { buttonStyle, inputStyle, tokenSelectionStyle } from './index.css'
@@ -22,13 +21,10 @@ import { formatNumber } from './utils/index'
 import { ChainNativeTokenByChainId, isWalletConnected, tokenStore, assets, DefaultERC20Tokens, ITokenObject } from '@scom/scom-token-list'
 import { TokenSelect } from './tokenSelect'
 import ScomTokenModal from '@scom/scom-token-modal'
-import { getChainId, getRpcWallet, isRpcWalletConnected, updateStore } from './store/index'
-import { IEventBusRegistry } from '@ijstech/eth-wallet'
 
 interface ScomTokenInputElement extends ControlElement {
   type?: IType;
   title?: string;
-  rpcWalletId?: string;
   token?: ITokenObject;
   tokenDataListProp?: ITokenObject[];
   readOnly?: boolean;
@@ -74,8 +70,6 @@ export default class ScomTokenInput extends Module {
   private btnToken: Button;
   private pnlTopSection: HStack;
 
-  private $eventBus: IEventBus;
-
   private _type: IType
   private _token: ITokenObject;
   private _title: string | Control
@@ -90,14 +84,10 @@ export default class ScomTokenInput extends Module {
   private _isBalanceShown: boolean = true
   private _tokenDataListProp: ITokenObject[] = []
   private _withoutConnected: boolean = false;
-  private _rpcWalletId: string = '';
   private _chainId: number;
   private _tokenBalancesMapProp: Record<string, string>;
   private tokenBalancesMap: any;
   public onChanged: (token?: ITokenObject) => void;
-
-  private walletEvents: IEventBusRegistry[] = [];
-  private clientEvents: any[] = [];
 
   onInputAmountChanged: (target: Control, event: Event) => void
   private _onSelectToken: (token: ITokenObject | undefined) => void;
@@ -105,8 +95,6 @@ export default class ScomTokenInput extends Module {
 
   constructor(parent?: Container, options?: ScomTokenInputElement) {
     super(parent, options);
-    this.$eventBus = application.EventBus;
-    this.registerEvent();
   }
 
   static async create(options?: ScomTokenInputElement, parent?: Container) {
@@ -115,57 +103,24 @@ export default class ScomTokenInput extends Module {
     return self;
   }
 
-  private async onRefresh() {
-    if (isWalletConnected()) {
-      this.tokenBalancesMap = tokenStore.getTokenBalancesByChainId(this._chainId) || {};
-      if (this.token) {
-        const token = this.tokenDataList.find(
-          (t) =>
-            (t.address && t.address == this.token?.address) ||
-            t.symbol == this.token?.symbol
-        )
-        if (!token) this.token = undefined
-        else this.token = token;
-      }
-    }
-    this.updateTokenUI();
-    this.renderTokenList();
-    this.updateStatusButton();
-    this.pnlTopSection.visible = this.isBalanceShown && !!this.title;
-  }
-
-  private async updateDataByNewToken() {
-    this.tokenBalancesMap = tokenStore.getTokenBalancesByChainId(this._chainId) || {};
-    this.renderTokenList();
-  }
-
-  private async onUpdateData(onPaid?: boolean) {
-    const rpcWallet = getRpcWallet()
-    this.tokenBalancesMap = onPaid ? tokenStore.getTokenBalancesByChainId(this._chainId) : await tokenStore.updateAllTokenBalances(rpcWallet);
-    this.onRefresh()
-  }
-
-  private registerEvent() {
-    // const clientWallet = Wallet.getClientInstance();
-    // this.walletEvents.push(clientWallet.registerWalletEvent(this, Constants.ClientWalletEvent.AccountsChanged, async (payload: Record<string, any>) => {
-    //   this.onUpdateData();
-    // }));
-    // this.clientEvents.push(this.$eventBus.register(this, EventId.chainChanged, () => this.onUpdateData(false)))
-    // this.clientEvents.push(this.$eventBus.register(this, EventId.Paid, () => this.onUpdateData(true)))
-    // this.clientEvents.push(this.$eventBus.register(this, EventId.EmitNewToken, this.updateDataByNewToken))
-  }
-
-  onHide() {
-    const rpcWallet = getRpcWallet();
-    for (let event of this.walletEvents) {
-      rpcWallet.unregisterWalletEvent(event);
-    }
-    this.walletEvents = [];
-    for (let event of this.clientEvents) {
-      event.unregister();
-    }
-    this.clientEvents = [];
-  }
+  // private async onRefresh() {
+  //   if (isWalletConnected()) {
+  //     this.tokenBalancesMap = tokenStore.getTokenBalancesByChainId(this._chainId) || {};
+  //     if (this.token) {
+  //       const token = this.tokenDataList.find(
+  //         (t) =>
+  //           (t.address && t.address == this.token?.address) ||
+  //           t.symbol == this.token?.symbol
+  //       )
+  //       if (!token) this.token = undefined
+  //       else this.token = token;
+  //     }
+  //   }
+  //   this.updateTokenUI();
+  //   this.renderTokenList();
+  //   this.updateStatusButton();
+  //   this.pnlTopSection.visible = this.isBalanceShown && !!this.title;
+  // }
 
   get tokenDataListProp(): Array<ITokenObject> {
     return this._tokenDataListProp ?? [];
@@ -176,7 +131,6 @@ export default class ScomTokenInput extends Module {
     if (this.type === 'button') {
       if (this.mdToken) this.mdToken.tokenDataListProp = this.tokenDataListProp;
     }
-    // this.renderTokenList();
   }
 
   private get tokenListByChainId() {
@@ -305,7 +259,7 @@ export default class ScomTokenInput extends Module {
   }
 
   get chainId() {
-    return this._chainId || getChainId();
+    return this._chainId;
   }
 
   set chainId(value: number | undefined) {
@@ -406,17 +360,6 @@ export default class ScomTokenInput extends Module {
     return this.inputAmount.value
   }
 
-  get rpcWalletId() {
-    return this._rpcWalletId
-  }
-  set rpcWalletId(value: string) {
-    this._rpcWalletId = value
-    updateStore({ rpcWalletId: value })
-    if (this.mdToken)
-      this.mdToken.rpcWalletId = value
-    // this.onUpdateData()
-  }
-
   get placeholder() {
     return this.inputAmount?.placeholder ?? 'Enter an amount'
   }
@@ -502,10 +445,6 @@ export default class ScomTokenInput extends Module {
 
   private async updateTokenUI() {
     this.value = ''
-    if (this._token?.isNew && isRpcWalletConnected()) {
-      const rpcWallet = getRpcWallet();
-      await tokenStore.updateAllTokenBalances(rpcWallet);
-    }
     this.updateBalance()
     this.updateTokenButton()
   }
@@ -522,16 +461,16 @@ export default class ScomTokenInput extends Module {
     }
   }
 
-  private updateStatusButton() {
-    const status = isWalletConnected()
-    const value = !this.readOnly && (status || this._withoutConnected)
-    if (this.btnToken) {
-      this.btnToken.enabled = value && !this.tokenReadOnly
-    }
-    if (this.btnMax) {
-      this.btnMax.enabled = value
-    }
-  }
+  // private updateStatusButton() {
+  //   const status = isWalletConnected()
+  //   const value = !this.readOnly && (status || this._withoutConnected)
+  //   if (this.btnToken) {
+  //     this.btnToken.enabled = value && !this.tokenReadOnly
+  //   }
+  //   if (this.btnMax) {
+  //     this.btnMax.enabled = value
+  //   }
+  // }
 
   private updateTokenButton() {
     if (!this.btnToken) return
@@ -611,12 +550,10 @@ export default class ScomTokenInput extends Module {
     }
     this.isInputShown = this.getAttribute('isInputShown', true, true)
     this.isBalanceShown = this.getAttribute('isBalanceShown', true, true)
-    const rpcWalletId = this.getAttribute('rpcWalletId', true)
-    if (rpcWalletId) this.rpcWalletId = rpcWalletId;
     this.placeholder = this.getAttribute('placeholder', true);
     const value = this.getAttribute('value', true);
     if (value !== undefined) this.value = value;
-    this.pnlTopSection.visible = this.isBalanceShown && !!this.title;
+    this.pnlTopSection.visible = this.isBalanceShown;
     document.addEventListener('click', (event) => {
       const target = event.target as Control
       const tokenInput = target.closest('#gridTokenInput')

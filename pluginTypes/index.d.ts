@@ -1,5 +1,3 @@
-/// <reference path="@ijstech/eth-wallet/index.d.ts" />
-/// <reference path="@scom/scom-token-modal/@ijstech/eth-wallet/index.d.ts" />
 /// <amd-module name="@scom/scom-token-input/index.css.ts" />
 declare module "@scom/scom-token-input/index.css.ts" {
     export const imageStyle: string;
@@ -12,14 +10,6 @@ declare module "@scom/scom-token-input/index.css.ts" {
 }
 /// <amd-module name="@scom/scom-token-input/global/index.ts" />
 declare module "@scom/scom-token-input/global/index.ts" {
-    export const enum EventId {
-        ConnectWallet = "connectWallet",
-        IsWalletConnected = "isWalletConnected",
-        chainChanged = "chainChanged",
-        IsWalletDisconnected = "IsWalletDisconnected",
-        EmitNewToken = "EmitNewToken",
-        Paid = "Paid"
-    }
     export type IType = 'button' | 'combobox';
 }
 /// <amd-module name="@scom/scom-token-input/utils/index.ts" />
@@ -34,15 +24,6 @@ declare module "@scom/scom-token-input/tokenSelect.css.ts" {
     export const modalStyle: string;
     const _default_1: string;
     export default _default_1;
-}
-/// <amd-module name="@scom/scom-token-input/store/index.ts" />
-declare module "@scom/scom-token-input/store/index.ts" {
-    export const getNetworkInfo: (chainId: number) => any;
-    export const viewOnExplorerByAddress: (chainId: number, address: string) => void;
-    export const updateStore: (data: any) => void;
-    export const getRpcWallet: () => import("@ijstech/eth-wallet").IRpcWallet;
-    export function isRpcWalletConnected(): boolean;
-    export function getChainId(): number;
 }
 /// <amd-module name="@scom/scom-token-input/tokenSelect.tsx" />
 declare module "@scom/scom-token-input/tokenSelect.tsx" {
@@ -97,7 +78,6 @@ declare module "@scom/scom-token-input" {
     interface ScomTokenInputElement extends ControlElement {
         type?: IType;
         title?: string;
-        rpcWalletId?: string;
         token?: ITokenObject;
         tokenDataListProp?: ITokenObject[];
         readOnly?: boolean;
@@ -137,7 +117,6 @@ declare module "@scom/scom-token-input" {
         private btnMax;
         private btnToken;
         private pnlTopSection;
-        private $eventBus;
         private _type;
         private _token;
         private _title;
@@ -152,23 +131,15 @@ declare module "@scom/scom-token-input" {
         private _isBalanceShown;
         private _tokenDataListProp;
         private _withoutConnected;
-        private _rpcWalletId;
         private _chainId;
         private _tokenBalancesMapProp;
         private tokenBalancesMap;
         onChanged: (token?: ITokenObject) => void;
-        private walletEvents;
-        private clientEvents;
         onInputAmountChanged: (target: Control, event: Event) => void;
         private _onSelectToken;
         onSetMaxBalance: () => void;
         constructor(parent?: Container, options?: ScomTokenInputElement);
         static create(options?: ScomTokenInputElement, parent?: Container): Promise<ScomTokenInput>;
-        private onRefresh;
-        private updateDataByNewToken;
-        private onUpdateData;
-        private registerEvent;
-        onHide(): void;
         get tokenDataListProp(): Array<ITokenObject>;
         set tokenDataListProp(value: Array<ITokenObject>);
         private get tokenListByChainId();
@@ -204,8 +175,6 @@ declare module "@scom/scom-token-input" {
         get isBalanceShown(): boolean;
         set isBalanceShown(value: boolean);
         get amount(): string;
-        get rpcWalletId(): string;
-        set rpcWalletId(value: string);
         get placeholder(): string;
         set placeholder(value: string);
         get value(): any;
@@ -220,7 +189,6 @@ declare module "@scom/scom-token-input" {
         private renderTokenList;
         private updateTokenUI;
         private updateBalance;
-        private updateStatusButton;
         private updateTokenButton;
         private onButtonClicked;
         private onSelectFn;
