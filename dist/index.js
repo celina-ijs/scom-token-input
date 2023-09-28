@@ -307,7 +307,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
     ], TokenSelect);
     exports.TokenSelect = TokenSelect;
 });
-define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "@ijstech/eth-contract", "@scom/scom-token-input/index.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-list"], function (require, exports, components_5, eth_contract_1, index_css_1, index_1, scom_token_list_2) {
+define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "@ijstech/eth-contract", "@scom/scom-token-input/index.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-list", "@ijstech/eth-wallet"], function (require, exports, components_5, eth_contract_1, index_css_1, index_1, scom_token_list_2, eth_wallet_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_5.Styles.Theme.ThemeVars;
@@ -408,7 +408,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 if ((nativeToken === null || nativeToken === void 0 ? void 0 : nativeToken.symbol) && token.symbol === nativeToken.symbol) {
                     Object.assign(tokenObject, { isNative: true });
                 }
-                if (!(0, scom_token_list_2.isWalletConnected)()) {
+                if (!eth_wallet_1.Wallet.getClientInstance().isConnected) {
                     Object.assign(tokenObject, {
                         balance: 0,
                     });

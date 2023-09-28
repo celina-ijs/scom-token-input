@@ -18,9 +18,10 @@ import { BigNumber } from '@ijstech/eth-contract'
 import customStyle, { buttonStyle, inputStyle, tokenSelectionStyle } from './index.css'
 import { IType } from './global/index'
 import { formatNumber } from './utils/index'
-import { ChainNativeTokenByChainId, isWalletConnected, tokenStore, assets, DefaultERC20Tokens, ITokenObject } from '@scom/scom-token-list'
+import { ChainNativeTokenByChainId, tokenStore, assets, DefaultERC20Tokens, ITokenObject } from '@scom/scom-token-list'
 import { TokenSelect } from './tokenSelect'
 import ScomTokenModal from '@scom/scom-token-modal'
+import { Wallet } from '@ijstech/eth-wallet'
 
 interface ScomTokenInputElement extends ControlElement {
   type?: IType;
@@ -162,7 +163,7 @@ export default class ScomTokenInput extends Module {
       if (nativeToken?.symbol && token.symbol === nativeToken.symbol) {
         Object.assign(tokenObject, { isNative: true })
       }
-      if (!isWalletConnected()){
+      if (!Wallet.getClientInstance().isConnected){
         Object.assign(tokenObject, {
           balance: 0,
         })
