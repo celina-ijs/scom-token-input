@@ -94,7 +94,6 @@ declare module "@scom/scom-token-input" {
         placeholder?: string;
         address?: string;
         chainId?: number;
-        tokenBalancesMapProp?: Record<string, string>;
         onInputAmountChanged?: (target: Control, event: Event) => void;
         onSelectToken?: (token: ITokenObject | undefined) => void;
         onSetMaxBalance?: () => void;
@@ -132,7 +131,6 @@ declare module "@scom/scom-token-input" {
         private _tokenDataListProp;
         private _withoutConnected;
         private _chainId;
-        private _tokenBalancesMapProp;
         private tokenBalancesMap;
         onChanged: (token?: ITokenObject) => void;
         onInputAmountChanged: (target: Control, event: Event) => void;
@@ -179,8 +177,6 @@ declare module "@scom/scom-token-input" {
         set placeholder(value: string);
         get value(): any;
         set value(value: any);
-        get tokenBalancesMapProp(): Record<string, string>;
-        set tokenBalancesMapProp(value: Record<string, string>);
         private getBalance;
         private onSetMax;
         private onAmountChanged;

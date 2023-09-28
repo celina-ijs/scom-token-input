@@ -41,7 +41,6 @@ interface ScomTokenInputElement extends ControlElement {
   placeholder?: string;
   address?: string;
   chainId?: number;
-  tokenBalancesMapProp?: Record<string, string>;
   onInputAmountChanged?: (target: Control, event: Event) => void;
   onSelectToken?: (token: ITokenObject | undefined) => void;
   onSetMaxBalance?: () => void;
@@ -85,7 +84,6 @@ export default class ScomTokenInput extends Module {
   private _tokenDataListProp: ITokenObject[] = []
   private _withoutConnected: boolean = false;
   private _chainId: number;
-  private _tokenBalancesMapProp: Record<string, string>;
   private tokenBalancesMap: any;
   public onChanged: (token?: ITokenObject) => void;
 
@@ -375,14 +373,6 @@ export default class ScomTokenInput extends Module {
       this.inputAmount.value = value
   }
 
-  get tokenBalancesMapProp() {
-    return this._tokenBalancesMapProp;
-  }
-
-  set tokenBalancesMapProp(value: Record<string, string>) {
-    this._tokenBalancesMapProp = value;
-  }
-
   private getBalance(token?: ITokenObject) {
     let tokenBalances = tokenStore?.getTokenBalancesByChainId(this._chainId)
     if (token && tokenBalances && Object.keys(tokenBalances).length) {
@@ -505,9 +495,6 @@ export default class ScomTokenInput extends Module {
       if (this.mdToken.chainId !== this.chainId) {
         this.mdToken.chainId = this.chainId;
       }
-      if (this.mdToken.tokenBalancesMapProp !== this.tokenBalancesMapProp) {
-        this.mdToken.tokenBalancesMapProp = this.tokenBalancesMapProp;
-      }
       this.mdToken.tokenDataListProp = this.tokenDataListProp;
       this.mdToken.showModal();
     }
@@ -531,7 +518,6 @@ export default class ScomTokenInput extends Module {
     this.title = this.getAttribute('title', true, '')
     this._withoutConnected = this.getAttribute('withoutConnected', true, false)
     this.chainId = this.getAttribute('chainId', true)
-    this.tokenBalancesMapProp = this.getAttribute('tokenBalancesMapProp', true)
     const address = this.getAttribute('address', true)
     if (address) this.address = address
     const tokenDataListProp = this.getAttribute('tokenDataListProp', true)

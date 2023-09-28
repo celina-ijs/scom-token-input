@@ -595,12 +595,6 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             if (this.inputAmount)
                 this.inputAmount.value = value;
         }
-        get tokenBalancesMapProp() {
-            return this._tokenBalancesMapProp;
-        }
-        set tokenBalancesMapProp(value) {
-            this._tokenBalancesMapProp = value;
-        }
         getBalance(token) {
             var _a;
             let tokenBalances = scom_token_list_2.tokenStore === null || scom_token_list_2.tokenStore === void 0 ? void 0 : scom_token_list_2.tokenStore.getTokenBalancesByChainId(this._chainId);
@@ -730,9 +724,6 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 if (this.mdToken.chainId !== this.chainId) {
                     this.mdToken.chainId = this.chainId;
                 }
-                if (this.mdToken.tokenBalancesMapProp !== this.tokenBalancesMapProp) {
-                    this.mdToken.tokenBalancesMapProp = this.tokenBalancesMapProp;
-                }
                 this.mdToken.tokenDataListProp = this.tokenDataListProp;
                 this.mdToken.showModal();
             }
@@ -754,7 +745,6 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.title = this.getAttribute('title', true, '');
             this._withoutConnected = this.getAttribute('withoutConnected', true, false);
             this.chainId = this.getAttribute('chainId', true);
-            this.tokenBalancesMapProp = this.getAttribute('tokenBalancesMapProp', true);
             const address = this.getAttribute('address', true);
             if (address)
                 this.address = address;
