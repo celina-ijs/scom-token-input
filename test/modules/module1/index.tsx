@@ -60,7 +60,6 @@ export default class Module1 extends Module {
         this.picker1 = new ScomTokenInput(undefined, {
             type: "combobox",
             title: 'Add funds',
-            rpcWalletId: instanceId,
             isBtnMaxShown: false,
             onSetMaxBalance: () => console.log('onSetMaxBalance'),
             onSelectToken: (token: any) => console.log('on select token', token)
@@ -69,12 +68,10 @@ export default class Module1 extends Module {
 
         this.picker2 = await ScomTokenInput.create({
             type: 'combobox',
-            rpcWalletId: instanceId,
             onSelectToken: (token: any) => console.log('on select token', token)
         })
         this.mainStack.appendChild(this.picker2);
 
-        this.picker0.rpcWalletId = instanceId;
         this.picker0.token = {
             "chainId": 43113,
             "name": "OpenSwap",

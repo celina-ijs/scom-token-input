@@ -21,7 +21,6 @@ declare module "@scom/scom-token-input/utils/index.ts" {
 declare module "@scom/scom-token-input/tokenSelect.css.ts" {
     export const scrollbarStyle: string;
     export const tokenStyle: string;
-    export const modalStyle: string;
     const _default_1: string;
     export default _default_1;
 }
@@ -75,6 +74,14 @@ declare module "@scom/scom-token-input" {
     import { ControlElement, Module, Container, Control } from '@ijstech/components';
     import { IType } from "@scom/scom-token-input/global/index.ts";
     import { ITokenObject } from '@scom/scom-token-list';
+    interface IModalStyles {
+        maxWidth?: number | string;
+        minWidth?: number | string;
+        background?: {
+            color?: string;
+            image?: string;
+        };
+    }
     interface ScomTokenInputElement extends ControlElement {
         type?: IType;
         title?: string;
@@ -94,6 +101,7 @@ declare module "@scom/scom-token-input" {
         placeholder?: string;
         address?: string;
         chainId?: number;
+        modalStyles?: IModalStyles;
         onInputAmountChanged?: (target: Control, event: Event) => void;
         onSelectToken?: (token: ITokenObject | undefined) => void;
         onSetMaxBalance?: () => void;
@@ -131,6 +139,7 @@ declare module "@scom/scom-token-input" {
         private _tokenDataListProp;
         private _withoutConnected;
         private _chainId;
+        private _modalStyles;
         private tokenBalancesMap;
         onChanged: (token?: ITokenObject) => void;
         onInputAmountChanged: (target: Control, event: Event) => void;
@@ -177,6 +186,8 @@ declare module "@scom/scom-token-input" {
         set placeholder(value: string);
         get value(): any;
         set value(value: any);
+        get modalStyles(): IModalStyles;
+        set modalStyles(value: IModalStyles);
         private getBalance;
         private onSetMax;
         private onAmountChanged;

@@ -11,8 +11,7 @@ import {
 import { assets, ITokenObject } from '@scom/scom-token-list';
 import customStyle, {
   tokenStyle,
-  scrollbarStyle,
-  modalStyle,
+  scrollbarStyle
 } from './tokenSelect.css'
 
 interface TokenSelectElement extends ControlElement {
@@ -139,8 +138,14 @@ export class TokenSelect extends Module {
 
   showModal() {
     if (!this.enabled) return;
-    const wapperWidth = this.wrapper.offsetWidth;
-    this.mdCbToken.maxWidth = wapperWidth < 230 ? 230 : wapperWidth;
+    if (this.maxWidth) {
+      this.mdCbToken.maxWidth = this.maxWidth;
+    } else {
+      const wapperWidth = this.wrapper.offsetWidth;
+      this.mdCbToken.maxWidth = wapperWidth < 230 ? 230 : wapperWidth;
+    }
+    if (this.minWidth) this.mdCbToken.minWidth = this.minWidth;
+    if (this.background) this.mdCbToken.background = this.background;
     this.mdCbToken.visible = !this.mdCbToken.visible;
   }
 
@@ -181,12 +186,13 @@ export class TokenSelect extends Module {
           id="mdCbToken"
           showBackdrop={false}
           width='100%'
-          minWidth={230}
+          minWidth={'auto'}
           closeOnBackdropClick={true}
           closeOnScrollChildFixed={true}
           isChildFixed={true}
           popupPlacement='bottomRight'
-          class={`full-width box-shadow ${modalStyle}`}
+          padding={{top: 0, left: 0, right: 0, bottom: 0}}
+          class={`box-shadow`}
         >
           <i-panel
             margin={{ top: '0.25rem' }}
