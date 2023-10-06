@@ -54,10 +54,10 @@ export default Styles.style({
       // border: `1px solid ${Theme.colors.primary.main}`,
       // boxShadow: '0 0 0 2px rgba(87, 75, 144, .2)'
     },
-    '.custom-border': {
-      border: 'none',
-      borderRadius: 'inherit',
-      height: '100%'
-    }
+    // '.custom-border': {
+    //   border: 'none',
+    //   borderRadius: 'inherit',
+    //   height: '100%'
+    // }
   }
 })

@@ -57,11 +57,11 @@ define("@scom/scom-token-input/index.css.ts", ["require", "exports", "@ijstech/c
             // border: `1px solid ${Theme.colors.primary.main}`,
             // boxShadow: '0 0 0 2px rgba(87, 75, 144, .2)'
             },
-            '.custom-border': {
-                border: 'none',
-                borderRadius: 'inherit',
-                height: '100%'
-            }
+            // '.custom-border': {
+            //   border: 'none',
+            //   borderRadius: 'inherit',
+            //   height: '100%'
+            // }
         }
     });
 });
@@ -83,7 +83,7 @@ define("@scom/scom-token-input/utils/index.ts", ["require", "exports", "@ijstech
 define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.modalStyle = exports.tokenStyle = exports.scrollbarStyle = void 0;
+    exports.tokenStyle = exports.scrollbarStyle = void 0;
     const Theme = components_3.Styles.Theme.ThemeVars;
     exports.scrollbarStyle = components_3.Styles.style({
         $nest: {
@@ -120,79 +120,13 @@ define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijs
             }
         }
     });
-    exports.modalStyle = components_3.Styles.style({
-        $nest: {
-            '.modal': {
-                minWidth: 'auto'
-            }
-        }
-    });
     exports.default = components_3.Styles.style({
         $nest: {
-            '.full-width': {
-                width: '100%',
-                $nest: {
-                    '.modal': {
-                        padding: 0
-                    }
-                }
-            },
             '.box-shadow > div': {
                 boxShadow: '0 3px 6px -4px rgba(0,0,0,.12), 0 6px 16px 0 rgba(0,0,0,.08), 0 9px 28px 8px rgba(0,0,0,.05)'
             },
-            '.is-ellipsis': {
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis'
-            },
-            '.sort-panel': {
-                marginBlock: '0.5rem',
-                $nest: {
-                    'i-icon': {
-                        width: '10px',
-                        height: '14px',
-                        display: 'flex',
-                        fill: Theme.text.primary,
-                        position: 'absolute',
-                        right: '0',
-                        cursor: 'pointer'
-                    },
-                    '.icon-sort-up': {
-                        top: '2px',
-                    },
-                    '.icon-sort-down': {
-                        bottom: '2px',
-                    },
-                    '.icon-sorted': {
-                        fill: Theme.colors.primary.main,
-                    }
-                }
-            },
-            '.search-input': {
-                $nest: {
-                    'input': {
-                        padding: '1rem 1.5rem 1rem 2.25rem'
-                    }
-                }
-            },
-            '.centered': {
-                transform: 'translateY(-50%)'
-            },
             '.pointer': {
                 cursor: 'pointer'
-            },
-            '.common-token:hover': {
-                border: `1px solid ${Theme.colors.primary.main}`
-            },
-            '.btn-import': {
-                background: 'transparent linear-gradient(255deg,#e75b66,#b52082) 0% 0% no-repeat padding-box',
-                borderRadius: '5px',
-                color: '#fff',
-                fontSize: '1rem',
-                padding: '0.25rem 1.25rem'
-            },
-            '#btnToken': {
-                justifyContent: 'space-between'
             }
         }
     });
@@ -263,8 +197,17 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         showModal() {
             if (!this.enabled)
                 return;
-            const wapperWidth = this.wrapper.offsetWidth;
-            this.mdCbToken.maxWidth = wapperWidth < 230 ? 230 : wapperWidth;
+            if (this.maxWidth) {
+                this.mdCbToken.maxWidth = this.maxWidth;
+            }
+            else {
+                const wapperWidth = this.wrapper.offsetWidth;
+                this.mdCbToken.maxWidth = wapperWidth < 230 ? 230 : wapperWidth;
+            }
+            if (this.minWidth)
+                this.mdCbToken.minWidth = this.minWidth;
+            if (this.background)
+                this.mdCbToken.background = this.background;
             this.mdCbToken.visible = !this.mdCbToken.visible;
         }
         hideModal() {
@@ -297,7 +240,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         }
         render() {
             return (this.$render("i-panel", { id: "wrapper" },
-                this.$render("i-modal", { id: "mdCbToken", showBackdrop: false, width: '100%', minWidth: 230, closeOnBackdropClick: true, closeOnScrollChildFixed: true, isChildFixed: true, popupPlacement: 'bottomRight', class: `full-width box-shadow ${tokenSelect_css_1.modalStyle}` },
+                this.$render("i-modal", { id: "mdCbToken", showBackdrop: false, width: '100%', minWidth: 'auto', closeOnBackdropClick: true, closeOnScrollChildFixed: true, isChildFixed: true, popupPlacement: 'bottomRight', padding: { top: 0, left: 0, right: 0, bottom: 0 }, class: `box-shadow` },
                     this.$render("i-panel", { margin: { top: '0.25rem' }, padding: { top: 5, bottom: 5 }, overflow: { y: 'auto', x: 'hidden' }, maxWidth: '100%', maxHeight: 300, border: { radius: 2 }, class: tokenSelect_css_1.scrollbarStyle },
                         this.$render("i-grid-layout", { id: 'gridTokenList', width: '100%', columnsPerRow: 1, templateRows: ['max-content'], class: 'is-combobox' })))));
         }
@@ -595,6 +538,30 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             if (this.inputAmount)
                 this.inputAmount.value = value;
         }
+        get modalStyles() {
+            return this._modalStyles;
+        }
+        set modalStyles(value) {
+            this._modalStyles = value;
+            if (value.maxWidth !== undefined) {
+                if (this.cbToken)
+                    this.cbToken.maxWidth = value.maxWidth;
+                if (this.mdToken)
+                    this.mdToken.maxWidth = value.maxWidth;
+            }
+            if (value.minWidth !== undefined) {
+                if (this.cbToken)
+                    this.cbToken.minWidth = value.minWidth;
+                if (this.mdToken)
+                    this.mdToken.minWidth = value.minWidth;
+            }
+            if (value.background) {
+                if (this.cbToken)
+                    this.cbToken.background = value.background;
+                if (this.mdToken)
+                    this.mdToken.background = value.background;
+            }
+        }
         getBalance(token) {
             var _a;
             let tokenBalances = scom_token_list_2.tokenStore === null || scom_token_list_2.tokenStore === void 0 ? void 0 : scom_token_list_2.tokenStore.getTokenBalancesByChainId(this._chainId);
@@ -771,6 +738,9 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             if (value !== undefined)
                 this.value = value;
             this.pnlTopSection.visible = this.isBalanceShown;
+            const modalStyles = this.getAttribute('modalStyles', true);
+            if (modalStyles)
+                this.modalStyles = modalStyles;
             document.addEventListener('click', (event) => {
                 const target = event.target;
                 const tokenInput = target.closest('#gridTokenInput');
@@ -781,8 +751,8 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             });
         }
         render() {
-            return (this.$render("i-hstack", { class: "custom-border", width: '100%', verticalAlignment: "center" },
-                this.$render("i-vstack", { gap: '0.5rem', width: '100%', class: "custom-border", margin: { top: '0.5rem', bottom: '0.5rem' } },
+            return (this.$render("i-hstack", { width: '100%', height: "100%", border: { radius: 'inherit', style: 'none' }, verticalAlignment: "center" },
+                this.$render("i-vstack", { gap: '0.5rem', width: '100%', height: "100%", margin: { top: '0.5rem', bottom: '0.5rem' }, border: { radius: 'inherit', style: 'none' } },
                     this.$render("i-hstack", { id: "pnlTopSection", horizontalAlignment: 'space-between', verticalAlignment: 'center' },
                         this.$render("i-hstack", { id: "pnlTitle", gap: "4px" }),
                         this.$render("i-hstack", { id: "pnlBalance", horizontalAlignment: 'end', verticalAlignment: 'center', gap: '0.5rem', margin: { bottom: '0.5rem' }, opacity: 0.6 },
@@ -803,7 +773,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                                         bottom: '0.25rem',
                                         left: '0.5rem',
                                         right: '0.5rem',
-                                    }, onClick: this.onButtonClicked })),
+                                    }, grid: { horizontalAlignment: 'stretch' }, onClick: this.onButtonClicked })),
                             this.$render("token-select", { id: "cbToken", width: "100%", onSelectToken: this.onSelectFn }),
                             this.$render("i-scom-token-modal", { id: "mdToken", width: "100%", onSelectToken: this.onSelectFn }))))));
         }

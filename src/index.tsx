@@ -11,7 +11,6 @@ import {
   Control,
   Panel,
   Button,
-  application,
   HStack
 } from '@ijstech/components'
 import { BigNumber } from '@ijstech/eth-contract'
@@ -22,6 +21,15 @@ import { ChainNativeTokenByChainId, tokenStore, assets, DefaultERC20Tokens, ITok
 import { TokenSelect } from './tokenSelect'
 import ScomTokenModal from '@scom/scom-token-modal'
 import { Wallet } from '@ijstech/eth-wallet'
+
+interface IModalStyles {
+  maxWidth?: number | string;
+  minWidth?: number | string;
+  background?: {
+    color?: string;
+    image?: string;
+  };
+}
 
 interface ScomTokenInputElement extends ControlElement {
   type?: IType;
@@ -42,6 +50,7 @@ interface ScomTokenInputElement extends ControlElement {
   placeholder?: string;
   address?: string;
   chainId?: number;
+  modalStyles?: IModalStyles;
   onInputAmountChanged?: (target: Control, event: Event) => void;
   onSelectToken?: (token: ITokenObject | undefined) => void;
   onSetMaxBalance?: () => void;
@@ -85,6 +94,7 @@ export default class ScomTokenInput extends Module {
   private _tokenDataListProp: ITokenObject[] = []
   private _withoutConnected: boolean = false;
   private _chainId: number;
+  private _modalStyles: IModalStyles;
   private tokenBalancesMap: any;
   public onChanged: (token?: ITokenObject) => void;
 
@@ -374,6 +384,25 @@ export default class ScomTokenInput extends Module {
       this.inputAmount.value = value
   }
 
+  get modalStyles() {
+    return this._modalStyles;
+  }
+  set modalStyles(value: IModalStyles) {
+    this._modalStyles = value;
+    if (value.maxWidth !== undefined) {
+      if (this.cbToken) this.cbToken.maxWidth = value.maxWidth;
+      if (this.mdToken) this.mdToken.maxWidth = value.maxWidth;
+    }
+    if (value.minWidth !== undefined) {
+      if (this.cbToken) this.cbToken.minWidth = value.minWidth;
+      if (this.mdToken) this.mdToken.minWidth = value.minWidth;
+    }
+    if (value.background) {
+      if (this.cbToken) this.cbToken.background = value.background;
+      if (this.mdToken) this.mdToken.background = value.background;
+    }
+  }
+
   private getBalance(token?: ITokenObject) {
     let tokenBalances = tokenStore?.getTokenBalancesByChainId(this._chainId)
     if (token && tokenBalances && Object.keys(tokenBalances).length) {
@@ -541,6 +570,8 @@ export default class ScomTokenInput extends Module {
     const value = this.getAttribute('value', true);
     if (value !== undefined) this.value = value;
     this.pnlTopSection.visible = this.isBalanceShown;
+    const modalStyles = this.getAttribute('modalStyles', true);
+    if (modalStyles) this.modalStyles = modalStyles;
     document.addEventListener('click', (event) => {
       const target = event.target as Control
       const tokenInput = target.closest('#gridTokenInput')
@@ -553,8 +584,16 @@ export default class ScomTokenInput extends Module {
 
   render() {
     return (
-      <i-hstack class="custom-border" width='100%' verticalAlignment="center">
-        <i-vstack gap='0.5rem' width='100%' class="custom-border" margin={{top: '0.5rem', bottom: '0.5rem'}}>
+      <i-hstack
+        width='100%' height="100%"
+        border={{radius: 'inherit', style: 'none'}}
+        verticalAlignment="center"
+      >
+        <i-vstack
+          gap='0.5rem' width='100%' height="100%"
+          margin={{top: '0.5rem', bottom: '0.5rem'}}
+          border={{radius: 'inherit', style: 'none'}}
+        >
           <i-hstack
             id="pnlTopSection"
             horizontalAlignment='space-between'
@@ -625,6 +664,7 @@ export default class ScomTokenInput extends Module {
                     left: '0.5rem',
                     right: '0.5rem',
                   }}
+                  grid={{ horizontalAlignment: 'stretch' }}
                   onClick={this.onButtonClicked}
                 ></i-button>
               </i-hstack>
