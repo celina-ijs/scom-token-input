@@ -195,6 +195,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             }
         }
         showModal() {
+            var _a;
             if (!this.enabled)
                 return;
             if (this.maxWidth) {
@@ -206,6 +207,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             }
             if (this.minWidth)
                 this.mdCbToken.minWidth = this.minWidth;
+            this.pnlList.maxHeight = (_a = this.maxHeight) !== null && _a !== void 0 ? _a : '300px';
             if (this.background)
                 this.mdCbToken.background = this.background;
             this.mdCbToken.visible = !this.mdCbToken.visible;
@@ -241,7 +243,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         render() {
             return (this.$render("i-panel", { id: "wrapper" },
                 this.$render("i-modal", { id: "mdCbToken", showBackdrop: false, width: '100%', minWidth: 'auto', closeOnBackdropClick: true, closeOnScrollChildFixed: true, isChildFixed: true, popupPlacement: 'bottomRight', padding: { top: 0, left: 0, right: 0, bottom: 0 }, class: `box-shadow` },
-                    this.$render("i-panel", { margin: { top: '0.25rem' }, padding: { top: 5, bottom: 5 }, overflow: { y: 'auto', x: 'hidden' }, maxWidth: '100%', maxHeight: 300, border: { radius: 2 }, class: tokenSelect_css_1.scrollbarStyle },
+                    this.$render("i-panel", { id: "pnlList", margin: { top: '0.25rem' }, padding: { top: 5, bottom: 5 }, overflow: { y: 'auto', x: 'hidden' }, maxWidth: '100%', border: { radius: 2 }, class: tokenSelect_css_1.scrollbarStyle },
                         this.$render("i-grid-layout", { id: 'gridTokenList', width: '100%', columnsPerRow: 1, templateRows: ['max-content'], class: 'is-combobox' })))));
         }
     };
@@ -508,10 +510,12 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         set isInputShown(value) {
             this._isInputShown = value;
-            if (this.inputAmount) {
+            if (this.inputAmount)
                 this.inputAmount.visible = value;
+            if (this.gridTokenInput)
                 this.gridTokenInput.templateColumns = value ? ['50%', 'auto'] : ['auto'];
-            }
+            if (this.pnlTokenBtn)
+                this.pnlTokenBtn.horizontalAlignment = value ? 'end' : 'start';
         }
         get isBalanceShown() {
             return this._isBalanceShown;
@@ -554,6 +558,12 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                     this.cbToken.minWidth = value.minWidth;
                 if (this.mdToken)
                     this.mdToken.minWidth = value.minWidth;
+            }
+            if (value.maxHeight !== undefined) {
+                if (this.cbToken)
+                    this.cbToken.maxHeight = value.maxHeight;
+                if (this.mdToken)
+                    this.mdToken.maxHeight = value.maxHeight;
             }
             if (value.background) {
                 if (this.cbToken)
@@ -738,6 +748,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             if (value !== undefined)
                 this.value = value;
             this.pnlTopSection.visible = this.isBalanceShown;
+            this.pnlTopSection.margin = { bottom: this.pnlTopSection.visible ? '0.5rem' : 0 };
             const modalStyles = this.getAttribute('modalStyles', true);
             if (modalStyles)
                 this.modalStyles = modalStyles;
@@ -752,16 +763,18 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         render() {
             return (this.$render("i-hstack", { width: '100%', height: "100%", border: { radius: 'inherit', style: 'none' }, verticalAlignment: "center" },
-                this.$render("i-vstack", { gap: '0.5rem', width: '100%', height: "100%", margin: { top: '0.5rem', bottom: '0.5rem' }, border: { radius: 'inherit', style: 'none' } },
-                    this.$render("i-hstack", { id: "pnlTopSection", horizontalAlignment: 'space-between', verticalAlignment: 'center' },
+                this.$render("i-vstack", { width: '100%', height: "100%", margin: { top: '0.5rem', bottom: '0.5rem' }, border: { radius: 'inherit', style: 'none' }, justifyContent: "center" },
+                    this.$render("i-hstack", { id: "pnlTopSection", horizontalAlignment: 'space-between', verticalAlignment: 'center', width: '100%' },
                         this.$render("i-hstack", { id: "pnlTitle", gap: "4px" }),
                         this.$render("i-hstack", { id: "pnlBalance", horizontalAlignment: 'end', verticalAlignment: 'center', gap: '0.5rem', margin: { bottom: '0.5rem' }, opacity: 0.6 },
                             this.$render("i-label", { caption: 'Balance:', font: { size: '0.875rem' } }),
                             this.$render("i-label", { id: 'lbBalance', font: { size: '0.875rem' }, caption: "0" }))),
-                    this.$render("i-grid-layout", { id: 'gridTokenInput', templateColumns: ['50%', 'auto'], background: { color: Theme.input.background }, font: { color: Theme.input.fontColor }, verticalAlignment: 'center', lineHeight: 1.5715, padding: { left: 11, right: 11 }, gap: { column: '0.5rem' } },
+                    this.$render("i-grid-layout", { id: 'gridTokenInput', templateColumns: ['50%', 'auto'], background: { color: Theme.input.background }, font: { color: Theme.input.fontColor }, verticalAlignment: 'center', lineHeight: 1.5715, width: '100%', 
+                        // padding={{ left: 11, right: 11 }}
+                        gap: { column: '0.5rem' } },
                         this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', class: index_css_1.inputStyle, font: { size: 'inherit' }, inputType: 'number', placeholder: 'Enter an amount', onChanged: this.onAmountChanged }),
                         this.$render("i-panel", { id: "pnlSelection", width: '100%', class: index_css_1.tokenSelectionStyle },
-                            this.$render("i-hstack", { verticalAlignment: "center", horizontalAlignment: "end", gap: "0.25rem" },
+                            this.$render("i-hstack", { id: "pnlTokenBtn", verticalAlignment: "center", gap: "0.25rem" },
                                 this.$render("i-button", { id: 'btnMax', visible: false, caption: 'Max', height: '100%', background: { color: Theme.colors.success.main }, font: { color: Theme.colors.success.contrastText }, padding: {
                                         top: '0.25rem',
                                         bottom: '0.25rem',

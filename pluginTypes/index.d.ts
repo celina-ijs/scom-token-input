@@ -50,6 +50,7 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         private mdCbToken;
         private gridTokenList;
         private wrapper;
+        private pnlList;
         onSelectToken: (token: ITokenObject | undefined) => void;
         constructor(parent?: Container, options?: any);
         get token(): ITokenObject | undefined;
@@ -77,6 +78,7 @@ declare module "@scom/scom-token-input" {
     interface IModalStyles {
         maxWidth?: number | string;
         minWidth?: number | string;
+        maxHeight?: number | string;
         background?: {
             color?: string;
             image?: string;
@@ -124,6 +126,7 @@ declare module "@scom/scom-token-input" {
         private btnMax;
         private btnToken;
         private pnlTopSection;
+        private pnlTokenBtn;
         private _type;
         private _token;
         private _title;

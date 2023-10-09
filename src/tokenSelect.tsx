@@ -40,6 +40,7 @@ export class TokenSelect extends Module {
   private mdCbToken: Modal
   private gridTokenList: GridLayout
   private wrapper: Panel
+  private pnlList: Panel
 
   onSelectToken: (token: ITokenObject|undefined) => void
 
@@ -145,6 +146,7 @@ export class TokenSelect extends Module {
       this.mdCbToken.maxWidth = wapperWidth < 230 ? 230 : wapperWidth;
     }
     if (this.minWidth) this.mdCbToken.minWidth = this.minWidth;
+    this.pnlList.maxHeight = this.maxHeight ?? '300px';
     if (this.background) this.mdCbToken.background = this.background;
     this.mdCbToken.visible = !this.mdCbToken.visible;
   }
@@ -195,11 +197,11 @@ export class TokenSelect extends Module {
           class={`box-shadow`}
         >
           <i-panel
+            id="pnlList"
             margin={{ top: '0.25rem' }}
             padding={{ top: 5, bottom: 5 }}
             overflow={{ y: 'auto', x: 'hidden' }}
             maxWidth='100%'
-            maxHeight={300}
             border={{ radius: 2 }}
             class={scrollbarStyle}
           >

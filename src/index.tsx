@@ -25,6 +25,7 @@ import { Wallet } from '@ijstech/eth-wallet'
 interface IModalStyles {
   maxWidth?: number | string;
   minWidth?: number | string;
+  maxHeight?: number | string;
   background?: {
     color?: string;
     image?: string;
@@ -78,6 +79,7 @@ export default class ScomTokenInput extends Module {
   private btnMax: Button
   private btnToken: Button;
   private pnlTopSection: HStack;
+  private pnlTokenBtn: HStack;
 
   private _type: IType
   private _token: ITokenObject;
@@ -351,10 +353,12 @@ export default class ScomTokenInput extends Module {
   }
   set isInputShown(value: boolean) {
     this._isInputShown = value;
-    if (this.inputAmount) {
-      this.inputAmount.visible = value
-      this.gridTokenInput.templateColumns = value ? ['50%', 'auto'] : ['auto']
-    }
+    if (this.inputAmount)
+      this.inputAmount.visible = value;
+    if (this.gridTokenInput)
+      this.gridTokenInput.templateColumns = value ? ['50%', 'auto'] : ['auto'];
+    if (this.pnlTokenBtn)
+      this.pnlTokenBtn.horizontalAlignment = value ? 'end' : 'start';
   }
 
   get isBalanceShown(): boolean {
@@ -362,7 +366,7 @@ export default class ScomTokenInput extends Module {
   }
   set isBalanceShown(value: boolean) {
     this._isBalanceShown = value;
-    if (this.pnlBalance) this.pnlBalance.visible = value
+    if (this.pnlBalance) this.pnlBalance.visible = value;
   }
 
   get amount(): string {
@@ -396,6 +400,10 @@ export default class ScomTokenInput extends Module {
     if (value.minWidth !== undefined) {
       if (this.cbToken) this.cbToken.minWidth = value.minWidth;
       if (this.mdToken) this.mdToken.minWidth = value.minWidth;
+    }
+    if (value.maxHeight !== undefined) {
+      if (this.cbToken) this.cbToken.maxHeight = value.maxHeight;
+      if (this.mdToken) this.mdToken.maxHeight = value.maxHeight;
     }
     if (value.background) {
       if (this.cbToken) this.cbToken.background = value.background;
@@ -570,6 +578,7 @@ export default class ScomTokenInput extends Module {
     const value = this.getAttribute('value', true);
     if (value !== undefined) this.value = value;
     this.pnlTopSection.visible = this.isBalanceShown;
+    this.pnlTopSection.margin = {bottom: this.pnlTopSection.visible ? '0.5rem' : 0};
     const modalStyles = this.getAttribute('modalStyles', true);
     if (modalStyles) this.modalStyles = modalStyles;
     document.addEventListener('click', (event) => {
@@ -590,14 +599,16 @@ export default class ScomTokenInput extends Module {
         verticalAlignment="center"
       >
         <i-vstack
-          gap='0.5rem' width='100%' height="100%"
+          width='100%' height="100%"
           margin={{top: '0.5rem', bottom: '0.5rem'}}
           border={{radius: 'inherit', style: 'none'}}
+          justifyContent="center"
         >
           <i-hstack
             id="pnlTopSection"
             horizontalAlignment='space-between'
             verticalAlignment='center'
+            width={'100%'}
           >
             <i-hstack id="pnlTitle" gap="4px"></i-hstack>
             <i-hstack
@@ -619,7 +630,8 @@ export default class ScomTokenInput extends Module {
             font={{ color: Theme.input.fontColor }}
             verticalAlignment='center'
             lineHeight={1.5715}
-            padding={{ left: 11, right: 11 }}
+            width={'100%'}
+            // padding={{ left: 11, right: 11 }}
             gap={{ column: '0.5rem' }}
           >
             <i-input
@@ -633,7 +645,7 @@ export default class ScomTokenInput extends Module {
               onChanged={this.onAmountChanged}
             ></i-input>
             <i-panel id="pnlSelection" width='100%' class={tokenSelectionStyle}>
-              <i-hstack verticalAlignment="center" horizontalAlignment="end" gap="0.25rem">
+              <i-hstack id="pnlTokenBtn" verticalAlignment="center" gap="0.25rem">
                 <i-button
                   id='btnMax'
                   visible={false}
