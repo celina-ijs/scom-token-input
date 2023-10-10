@@ -147,7 +147,7 @@ export class TokenSelect extends Module {
     }
     if (this.minWidth) this.mdCbToken.minWidth = this.minWidth;
     this.pnlList.maxHeight = this.maxHeight ?? '300px';
-    if (this.background) this.mdCbToken.background = this.background;
+    if (this.background?.color) this.mdCbToken.background.color = this.background.color;
     this.mdCbToken.visible = !this.mdCbToken.visible;
   }
 

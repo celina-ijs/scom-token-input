@@ -11,16 +11,19 @@ import {
   Control,
   Panel,
   Button,
-  HStack
+  HStack,
+  IconName
 } from '@ijstech/components'
 import { BigNumber } from '@ijstech/eth-contract'
-import customStyle, { buttonStyle, inputStyle, tokenSelectionStyle } from './index.css'
+import customStyle, { buttonStyle } from './index.css'
 import { IType } from './global/index'
 import { formatNumber } from './utils/index'
 import { ChainNativeTokenByChainId, tokenStore, assets, DefaultERC20Tokens, ITokenObject } from '@scom/scom-token-list'
 import { TokenSelect } from './tokenSelect'
 import ScomTokenModal from '@scom/scom-token-modal'
 import { Wallet } from '@ijstech/eth-wallet'
+
+const Theme = Styles.Theme.ThemeVars;
 
 interface IModalStyles {
   maxWidth?: number | string;
@@ -30,6 +33,27 @@ interface IModalStyles {
     color?: string;
     image?: string;
   };
+}
+interface IButtonStyles extends ControlElement {
+  caption?: string;
+  icon?: any;
+  rightIcon?: any;
+}
+const defaultTokenProps = {
+  id: 'btnToken',
+  height: '100%',
+  caption: 'Select Token',
+  rightIcon: {width: 14, height: 14, name: 'angle-down' as IconName},
+  border: {radius: 0},
+  background: {color: 'transparent'},
+  font: {color: Theme.input.fontColor},
+  padding: {
+    top: '0.25rem',
+    bottom: '0.25rem',
+    left: '0.5rem',
+    right: '0.5rem',
+  },
+  class: buttonStyle
 }
 
 interface ScomTokenInputElement extends ControlElement {
@@ -52,11 +76,11 @@ interface ScomTokenInputElement extends ControlElement {
   address?: string;
   chainId?: number;
   modalStyles?: IModalStyles;
+  tokenButtonStyles?: IButtonStyles;
   onInputAmountChanged?: (target: Control, event: Event) => void;
   onSelectToken?: (token: ITokenObject | undefined) => void;
   onSetMaxBalance?: () => void;
 }
-const Theme = Styles.Theme.ThemeVars
 
 declare global {
   namespace JSX {
@@ -97,15 +121,16 @@ export default class ScomTokenInput extends Module {
   private _withoutConnected: boolean = false;
   private _chainId: number;
   private _modalStyles: IModalStyles;
+  private _tokenButtonStyles: IButtonStyles;
   private tokenBalancesMap: any;
-  public onChanged: (token?: ITokenObject) => void;
-
-  onInputAmountChanged: (target: Control, event: Event) => void
   private _onSelectToken: (token: ITokenObject | undefined) => void;
-  onSetMaxBalance: () => void
+  public onChanged: (token?: ITokenObject) => void;
+  public onInputAmountChanged: (target: Control, event: Event) => void
+  public onSetMaxBalance: () => void
 
   constructor(parent?: Container, options?: ScomTokenInputElement) {
     super(parent, options);
+    this.onButtonClicked = this.onButtonClicked.bind(this);
   }
 
   static async create(options?: ScomTokenInputElement, parent?: Container) {
@@ -411,6 +436,17 @@ export default class ScomTokenInput extends Module {
     }
   }
 
+  get tokenButtonStyles() {
+    return this._tokenButtonStyles;
+  }
+  set tokenButtonStyles(value: IButtonStyles) {
+    this._tokenButtonStyles = value;
+    if (!this.btnToken) return;
+    let tokenBtnProps = value ? {...defaultTokenProps, ...value} : {...defaultTokenProps};
+    this.btnToken = new Button(this.pnlTokenBtn, tokenBtnProps);
+    this.btnToken.onClick = this.onButtonClicked;
+  }
+
   private getBalance(token?: ITokenObject) {
     let tokenBalances = tokenStore?.getTokenBalancesByChainId(this._chainId)
     if (token && tokenBalances && Object.keys(tokenBalances).length) {
@@ -550,6 +586,11 @@ export default class ScomTokenInput extends Module {
   init() {
     this.classList.add(customStyle)
     super.init()
+    const tokenButtonStyles = this.getAttribute('tokenButtonStyles', true);
+    if (tokenButtonStyles) this._tokenButtonStyles = tokenButtonStyles;
+    let tokenBtnProps = tokenButtonStyles ? {...defaultTokenProps, ...tokenButtonStyles} : {...defaultTokenProps};
+    this.btnToken = new Button(this.pnlTokenBtn, tokenBtnProps);
+    this.btnToken.onClick = this.onButtonClicked;
     this.onInputAmountChanged = this.getAttribute('onInputAmountChanged', true) || this.onInputAmountChanged
     this.onSetMaxBalance = this.getAttribute('onSetMaxBalance', true) || this.onSetMaxBalance
     this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken
@@ -628,23 +669,24 @@ export default class ScomTokenInput extends Module {
             templateColumns={['50%', 'auto']}
             background={{ color: Theme.input.background }}
             font={{ color: Theme.input.fontColor }}
+            border={{radius: 'inherit', style: 'none'}}
             verticalAlignment='center'
             lineHeight={1.5715}
             width={'100%'}
-            // padding={{ left: 11, right: 11 }}
             gap={{ column: '0.5rem' }}
           >
             <i-input
               id='inputAmount'
               width='100%'
               height='100%'
-              class={inputStyle}
               font={{size: 'inherit'}}
               inputType='number'
+              padding={{left: 0, right: 0, top: 0, bottom: 0}}
+              border={{style: 'none'}}
               placeholder='Enter an amount'
               onChanged={this.onAmountChanged}
             ></i-input>
-            <i-panel id="pnlSelection" width='100%' class={tokenSelectionStyle}>
+            <i-panel id="pnlSelection" width='100%'>
               <i-hstack id="pnlTokenBtn" verticalAlignment="center" gap="0.25rem">
                 <i-button
                   id='btnMax'
@@ -661,7 +703,7 @@ export default class ScomTokenInput extends Module {
                   }}
                   onClick={() => this.onSetMax()}
                 />
-                <i-button
+                {/* <i-button
                   id='btnToken'
                   class={`${buttonStyle}`}
                   height='100%'
@@ -676,9 +718,8 @@ export default class ScomTokenInput extends Module {
                     left: '0.5rem',
                     right: '0.5rem',
                   }}
-                  grid={{ horizontalAlignment: 'stretch' }}
                   onClick={this.onButtonClicked}
-                ></i-button>
+                ></i-button> */}
               </i-hstack>
               <token-select
                 id="cbToken"
