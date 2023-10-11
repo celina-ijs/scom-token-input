@@ -249,9 +249,6 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this._tokenDataListProp = [];
             this._withoutConnected = false;
             this.sortToken = (a, b, asc) => {
-                if (a.balance != b.balance) {
-                    return asc ? a.balance - b.balance : b.balance - a.balance;
-                }
                 if (a.symbol.toLowerCase() < b.symbol.toLowerCase()) {
                     return -1;
                 }

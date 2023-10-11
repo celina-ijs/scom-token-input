@@ -215,9 +215,6 @@ export default class ScomTokenInput extends Module {
   }
 
   private sortToken = (a: any, b: any, asc?: boolean) => {
-    if (a.balance != b.balance) {
-      return asc ? a.balance - b.balance : b.balance - a.balance
-    }
     if (a.symbol.toLowerCase() < b.symbol.toLowerCase()) {
       return -1
     }
