@@ -7,38 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 define("@scom/scom-token-input/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.buttonStyle = exports.tokenSelectionStyle = exports.inputStyle = exports.markdownStyle = exports.imageStyle = void 0;
-    const Theme = components_1.Styles.Theme.ThemeVars;
-    exports.imageStyle = components_1.Styles.style({
-        $nest: {
-            '&>img': {
-                maxWidth: 'unset',
-                maxHeight: 'unset',
-                borderRadius: 4
-            }
-        }
-    });
-    exports.markdownStyle = components_1.Styles.style({
-        overflowWrap: 'break-word'
-    });
-    exports.inputStyle = components_1.Styles.style({
-        $nest: {
-            '> input': {
-                background: 'transparent',
-                border: 0,
-                padding: 0,
-                color: Theme.input.fontColor,
-                fontSize: 'inherit'
-            }
-        }
-    });
-    exports.tokenSelectionStyle = components_1.Styles.style({
-        $nest: {
-            'i-button.token-button': {
-                justifyContent: 'start'
-            }
-        }
-    });
+    exports.buttonStyle = void 0;
     exports.buttonStyle = components_1.Styles.style({
         boxShadow: 'none',
         whiteSpace: 'nowrap',
@@ -49,19 +18,12 @@ define("@scom/scom-token-input/index.css.ts", ["require", "exports", "@ijstech/c
             '#gridTokenInput': {
                 boxShadow: 'none',
                 outline: 'none',
-                borderRadius: 'inherit',
-                border: 'inherit',
                 transition: 'all .5s ease-in'
             },
             '#gridTokenInput.focus-style': {
             // border: `1px solid ${Theme.colors.primary.main}`,
             // boxShadow: '0 0 0 2px rgba(87, 75, 144, .2)'
-            },
-            // '.custom-border': {
-            //   border: 'none',
-            //   borderRadius: 'inherit',
-            //   height: '100%'
-            // }
+            }
         }
     });
 });
@@ -195,7 +157,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             }
         }
         showModal() {
-            var _a;
+            var _a, _b;
             if (!this.enabled)
                 return;
             if (this.maxWidth) {
@@ -208,8 +170,8 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             if (this.minWidth)
                 this.mdCbToken.minWidth = this.minWidth;
             this.pnlList.maxHeight = (_a = this.maxHeight) !== null && _a !== void 0 ? _a : '300px';
-            if (this.background)
-                this.mdCbToken.background = this.background;
+            if ((_b = this.background) === null || _b === void 0 ? void 0 : _b.color)
+                this.mdCbToken.background.color = this.background.color;
             this.mdCbToken.visible = !this.mdCbToken.visible;
         }
         hideModal() {
@@ -256,6 +218,22 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_5.Styles.Theme.ThemeVars;
+    const defaultTokenProps = {
+        id: 'btnToken',
+        height: '100%',
+        caption: 'Select Token',
+        rightIcon: { width: 14, height: 14, name: 'angle-down' },
+        border: { radius: 0 },
+        background: { color: 'transparent' },
+        font: { color: Theme.input.fontColor },
+        padding: {
+            top: '0.25rem',
+            bottom: '0.25rem',
+            left: '0.5rem',
+            right: '0.5rem',
+        },
+        class: index_css_1.buttonStyle
+    };
     let ScomTokenInput = class ScomTokenInput extends components_5.Module {
         constructor(parent, options) {
             super(parent, options);
@@ -282,6 +260,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 }
                 return 0;
             };
+            this.onButtonClicked = this.onButtonClicked.bind(this);
         }
         static async create(options, parent) {
             let self = new this(parent, options);
@@ -572,6 +551,17 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                     this.mdToken.background = value.background;
             }
         }
+        get tokenButtonStyles() {
+            return this._tokenButtonStyles;
+        }
+        set tokenButtonStyles(value) {
+            this._tokenButtonStyles = value;
+            if (!this.btnToken)
+                return;
+            let tokenBtnProps = value ? Object.assign(Object.assign({}, defaultTokenProps), value) : Object.assign({}, defaultTokenProps);
+            this.btnToken = new components_5.Button(this.pnlTokenBtn, tokenBtnProps);
+            this.btnToken.onClick = this.onButtonClicked;
+        }
         getBalance(token) {
             var _a;
             let tokenBalances = scom_token_list_2.tokenStore === null || scom_token_list_2.tokenStore === void 0 ? void 0 : scom_token_list_2.tokenStore.getTokenBalancesByChainId(this._chainId);
@@ -716,6 +706,12 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         init() {
             this.classList.add(index_css_1.default);
             super.init();
+            const tokenButtonStyles = this.getAttribute('tokenButtonStyles', true);
+            if (tokenButtonStyles)
+                this._tokenButtonStyles = tokenButtonStyles;
+            let tokenBtnProps = tokenButtonStyles ? Object.assign(Object.assign({}, defaultTokenProps), tokenButtonStyles) : Object.assign({}, defaultTokenProps);
+            this.btnToken = new components_5.Button(this.pnlTokenBtn, tokenBtnProps);
+            this.btnToken.onClick = this.onButtonClicked;
             this.onInputAmountChanged = this.getAttribute('onInputAmountChanged', true) || this.onInputAmountChanged;
             this.onSetMaxBalance = this.getAttribute('onSetMaxBalance', true) || this.onSetMaxBalance;
             this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken;
@@ -769,24 +765,16 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                         this.$render("i-hstack", { id: "pnlBalance", horizontalAlignment: 'end', verticalAlignment: 'center', gap: '0.5rem', margin: { bottom: '0.5rem' }, opacity: 0.6 },
                             this.$render("i-label", { caption: 'Balance:', font: { size: '0.875rem' } }),
                             this.$render("i-label", { id: 'lbBalance', font: { size: '0.875rem' }, caption: "0" }))),
-                    this.$render("i-grid-layout", { id: 'gridTokenInput', templateColumns: ['50%', 'auto'], background: { color: Theme.input.background }, font: { color: Theme.input.fontColor }, verticalAlignment: 'center', lineHeight: 1.5715, width: '100%', 
-                        // padding={{ left: 11, right: 11 }}
-                        gap: { column: '0.5rem' } },
-                        this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', class: index_css_1.inputStyle, font: { size: 'inherit' }, inputType: 'number', placeholder: 'Enter an amount', onChanged: this.onAmountChanged }),
-                        this.$render("i-panel", { id: "pnlSelection", width: '100%', class: index_css_1.tokenSelectionStyle },
+                    this.$render("i-grid-layout", { id: 'gridTokenInput', templateColumns: ['50%', 'auto'], background: { color: Theme.input.background }, font: { color: Theme.input.fontColor }, border: { radius: 'inherit', style: 'none' }, verticalAlignment: 'center', lineHeight: 1.5715, width: '100%', gap: { column: '0.5rem' } },
+                        this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', font: { size: 'inherit' }, inputType: 'number', padding: { left: 0, right: 0, top: 0, bottom: 0 }, border: { style: 'none' }, placeholder: 'Enter an amount', onChanged: this.onAmountChanged }),
+                        this.$render("i-panel", { id: "pnlSelection", width: '100%' },
                             this.$render("i-hstack", { id: "pnlTokenBtn", verticalAlignment: "center", gap: "0.25rem" },
                                 this.$render("i-button", { id: 'btnMax', visible: false, caption: 'Max', height: '100%', background: { color: Theme.colors.success.main }, font: { color: Theme.colors.success.contrastText }, padding: {
                                         top: '0.25rem',
                                         bottom: '0.25rem',
                                         left: '0.5rem',
                                         right: '0.5rem',
-                                    }, onClick: () => this.onSetMax() }),
-                                this.$render("i-button", { id: 'btnToken', class: `${index_css_1.buttonStyle}`, height: '100%', caption: 'Select Token', rightIcon: { width: 14, height: 14, name: 'angle-down' }, border: { radius: 0 }, background: { color: 'transparent' }, font: { color: Theme.input.fontColor }, padding: {
-                                        top: '0.25rem',
-                                        bottom: '0.25rem',
-                                        left: '0.5rem',
-                                        right: '0.5rem',
-                                    }, grid: { horizontalAlignment: 'stretch' }, onClick: this.onButtonClicked })),
+                                    }, onClick: () => this.onSetMax() })),
                             this.$render("token-select", { id: "cbToken", width: "100%", onSelectToken: this.onSelectFn }),
                             this.$render("i-scom-token-modal", { id: "mdToken", width: "100%", onSelectToken: this.onSelectFn }))))));
         }

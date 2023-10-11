@@ -1,9 +1,5 @@
 /// <amd-module name="@scom/scom-token-input/index.css.ts" />
 declare module "@scom/scom-token-input/index.css.ts" {
-    export const imageStyle: string;
-    export const markdownStyle: string;
-    export const inputStyle: string;
-    export const tokenSelectionStyle: string;
     export const buttonStyle: string;
     const _default: string;
     export default _default;
@@ -84,6 +80,11 @@ declare module "@scom/scom-token-input" {
             image?: string;
         };
     }
+    interface IButtonStyles extends ControlElement {
+        caption?: string;
+        icon?: any;
+        rightIcon?: any;
+    }
     interface ScomTokenInputElement extends ControlElement {
         type?: IType;
         title?: string;
@@ -104,6 +105,7 @@ declare module "@scom/scom-token-input" {
         address?: string;
         chainId?: number;
         modalStyles?: IModalStyles;
+        tokenButtonStyles?: IButtonStyles;
         onInputAmountChanged?: (target: Control, event: Event) => void;
         onSelectToken?: (token: ITokenObject | undefined) => void;
         onSetMaxBalance?: () => void;
@@ -143,10 +145,11 @@ declare module "@scom/scom-token-input" {
         private _withoutConnected;
         private _chainId;
         private _modalStyles;
+        private _tokenButtonStyles;
         private tokenBalancesMap;
+        private _onSelectToken;
         onChanged: (token?: ITokenObject) => void;
         onInputAmountChanged: (target: Control, event: Event) => void;
-        private _onSelectToken;
         onSetMaxBalance: () => void;
         constructor(parent?: Container, options?: ScomTokenInputElement);
         static create(options?: ScomTokenInputElement, parent?: Container): Promise<ScomTokenInput>;
@@ -191,6 +194,8 @@ declare module "@scom/scom-token-input" {
         set value(value: any);
         get modalStyles(): IModalStyles;
         set modalStyles(value: IModalStyles);
+        get tokenButtonStyles(): IButtonStyles;
+        set tokenButtonStyles(value: IButtonStyles);
         private getBalance;
         private onSetMax;
         private onAmountChanged;
