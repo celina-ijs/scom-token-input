@@ -143,12 +143,11 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             this.gridTokenList.append(this.$render("i-label", { class: 'text-center', caption: 'No tokens found', margin: { top: '1rem', bottom: '1rem' } }));
         }
         async renderTokenList() {
-            var _a;
             if (!this.gridTokenList)
                 return;
             this.tokenMap = new Map();
             this.gridTokenList.clearInnerHTML();
-            if ((_a = this.tokenList) === null || _a === void 0 ? void 0 : _a.length) {
+            if (this.tokenList?.length) {
                 const tokenItems = this.tokenList.map((token) => this.renderToken(token));
                 this.gridTokenList.append(...tokenItems);
             }
@@ -157,7 +156,6 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             }
         }
         showModal() {
-            var _a, _b;
             if (!this.enabled)
                 return;
             if (this.maxWidth) {
@@ -169,8 +167,8 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             }
             if (this.minWidth)
                 this.mdCbToken.minWidth = this.minWidth;
-            this.pnlList.maxHeight = (_a = this.maxHeight) !== null && _a !== void 0 ? _a : '300px';
-            if ((_b = this.background) === null || _b === void 0 ? void 0 : _b.color)
+            this.pnlList.maxHeight = this.maxHeight ?? '300px';
+            if (this.background?.color)
                 this.mdCbToken.background.color = this.background.color;
             this.mdCbToken.visible = !this.mdCbToken.visible;
         }
@@ -189,7 +187,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             this.token = token;
             this.setActive(token);
             if (this.onSelectToken)
-                this.onSelectToken(Object.assign({}, token));
+                this.onSelectToken({ ...token });
             this.hideModal();
         }
         init() {
@@ -283,39 +281,36 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         //   this.pnlTopSection.visible = this.isBalanceShown && !!this.title;
         // }
         get tokenDataListProp() {
-            var _a;
-            return (_a = this._tokenDataListProp) !== null && _a !== void 0 ? _a : [];
+            return this._tokenDataListProp ?? [];
         }
         set tokenDataListProp(value) {
-            this._tokenDataListProp = value !== null && value !== void 0 ? value : [];
+            this._tokenDataListProp = value ?? [];
             if (this.type === 'button') {
                 if (this.mdToken)
                     this.mdToken.tokenDataListProp = this.tokenDataListProp;
             }
         }
         get tokenListByChainId() {
-            var _a, _b;
             let list = [];
             const propList = this.tokenDataListProp.filter(f => !f.chainId || f.chainId === this.chainId);
             const nativeToken = scom_token_list_2.ChainNativeTokenByChainId[this.chainId];
             const tokens = scom_token_list_2.DefaultERC20Tokens[this.chainId];
             for (const token of propList) {
-                const tokenAddress = (_a = token.address) === null || _a === void 0 ? void 0 : _a.toLowerCase();
-                if (!tokenAddress || tokenAddress === ((_b = nativeToken === null || nativeToken === void 0 ? void 0 : nativeToken.symbol) === null || _b === void 0 ? void 0 : _b.toLowerCase())) {
+                const tokenAddress = token.address?.toLowerCase();
+                if (!tokenAddress || tokenAddress === nativeToken?.symbol?.toLowerCase()) {
                     if (nativeToken)
-                        list.push(Object.assign(Object.assign({}, nativeToken), { chainId: this.chainId }));
+                        list.push({ ...nativeToken, chainId: this.chainId });
                 }
                 else {
-                    const tokenObj = tokens.find(v => { var _a; return ((_a = v.address) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === tokenAddress; });
+                    const tokenObj = tokens.find(v => v.address?.toLowerCase() === tokenAddress);
                     if (tokenObj)
-                        list.push(Object.assign(Object.assign({}, token), { chainId: this.chainId }));
+                        list.push({ ...token, chainId: this.chainId });
                 }
             }
             return list;
         }
         get tokenDataList() {
-            var _a;
-            let tokenList = ((_a = this.tokenListByChainId) === null || _a === void 0 ? void 0 : _a.length) ? this.tokenListByChainId : scom_token_list_2.tokenStore.getTokenList(this.chainId);
+            let tokenList = this.tokenListByChainId?.length ? this.tokenListByChainId : scom_token_list_2.tokenStore.getTokenList(this.chainId);
             if (this.tokenDataListProp && this.tokenDataListProp.length) {
                 tokenList = this.tokenDataListProp;
             }
@@ -323,10 +318,9 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.tokenBalancesMap = scom_token_list_2.tokenStore.getTokenBalancesByChainId(this._chainId) || {};
             }
             return tokenList.map((token) => {
-                var _a;
-                const tokenObject = Object.assign({}, token);
+                const tokenObject = { ...token };
                 const nativeToken = scom_token_list_2.ChainNativeTokenByChainId[this.chainId];
-                if ((nativeToken === null || nativeToken === void 0 ? void 0 : nativeToken.symbol) && token.symbol === nativeToken.symbol) {
+                if (nativeToken?.symbol && token.symbol === nativeToken.symbol) {
                     Object.assign(tokenObject, { isNative: true });
                 }
                 if (!eth_wallet_1.Wallet.getClientInstance().isConnected) {
@@ -336,7 +330,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 }
                 else if (this.tokenBalancesMap) {
                     Object.assign(tokenObject, {
-                        balance: this.tokenBalancesMap[((_a = token.address) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || token.symbol] || 0,
+                        balance: this.tokenBalancesMap[token.address?.toLowerCase() || token.symbol] || 0,
                     });
                 }
                 return tokenObject;
@@ -349,8 +343,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this._onSelectToken = callback;
         }
         get type() {
-            var _a;
-            return (_a = this._type) !== null && _a !== void 0 ? _a : 'button';
+            return this._type ?? 'button';
         }
         set type(value) {
             if (value === this._type)
@@ -361,8 +354,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             // this.onRefresh()
         }
         get title() {
-            var _a;
-            return (_a = this._title) !== null && _a !== void 0 ? _a : '';
+            return this._title ?? '';
         }
         set title(value) {
             this._title = value;
@@ -394,7 +386,6 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.updateTokenUI();
         }
         set address(value) {
-            var _a, _b;
             if (!value) {
                 this.token = null;
                 return;
@@ -402,11 +393,11 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             const tokenAddress = value.toLowerCase();
             let tokenObj = null;
             if (tokenAddress.startsWith('0x')) {
-                tokenObj = (_a = scom_token_list_2.DefaultERC20Tokens[this.chainId]) === null || _a === void 0 ? void 0 : _a.find(v => { var _a; return ((_a = v.address) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === tokenAddress; });
+                tokenObj = scom_token_list_2.DefaultERC20Tokens[this.chainId]?.find(v => v.address?.toLowerCase() === tokenAddress);
             }
             else {
                 const nativeToken = scom_token_list_2.ChainNativeTokenByChainId[this.chainId];
-                tokenObj = ((_b = nativeToken === null || nativeToken === void 0 ? void 0 : nativeToken.symbol) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === tokenAddress ? nativeToken : null;
+                tokenObj = nativeToken?.symbol?.toLowerCase() === tokenAddress ? nativeToken : null;
             }
             this.token = tokenObj;
         }
@@ -505,11 +496,10 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             return this.inputAmount.value;
         }
         get placeholder() {
-            var _a, _b;
-            return (_b = (_a = this.inputAmount) === null || _a === void 0 ? void 0 : _a.placeholder) !== null && _b !== void 0 ? _b : 'Enter an amount';
+            return this.inputAmount?.placeholder ?? 'Enter an amount';
         }
         set placeholder(value) {
-            this.inputAmount.placeholder = value !== null && value !== void 0 ? value : 'Enter an amount';
+            this.inputAmount.placeholder = value ?? 'Enter an amount';
         }
         get value() {
             return this.inputAmount.value;
@@ -555,16 +545,15 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this._tokenButtonStyles = value;
             if (!this.btnToken)
                 return;
-            let tokenBtnProps = value ? Object.assign(Object.assign({}, defaultTokenProps), value) : Object.assign({}, defaultTokenProps);
+            let tokenBtnProps = value ? { ...defaultTokenProps, ...value } : { ...defaultTokenProps };
             this.btnToken = new components_5.Button(this.pnlTokenBtn, tokenBtnProps);
             this.btnToken.onClick = this.onButtonClicked;
         }
         getBalance(token) {
-            var _a;
-            let tokenBalances = scom_token_list_2.tokenStore === null || scom_token_list_2.tokenStore === void 0 ? void 0 : scom_token_list_2.tokenStore.getTokenBalancesByChainId(this._chainId);
+            let tokenBalances = scom_token_list_2.tokenStore?.getTokenBalancesByChainId(this._chainId);
             if (token && tokenBalances && Object.keys(tokenBalances).length) {
                 const address = (token.address || '').toLowerCase();
-                let balance = address ? ((_a = tokenBalances[address]) !== null && _a !== void 0 ? _a : 0) : (tokenBalances[token.symbol] || 0);
+                let balance = address ? (tokenBalances[address] ?? 0) : (tokenBalances[token.symbol] || 0);
                 return balance;
             }
             return 0;
@@ -589,7 +578,6 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             return super._handleFocus(event);
         }
         async renderTokenList(init) {
-            var _a;
             if (this.type === 'combobox') {
                 if (!this.cbToken)
                     return;
@@ -600,7 +588,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                     this.token = null;
                 }
                 this.cbToken.visible = true;
-                if (init && ((_a = this.cbToken.tokenList) === null || _a === void 0 ? void 0 : _a.length) && this.tokenDataList.length) {
+                if (init && this.cbToken.tokenList?.length && this.tokenDataList.length) {
                     const token = this.cbToken.tokenList[0];
                     const tokenData = this.tokenDataList[0];
                     if (JSON.stringify(token) !== JSON.stringify(tokenData) || this.cbToken.tokenList.length !== this.tokenDataList.length) {
@@ -629,13 +617,12 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             this.updateTokenButton();
         }
         async updateBalance() {
-            var _a;
             if (!this.lbBalance)
                 return;
             if (!this.lbBalance.isConnected)
                 await this.lbBalance.ready();
             if (this.token) {
-                const symbol = ((_a = this.token) === null || _a === void 0 ? void 0 : _a.symbol) || '';
+                const symbol = this.token?.symbol || '';
                 const balance = this.getBalance(this.token);
                 this.lbBalance.caption = `${(0, index_1.formatNumber)(balance, 6)} ${symbol}`;
             }
@@ -656,20 +643,17 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         updateTokenButton() {
             if (!this.btnToken)
                 return;
-            let token = this.token ? Object.assign({}, this.token) : undefined;
+            let token = this.token ? { ...this.token } : undefined;
             if (!token)
-                token = (this.tokenDataList || []).find((v) => {
-                    var _a, _b;
-                    return (v.address && v.address == ((_a = this.token) === null || _a === void 0 ? void 0 : _a.address)) ||
-                        v.symbol == ((_b = this.token) === null || _b === void 0 ? void 0 : _b.symbol);
-                });
+                token = (this.tokenDataList || []).find((v) => (v.address && v.address == this.token?.address) ||
+                    v.symbol == this.token?.symbol);
             if (token) {
                 const tokenIconPath = scom_token_list_2.assets.tokenPath(token, this.chainId);
                 this.btnToken.caption = `<i-hstack verticalAlignment="center" gap="0.5rem">
           <i-panel>
             <i-image width=${24} height=${24} url="${tokenIconPath}" fallbackUrl="${scom_token_list_2.assets.fallbackUrl}"></i-image>
           </i-panel>
-          <i-label caption="${(token === null || token === void 0 ? void 0 : token.symbol) || ''}"></i-label>
+          <i-label caption="${token?.symbol || ''}"></i-label>
         </i-hstack>`;
                 this.btnMax.visible = this.isBtnMaxShown;
             }
@@ -706,7 +690,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             const tokenButtonStyles = this.getAttribute('tokenButtonStyles', true);
             if (tokenButtonStyles)
                 this._tokenButtonStyles = tokenButtonStyles;
-            let tokenBtnProps = tokenButtonStyles ? Object.assign(Object.assign({}, defaultTokenProps), tokenButtonStyles) : Object.assign({}, defaultTokenProps);
+            let tokenBtnProps = tokenButtonStyles ? { ...defaultTokenProps, ...tokenButtonStyles } : { ...defaultTokenProps };
             this.btnToken = new components_5.Button(this.pnlTokenBtn, tokenBtnProps);
             this.btnToken.onClick = this.onButtonClicked;
             this.onInputAmountChanged = this.getAttribute('onInputAmountChanged', true) || this.onInputAmountChanged;
