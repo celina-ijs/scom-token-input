@@ -167,7 +167,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             }
             if (this.minWidth)
                 this.mdCbToken.minWidth = this.minWidth;
-            this.pnlList.maxHeight = this.maxHeight ?? '300px';
+            this.pnlList.maxHeight = !this.maxHeight ? '300px' : this.maxHeight;
             if (this.background?.color)
                 this.mdCbToken.background.color = this.background.color;
             this.mdCbToken.visible = !this.mdCbToken.visible;
