@@ -73,7 +73,7 @@ export class TokenSelect extends Module {
   }
 
   private renderToken(token: ITokenObject) {
-    const tokenIconPath = assets.tokenPath(token, this.chainId)
+    const tokenIconPath = token.logoURI || assets.tokenPath(token, this.chainId)
     const isActive = this.token && (token.address === this.token.address || token.symbol === this.token.symbol);
     if (isActive) this.currentToken = token.address || token.symbol;
     const tokenElm = (

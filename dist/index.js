@@ -125,7 +125,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             this._chainId = value;
         }
         renderToken(token) {
-            const tokenIconPath = scom_token_list_1.assets.tokenPath(token, this.chainId);
+            const tokenIconPath = token.logoURI || scom_token_list_1.assets.tokenPath(token, this.chainId);
             const isActive = this.token && (token.address === this.token.address || token.symbol === this.token.symbol);
             if (isActive)
                 this.currentToken = token.address || token.symbol;
@@ -648,7 +648,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 token = (this.tokenDataList || []).find((v) => (v.address && v.address == this.token?.address) ||
                     v.symbol == this.token?.symbol);
             if (token) {
-                const tokenIconPath = scom_token_list_2.assets.tokenPath(token, this.chainId);
+                const tokenIconPath = token.logoURI || scom_token_list_2.assets.tokenPath(token, this.chainId);
                 this.btnToken.caption = `<i-hstack verticalAlignment="center" gap="0.5rem">
           <i-panel>
             <i-image width=${24} height=${24} url="${tokenIconPath}" fallbackUrl="${scom_token_list_2.assets.fallbackUrl}"></i-image>
