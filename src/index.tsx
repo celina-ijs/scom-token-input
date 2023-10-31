@@ -543,7 +543,7 @@ export default class ScomTokenInput extends Module {
           v.symbol == this.token?.symbol
       )
     if (token) {
-      const tokenIconPath = assets.tokenPath(token, this.chainId)
+      const tokenIconPath = token.logoURI ||assets.tokenPath(token, this.chainId)
       this.btnToken.caption = `<i-hstack verticalAlignment="center" gap="0.5rem">
           <i-panel>
             <i-image width=${24} height=${24} url="${tokenIconPath}" fallbackUrl="${assets.fallbackUrl}"></i-image>
