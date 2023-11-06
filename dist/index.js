@@ -89,6 +89,9 @@ define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijs
             },
             '.pointer': {
                 cursor: 'pointer'
+            },
+            'i-input > input': {
+                background: 'transparent'
             }
         }
     });
@@ -97,11 +100,13 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.TokenSelect = void 0;
+    const Theme = components_4.Styles.Theme.ThemeVars;
     let TokenSelect = class TokenSelect extends components_4.Module {
         constructor(parent, options) {
             super(parent, options);
             this.tokenMap = new Map();
             this.currentToken = '';
+            this.filterValue = '';
         }
         get token() {
             return this._token;
@@ -116,13 +121,23 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         }
         set tokenList(value) {
             this._tokenList = value;
-            this.renderTokenList();
         }
         get chainId() {
             return this._chainId;
         }
         set chainId(value) {
             this._chainId = value;
+        }
+        get tokenDataListFiltered() {
+            let tokenList = this.tokenList || [];
+            if (tokenList.length && this.filterValue) {
+                tokenList = tokenList.filter((token) => {
+                    return token.symbol.toLowerCase().includes(this.filterValue) ||
+                        token.name.toLowerCase().includes(this.filterValue) ||
+                        token.address?.toLowerCase() === this.filterValue;
+                });
+            }
+            return tokenList;
         }
         renderToken(token) {
             const tokenIconPath = token.logoURI || scom_token_list_1.assets.tokenPath(token, this.chainId);
@@ -147,8 +162,9 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
                 return;
             this.tokenMap = new Map();
             this.gridTokenList.clearInnerHTML();
-            if (this.tokenList?.length) {
-                const tokenItems = this.tokenList.map((token) => this.renderToken(token));
+            const tokenList = this.tokenDataListFiltered;
+            if (tokenList?.length) {
+                const tokenItems = tokenList.map((token) => this.renderToken(token));
                 this.gridTokenList.append(...tokenItems);
             }
             else {
@@ -163,7 +179,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             }
             else {
                 const wapperWidth = this.wrapper.offsetWidth;
-                this.mdCbToken.maxWidth = wapperWidth < 230 ? 230 : wapperWidth;
+                this.mdCbToken.maxWidth = wapperWidth < 240 ? 240 : wapperWidth;
             }
             if (this.minWidth)
                 this.mdCbToken.minWidth = this.minWidth;
@@ -190,6 +206,17 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
                 this.onSelectToken({ ...token });
             this.hideModal();
         }
+        onSearch() {
+            const value = this.edtSearch.value.toLowerCase();
+            if (this.filterValue === value)
+                return;
+            this.filterValue = value;
+            this.renderTokenList();
+        }
+        onOpenModal() {
+            this.edtSearch.value = this.filterValue = '';
+            this.renderTokenList();
+        }
         init() {
             this.classList.add(tokenSelect_css_1.default);
             super.init();
@@ -202,9 +229,14 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         }
         render() {
             return (this.$render("i-panel", { id: "wrapper" },
-                this.$render("i-modal", { id: "mdCbToken", showBackdrop: false, width: '100%', minWidth: 'auto', closeOnBackdropClick: true, closeOnScrollChildFixed: true, isChildFixed: true, popupPlacement: 'bottomRight', padding: { top: 0, left: 0, right: 0, bottom: 0 }, class: `box-shadow` },
-                    this.$render("i-panel", { id: "pnlList", margin: { top: '0.25rem' }, padding: { top: 5, bottom: 5 }, overflow: { y: 'auto', x: 'hidden' }, maxWidth: '100%', border: { radius: 2 }, class: tokenSelect_css_1.scrollbarStyle },
-                        this.$render("i-grid-layout", { id: 'gridTokenList', width: '100%', columnsPerRow: 1, templateRows: ['max-content'], class: 'is-combobox' })))));
+                this.$render("i-modal", { id: "mdCbToken", showBackdrop: false, width: '100%', minWidth: 'auto', closeOnBackdropClick: true, closeOnScrollChildFixed: true, isChildFixed: true, popupPlacement: 'bottomRight', padding: { top: 0, left: 0, right: 0, bottom: 0 }, class: `box-shadow`, onOpen: this.onOpenModal.bind(this) },
+                    this.$render("i-panel", null,
+                        this.$render("i-panel", { position: 'relative', stack: { grow: '1' }, border: { bottom: { width: 1, style: 'solid', color: Theme.divider } } },
+                            this.$render("i-hstack", { position: 'absolute', height: "100%", verticalAlignment: 'center', padding: { left: '0.5rem' } },
+                                this.$render("i-icon", { width: 14, height: 14, name: "search", fill: Theme.text.primary })),
+                            this.$render("i-input", { id: "edtSearch", width: "100%", height: 40, border: { width: 0 }, padding: { top: '0.25rem', right: '0.75rem', bottom: '0.25rem', left: '1.9375rem' }, background: { color: 'transparent' }, placeholder: 'Search name or paste address', onKeyUp: this.onSearch.bind(this) })),
+                        this.$render("i-panel", { id: "pnlList", margin: { top: '0.25rem' }, padding: { top: 5, bottom: 5 }, overflow: { y: 'auto', x: 'hidden' }, maxWidth: '100%', border: { radius: 2 }, class: tokenSelect_css_1.scrollbarStyle },
+                            this.$render("i-grid-layout", { id: 'gridTokenList', width: '100%', columnsPerRow: 1, templateRows: ['max-content'], class: 'is-combobox' }))))));
         }
     };
     TokenSelect = __decorate([

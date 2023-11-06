@@ -45,6 +45,9 @@ export default Styles.style({
     },
     '.pointer': {
       cursor: 'pointer'
+    },
+    'i-input > input': {
+      background: 'transparent'
     }
   }
 })

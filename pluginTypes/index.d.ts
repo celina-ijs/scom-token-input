@@ -43,7 +43,9 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         private _chainId;
         private tokenMap;
         private currentToken;
+        private filterValue;
         private mdCbToken;
+        private edtSearch;
         private gridTokenList;
         private wrapper;
         private pnlList;
@@ -55,6 +57,7 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         set tokenList(value: Array<ITokenObject>);
         get chainId(): number;
         set chainId(value: number | undefined);
+        private get tokenDataListFiltered();
         private renderToken;
         private clearTokenList;
         private renderTokenList;
@@ -62,6 +65,8 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         hideModal(): void;
         private setActive;
         private onSelect;
+        private onSearch;
+        private onOpenModal;
         init(): void;
         render(): any;
     }
