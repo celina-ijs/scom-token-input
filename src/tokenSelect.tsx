@@ -6,7 +6,9 @@ import {
   Container,
   GridLayout,
   HStack,
-  Panel
+  Panel,
+  Input,
+  Styles
 } from '@ijstech/components'
 import { assets, ITokenObject } from '@scom/scom-token-list';
 import customStyle, {
@@ -14,11 +16,13 @@ import customStyle, {
   scrollbarStyle
 } from './tokenSelect.css'
 
+const Theme = Styles.Theme.ThemeVars;
+
 interface TokenSelectElement extends ControlElement {
   chainId?: number;
   token?: ITokenObject;
   tokenList?: ITokenObject[];
-  onSelectToken?: (token: ITokenObject|undefined) => void;
+  onSelectToken?: (token: ITokenObject | undefined) => void;
 }
 
 declare global {
@@ -36,13 +40,15 @@ export class TokenSelect extends Module {
   private _chainId: number;
   private tokenMap: Map<string, HStack> = new Map()
   private currentToken: string = ''
+  private filterValue: string = '';
 
   private mdCbToken: Modal
+  private edtSearch: Input;
   private gridTokenList: GridLayout
   private wrapper: Panel
   private pnlList: Panel
 
-  onSelectToken: (token: ITokenObject|undefined) => void
+  onSelectToken: (token: ITokenObject | undefined) => void
 
   constructor(parent?: Container, options?: any) {
     super(parent, options)
@@ -60,8 +66,7 @@ export class TokenSelect extends Module {
     return this._tokenList
   }
   set tokenList(value: Array<ITokenObject>) {
-    this._tokenList = value
-    this.renderTokenList()
+    this._tokenList = value;
   }
 
   get chainId(): number {
@@ -70,6 +75,18 @@ export class TokenSelect extends Module {
 
   set chainId(value: number | undefined) {
     this._chainId = value;
+  }
+
+  private get tokenDataListFiltered(): ITokenObject[] {
+    let tokenList: ITokenObject[] = this.tokenList || [];
+    if (tokenList.length && this.filterValue) {
+      tokenList = tokenList.filter((token: ITokenObject) => {
+        return token.symbol.toLowerCase().includes(this.filterValue) ||
+          token.name.toLowerCase().includes(this.filterValue) ||
+          token.address?.toLowerCase() === this.filterValue;
+      });
+    }
+    return tokenList;
   }
 
   private renderToken(token: ITokenObject) {
@@ -126,9 +143,10 @@ export class TokenSelect extends Module {
   private async renderTokenList() {
     if (!this.gridTokenList) return;
     this.tokenMap = new Map();
-    this.gridTokenList.clearInnerHTML()
-    if (this.tokenList?.length) {
-      const tokenItems = this.tokenList.map((token: ITokenObject) =>
+    this.gridTokenList.clearInnerHTML();
+    const tokenList = this.tokenDataListFiltered;
+    if (tokenList?.length) {
+      const tokenItems = tokenList.map((token: ITokenObject) =>
         this.renderToken(token)
       )
       this.gridTokenList.append(...tokenItems)
@@ -143,7 +161,7 @@ export class TokenSelect extends Module {
       this.mdCbToken.maxWidth = this.maxWidth;
     } else {
       const wapperWidth = this.wrapper.offsetWidth;
-      this.mdCbToken.maxWidth = wapperWidth < 230 ? 230 : wapperWidth;
+      this.mdCbToken.maxWidth = wapperWidth < 240 ? 240 : wapperWidth;
     }
     if (this.minWidth) this.mdCbToken.minWidth = this.minWidth;
     this.pnlList.maxHeight = !this.maxHeight ? '300px' : this.maxHeight;
@@ -171,6 +189,18 @@ export class TokenSelect extends Module {
     this.hideModal()
   }
 
+  private onSearch() {
+    const value = this.edtSearch.value.toLowerCase();
+    if (this.filterValue === value) return;
+    this.filterValue = value;
+    this.renderTokenList();
+  }
+
+  private onOpenModal() {
+    this.edtSearch.value = this.filterValue = '';
+    this.renderTokenList();
+  }
+
   init() {
     this.classList.add(customStyle)
     super.init()
@@ -193,25 +223,43 @@ export class TokenSelect extends Module {
           closeOnScrollChildFixed={true}
           isChildFixed={true}
           popupPlacement='bottomRight'
-          padding={{top: 0, left: 0, right: 0, bottom: 0}}
+          padding={{ top: 0, left: 0, right: 0, bottom: 0 }}
           class={`box-shadow`}
+          onOpen={this.onOpenModal.bind(this)}
         >
-          <i-panel
-            id="pnlList"
-            margin={{ top: '0.25rem' }}
-            padding={{ top: 5, bottom: 5 }}
-            overflow={{ y: 'auto', x: 'hidden' }}
-            maxWidth='100%'
-            border={{ radius: 2 }}
-            class={scrollbarStyle}
-          >
-            <i-grid-layout
-              id='gridTokenList'
-              width='100%'
-              columnsPerRow={1}
-              templateRows={['max-content']}
-              class={'is-combobox'}
-            ></i-grid-layout>
+          <i-panel>
+            <i-panel position='relative' stack={{ grow: '1' }} border={{ bottom: { width: 1, style: 'solid', color: Theme.divider } }}>
+              <i-hstack position='absolute' height="100%" verticalAlignment='center' padding={{ left: '0.5rem' }}>
+                <i-icon width={14} height={14} name="search" fill={Theme.text.primary}></i-icon>
+              </i-hstack>
+              <i-input
+                id="edtSearch"
+                width="100%"
+                height={40}
+                border={{ width: 0 }}
+                padding={{top: '0.25rem', right: '0.75rem', bottom: '0.25rem', left: '1.9375rem'}}
+                background={{ color: 'transparent' }}
+                placeholder='Search name or paste address'
+                onKeyUp={this.onSearch.bind(this)}
+              ></i-input>
+            </i-panel>
+            <i-panel
+              id="pnlList"
+              margin={{ top: '0.25rem' }}
+              padding={{ top: 5, bottom: 5 }}
+              overflow={{ y: 'auto', x: 'hidden' }}
+              maxWidth='100%'
+              border={{ radius: 2 }}
+              class={scrollbarStyle}
+            >
+              <i-grid-layout
+                id='gridTokenList'
+                width='100%'
+                columnsPerRow={1}
+                templateRows={['max-content']}
+                class={'is-combobox'}
+              ></i-grid-layout>
+            </i-panel>
           </i-panel>
         </i-modal>
       </i-panel>
