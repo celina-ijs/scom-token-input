@@ -70,7 +70,7 @@ define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijs
     exports.tokenStyle = components_3.Styles.style({
         $nest: {
             '&:hover': {
-                background: Theme.action.hover
+                background: Theme.action.hoverBackground
             },
             '&.is-selected': {
                 background: Theme.action.active,
