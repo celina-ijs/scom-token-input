@@ -70,7 +70,7 @@ define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijs
     exports.tokenStyle = components_3.Styles.style({
         $nest: {
             '&:hover': {
-                background: Theme.action.hover
+                background: Theme.action.hoverBackground
             },
             '&.is-selected': {
                 background: Theme.action.active,
@@ -121,6 +121,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         }
         set tokenList(value) {
             this._tokenList = value;
+            this.renderTokenList();
         }
         get chainId() {
             return this._chainId;
@@ -181,6 +182,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
                 const wapperWidth = this.wrapper.offsetWidth;
                 this.mdCbToken.maxWidth = wapperWidth < 240 ? 240 : wapperWidth;
             }
+            this.mdCbToken.style.width = "100%";
             if (this.minWidth)
                 this.mdCbToken.minWidth = this.minWidth;
             this.pnlList.maxHeight = !this.maxHeight ? '300px' : this.maxHeight;
@@ -215,7 +217,6 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         }
         onOpenModal() {
             this.edtSearch.value = this.filterValue = '';
-            this.renderTokenList();
         }
         init() {
             this.classList.add(tokenSelect_css_1.default);
@@ -229,7 +230,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         }
         render() {
             return (this.$render("i-panel", { id: "wrapper" },
-                this.$render("i-modal", { id: "mdCbToken", showBackdrop: false, width: '100%', minWidth: 'auto', closeOnBackdropClick: true, closeOnScrollChildFixed: true, isChildFixed: true, popupPlacement: 'bottomRight', padding: { top: 0, left: 0, right: 0, bottom: 0 }, class: `box-shadow`, onOpen: this.onOpenModal.bind(this) },
+                this.$render("i-modal", { id: "mdCbToken", showBackdrop: false, width: '100%', minWidth: 'auto', closeOnBackdropClick: true, popupPlacement: 'bottom', padding: { top: 0, left: 0, right: 0, bottom: 0 }, class: `box-shadow`, onOpen: this.onOpenModal.bind(this) },
                     this.$render("i-panel", null,
                         this.$render("i-panel", { position: 'relative', stack: { grow: '1' }, border: { bottom: { width: 1, style: 'solid', color: Theme.divider } } },
                             this.$render("i-hstack", { position: 'absolute', height: "100%", verticalAlignment: 'center', padding: { left: '0.5rem' } },

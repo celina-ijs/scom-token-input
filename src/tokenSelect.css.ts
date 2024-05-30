@@ -25,7 +25,7 @@ export const scrollbarStyle = Styles.style({
 export const tokenStyle = Styles.style({
   $nest: {
     '&:hover': {
-      background: Theme.action.hover
+      background: Theme.action.hoverBackground
     },
     '&.is-selected': {
       background: Theme.action.active,

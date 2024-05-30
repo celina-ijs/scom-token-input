@@ -67,6 +67,7 @@ export class TokenSelect extends Module {
   }
   set tokenList(value: Array<ITokenObject>) {
     this._tokenList = value;
+    this.renderTokenList();
   }
 
   get chainId(): number {
@@ -163,6 +164,7 @@ export class TokenSelect extends Module {
       const wapperWidth = this.wrapper.offsetWidth;
       this.mdCbToken.maxWidth = wapperWidth < 240 ? 240 : wapperWidth;
     }
+    this.mdCbToken.style.width = "100%";
     if (this.minWidth) this.mdCbToken.minWidth = this.minWidth;
     this.pnlList.maxHeight = !this.maxHeight ? '300px' : this.maxHeight;
     if (this.background?.color) this.mdCbToken.background.color = this.background.color;
@@ -198,7 +200,6 @@ export class TokenSelect extends Module {
 
   private onOpenModal() {
     this.edtSearch.value = this.filterValue = '';
-    this.renderTokenList();
   }
 
   init() {
@@ -220,9 +221,7 @@ export class TokenSelect extends Module {
           width='100%'
           minWidth={'auto'}
           closeOnBackdropClick={true}
-          closeOnScrollChildFixed={true}
-          isChildFixed={true}
-          popupPlacement='bottomRight'
+          popupPlacement='bottom'
           padding={{ top: 0, left: 0, right: 0, bottom: 0 }}
           class={`box-shadow`}
           onOpen={this.onOpenModal.bind(this)}
