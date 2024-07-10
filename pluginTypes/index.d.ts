@@ -44,6 +44,7 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         private tokenMap;
         private currentToken;
         private filterValue;
+        private _supportValidAddress;
         private mdCbToken;
         private edtSearch;
         private gridTokenList;
@@ -57,6 +58,8 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         set tokenList(value: Array<ITokenObject>);
         get chainId(): number;
         set chainId(value: number | undefined);
+        get supportValidAddress(): boolean;
+        set supportValidAddress(value: boolean);
         private get tokenDataListFiltered();
         private renderToken;
         private clearTokenList;
@@ -65,6 +68,7 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         hideModal(): void;
         private setActive;
         private onSelect;
+        private getTokenInfo;
         private onSearch;
         private onOpenModal;
         init(): void;
@@ -111,6 +115,7 @@ declare module "@scom/scom-token-input" {
         chainId?: number;
         modalStyles?: IModalStyles;
         tokenButtonStyles?: IButtonStyles;
+        supportValidAddress?: boolean;
         onInputAmountChanged?: (target: Control, event: Event) => void;
         onSelectToken?: (token: ITokenObject | undefined) => void;
         onSetMaxBalance?: () => void;
@@ -152,6 +157,7 @@ declare module "@scom/scom-token-input" {
         private _modalStyles;
         private _tokenButtonStyles;
         private tokenBalancesMap;
+        private _supportValidAddress;
         private _onSelectToken;
         onChanged: (token?: ITokenObject) => void;
         onInputAmountChanged: (target: Control, event: Event) => void;
@@ -192,6 +198,8 @@ declare module "@scom/scom-token-input" {
         set isInputShown(value: boolean);
         get isBalanceShown(): boolean;
         set isBalanceShown(value: boolean);
+        get supportValidAddress(): boolean;
+        set supportValidAddress(value: boolean);
         get amount(): string;
         get placeholder(): string;
         set placeholder(value: string);

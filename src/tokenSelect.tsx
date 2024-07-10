@@ -10,6 +10,7 @@ import {
   Input,
   Styles
 } from '@ijstech/components'
+import { Wallet } from '@ijstech/eth-wallet';
 import { assets, ITokenObject } from '@scom/scom-token-list';
 import customStyle, {
   tokenStyle,
@@ -41,6 +42,7 @@ export class TokenSelect extends Module {
   private tokenMap: Map<string, HStack> = new Map()
   private currentToken: string = ''
   private filterValue: string = '';
+  private _supportValidAddress: boolean = false;
 
   private mdCbToken: Modal
   private edtSearch: Input;
@@ -76,6 +78,13 @@ export class TokenSelect extends Module {
 
   set chainId(value: number | undefined) {
     this._chainId = value;
+  }
+
+  get supportValidAddress(): boolean {
+    return this._supportValidAddress;
+  }
+  set supportValidAddress(value: boolean) {
+    this._supportValidAddress = value;
   }
 
   private get tokenDataListFiltered(): ITokenObject[] {
@@ -141,12 +150,18 @@ export class TokenSelect extends Module {
     )
   }
 
-  private async renderTokenList() {
+  private async renderTokenList(isSearch: boolean = false) {
     if (!this.gridTokenList) return;
     this.tokenMap = new Map();
     this.gridTokenList.clearInnerHTML();
-    const tokenList = this.tokenDataListFiltered;
-    if (tokenList?.length) {
+    const tokenList = this.tokenDataListFiltered || [];
+    if (this.supportValidAddress && isSearch && !tokenList.length && this.filterValue) {
+      const token = await this.getTokenInfo(this.filterValue);
+      if (token) {
+        tokenList.push(token);
+      }
+    }
+    if (tokenList.length) {
       const tokenItems = tokenList.map((token: ITokenObject) =>
         this.renderToken(token)
       )
@@ -191,11 +206,33 @@ export class TokenSelect extends Module {
     this.hideModal()
   }
 
+  private async getTokenInfo(address: string) {
+    let token: ITokenObject;
+    const wallet = Wallet.getClientInstance();
+    await wallet.init();
+    wallet.chainId = this.chainId;
+    const isValidAddress = wallet.isAddress(address);
+    if (isValidAddress) {
+      const tokenAddress = wallet.toChecksumAddress(address);
+      const tokenInfo = await wallet.tokenInfo(tokenAddress);
+      if (tokenInfo?.symbol) {
+        token = {
+          chainId: this.chainId,
+          address: tokenAddress,
+          name: tokenInfo.name,
+          decimals: tokenInfo.decimals,
+          symbol: tokenInfo.symbol
+        }
+      }
+    }
+    return token;
+  }
+
   private onSearch() {
     const value = this.edtSearch.value.toLowerCase();
     if (this.filterValue === value) return;
     this.filterValue = value;
-    this.renderTokenList();
+    this.renderTokenList(true);
   }
 
   private onOpenModal() {
