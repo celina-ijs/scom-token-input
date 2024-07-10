@@ -77,6 +77,7 @@ interface ScomTokenInputElement extends ControlElement {
   chainId?: number;
   modalStyles?: IModalStyles;
   tokenButtonStyles?: IButtonStyles;
+  supportValidAddress?: boolean;
   onInputAmountChanged?: (target: Control, event: Event) => void;
   onSelectToken?: (token: ITokenObject | undefined) => void;
   onSetMaxBalance?: () => void;
@@ -123,6 +124,7 @@ export default class ScomTokenInput extends Module {
   private _modalStyles: IModalStyles;
   private _tokenButtonStyles: IButtonStyles;
   private tokenBalancesMap: any;
+  private _supportValidAddress: boolean = false;
   private _onSelectToken: (token: ITokenObject | undefined) => void;
   public onChanged: (token?: ITokenObject) => void;
   public onInputAmountChanged: (target: Control, event: Event) => void
@@ -391,6 +393,14 @@ export default class ScomTokenInput extends Module {
     if (this.pnlBalance) this.pnlBalance.visible = value;
   }
 
+  get supportValidAddress(): boolean {
+    return this._supportValidAddress;
+  }
+  set supportValidAddress(value: boolean) {
+    this._supportValidAddress = value;
+    if (this.cbToken) this.cbToken.supportValidAddress = value;
+  }
+
   get amount(): string {
     return this.inputAmount.value
   }
@@ -613,6 +623,8 @@ export default class ScomTokenInput extends Module {
     this.isInputShown = this.getAttribute('isInputShown', true, true)
     this.isBalanceShown = this.getAttribute('isBalanceShown', true, true)
     this.placeholder = this.getAttribute('placeholder', true);
+    const supportValidAddress = this.getAttribute('supportValidAddress', true);
+    if (supportValidAddress != null) this.supportValidAddress = supportValidAddress;
     const value = this.getAttribute('value', true);
     if (value !== undefined) this.value = value;
     this.pnlTopSection.visible = this.isBalanceShown;
