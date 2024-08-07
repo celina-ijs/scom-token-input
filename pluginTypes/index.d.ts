@@ -11,7 +11,9 @@ declare module "@scom/scom-token-input/global/index.ts" {
 /// <amd-module name="@scom/scom-token-input/utils/index.ts" />
 declare module "@scom/scom-token-input/utils/index.ts" {
     import { BigNumber } from "@ijstech/eth-wallet";
+    import { ITokenObject } from "@scom/scom-token-list";
     export const formatNumber: (value: number | string | BigNumber, decimals?: number) => string;
+    export const getTokenInfo: (address: string, chainId: number) => Promise<ITokenObject>;
 }
 /// <amd-module name="@scom/scom-token-input/tokenSelect.css.ts" />
 declare module "@scom/scom-token-input/tokenSelect.css.ts" {
@@ -68,7 +70,6 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         hideModal(): void;
         private setActive;
         private onSelect;
-        private getTokenInfo;
         private onSearch;
         private onOpenModal;
         init(): void;
@@ -141,6 +142,7 @@ declare module "@scom/scom-token-input" {
         private pnlTokenBtn;
         private _type;
         private _token;
+        private _address;
         private _title;
         private _isCommonShown;
         private _isSortBalanceShown;
@@ -177,6 +179,7 @@ declare module "@scom/scom-token-input" {
         set title(value: string | Control);
         get token(): ITokenObject | undefined;
         set token(value: ITokenObject | undefined);
+        get address(): string;
         set address(value: string);
         get chainId(): number | undefined;
         set chainId(value: number | undefined);
@@ -214,6 +217,7 @@ declare module "@scom/scom-token-input" {
         private onAmountChanged;
         private onToggleFocus;
         _handleFocus(event: Event): boolean;
+        private updateCustomToken;
         private renderTokenList;
         private updateTokenUI;
         private updateBalance;

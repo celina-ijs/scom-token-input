@@ -31,16 +31,38 @@ define("@scom/scom-token-input/global/index.ts", ["require", "exports"], functio
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("@scom/scom-token-input/utils/index.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
+define("@scom/scom-token-input/utils/index.ts", ["require", "exports", "@ijstech/components", "@ijstech/eth-wallet"], function (require, exports, components_2, eth_wallet_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.formatNumber = void 0;
+    exports.getTokenInfo = exports.formatNumber = void 0;
     const formatNumber = (value, decimals) => {
         const minValue = '0.0000001';
         const newValue = typeof value === 'object' ? value.toString() : value;
         return components_2.FormatUtils.formatNumber(newValue, { decimalFigures: decimals || 4, minValue });
     };
     exports.formatNumber = formatNumber;
+    const getTokenInfo = async (address, chainId) => {
+        let token;
+        const wallet = eth_wallet_1.Wallet.getClientInstance();
+        await wallet.init();
+        wallet.chainId = chainId;
+        const isValidAddress = wallet.isAddress(address);
+        if (isValidAddress) {
+            const tokenAddress = wallet.toChecksumAddress(address);
+            const tokenInfo = await wallet.tokenInfo(tokenAddress);
+            if (tokenInfo?.symbol) {
+                token = {
+                    chainId,
+                    address: tokenAddress,
+                    name: tokenInfo.name,
+                    decimals: tokenInfo.decimals,
+                    symbol: tokenInfo.symbol
+                };
+            }
+        }
+        return token;
+    };
+    exports.getTokenInfo = getTokenInfo;
 });
 define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_3) {
     "use strict";
@@ -96,7 +118,7 @@ define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijs
         }
     });
 });
-define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstech/components", "@ijstech/eth-wallet", "@scom/scom-token-list", "@scom/scom-token-input/tokenSelect.css.ts"], function (require, exports, components_4, eth_wallet_1, scom_token_list_1, tokenSelect_css_1) {
+define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-token-list", "@scom/scom-token-input/tokenSelect.css.ts", "@scom/scom-token-input/utils/index.ts"], function (require, exports, components_4, scom_token_list_1, tokenSelect_css_1, utils_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.TokenSelect = void 0;
@@ -172,7 +194,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             this.gridTokenList.clearInnerHTML();
             const tokenList = this.tokenDataListFiltered || [];
             if (this.supportValidAddress && isSearch && !tokenList.length && this.filterValue) {
-                const token = await this.getTokenInfo(this.filterValue);
+                const token = await (0, utils_1.getTokenInfo)(this.filterValue, this.chainId);
                 if (token) {
                     tokenList.push(token);
                 }
@@ -221,27 +243,6 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
                 this.onSelectToken({ ...token });
             this.hideModal();
         }
-        async getTokenInfo(address) {
-            let token;
-            const wallet = eth_wallet_1.Wallet.getClientInstance();
-            await wallet.init();
-            wallet.chainId = this.chainId;
-            const isValidAddress = wallet.isAddress(address);
-            if (isValidAddress) {
-                const tokenAddress = wallet.toChecksumAddress(address);
-                const tokenInfo = await wallet.tokenInfo(tokenAddress);
-                if (tokenInfo?.symbol) {
-                    token = {
-                        chainId: this.chainId,
-                        address: tokenAddress,
-                        name: tokenInfo.name,
-                        decimals: tokenInfo.decimals,
-                        symbol: tokenInfo.symbol
-                    };
-                }
-            }
-            return token;
-        }
         onSearch() {
             const value = this.edtSearch.value.toLowerCase();
             if (this.filterValue === value)
@@ -250,6 +251,8 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             this.renderTokenList(true);
         }
         onOpenModal() {
+            if (this.filterValue)
+                this.renderTokenList(true);
             this.edtSearch.value = this.filterValue = '';
         }
         init() {
@@ -453,21 +456,27 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.mdToken.token = value;
             this.updateTokenUI();
         }
+        get address() {
+            return this._address;
+        }
         set address(value) {
+            this._address = value;
             if (!value) {
                 this.token = null;
                 return;
             }
             const tokenAddress = value.toLowerCase();
             let tokenObj = null;
-            if (tokenAddress.startsWith('0x')) {
+            if (tokenAddress.startsWith('0x') && tokenAddress !== eth_contract_1.nullAddress) {
                 tokenObj = scom_token_list_2.DefaultERC20Tokens[this.chainId]?.find(v => v.address?.toLowerCase() === tokenAddress);
             }
             else {
                 const nativeToken = scom_token_list_2.ChainNativeTokenByChainId[this.chainId];
-                tokenObj = nativeToken?.symbol?.toLowerCase() === tokenAddress ? nativeToken : null;
+                tokenObj = (tokenAddress === eth_contract_1.nullAddress || nativeToken?.symbol?.toLowerCase() === tokenAddress) ? nativeToken : null;
             }
             this.token = tokenObj;
+            if (!tokenObj)
+                this.updateCustomToken();
         }
         get chainId() {
             return this._chainId;
@@ -629,7 +638,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             let tokenBalances = scom_token_list_2.tokenStore?.getTokenBalancesByChainId(this._chainId);
             if (token && tokenBalances && Object.keys(tokenBalances).length) {
                 const address = (token.address || '').toLowerCase();
-                let balance = address ? (tokenBalances[address] ?? 0) : (tokenBalances[token.symbol] || 0);
+                let balance = address ? (tokenBalances[address] ?? (token.balance || 0)) : (tokenBalances[token.symbol] || 0);
                 return balance;
             }
             return 0;
@@ -652,6 +661,17 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         _handleFocus(event) {
             this.onToggleFocus(true);
             return super._handleFocus(event);
+        }
+        async updateCustomToken() {
+            if (this.token || !this._address || !this.supportValidAddress || !this.chainId)
+                return;
+            const token = await (0, index_1.getTokenInfo)(this._address, this.chainId);
+            if (token) {
+                if (this.type === 'combobox' && this.cbToken && !this.cbToken.chainId) {
+                    this.cbToken.chainId = this.chainId;
+                }
+                this.token = token;
+            }
         }
         async renderTokenList(init) {
             if (this.type === 'combobox') {

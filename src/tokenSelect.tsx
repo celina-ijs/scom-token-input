@@ -16,6 +16,7 @@ import customStyle, {
   tokenStyle,
   scrollbarStyle
 } from './tokenSelect.css'
+import { getTokenInfo } from './utils';
 
 const Theme = Styles.Theme.ThemeVars;
 
@@ -156,7 +157,7 @@ export class TokenSelect extends Module {
     this.gridTokenList.clearInnerHTML();
     const tokenList = this.tokenDataListFiltered || [];
     if (this.supportValidAddress && isSearch && !tokenList.length && this.filterValue) {
-      const token = await this.getTokenInfo(this.filterValue);
+      const token = await getTokenInfo(this.filterValue, this.chainId);
       if (token) {
         tokenList.push(token);
       }
@@ -206,28 +207,6 @@ export class TokenSelect extends Module {
     this.hideModal()
   }
 
-  private async getTokenInfo(address: string) {
-    let token: ITokenObject;
-    const wallet = Wallet.getClientInstance();
-    await wallet.init();
-    wallet.chainId = this.chainId;
-    const isValidAddress = wallet.isAddress(address);
-    if (isValidAddress) {
-      const tokenAddress = wallet.toChecksumAddress(address);
-      const tokenInfo = await wallet.tokenInfo(tokenAddress);
-      if (tokenInfo?.symbol) {
-        token = {
-          chainId: this.chainId,
-          address: tokenAddress,
-          name: tokenInfo.name,
-          decimals: tokenInfo.decimals,
-          symbol: tokenInfo.symbol
-        }
-      }
-    }
-    return token;
-  }
-
   private onSearch() {
     const value = this.edtSearch.value.toLowerCase();
     if (this.filterValue === value) return;
@@ -236,6 +215,7 @@ export class TokenSelect extends Module {
   }
 
   private onOpenModal() {
+    if (this.filterValue) this.renderTokenList(true);
     this.edtSearch.value = this.filterValue = '';
   }
 
