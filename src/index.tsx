@@ -14,10 +14,10 @@ import {
   HStack,
   IconName
 } from '@ijstech/components'
-import { BigNumber } from '@ijstech/eth-contract'
+import { BigNumber, nullAddress } from '@ijstech/eth-contract'
 import customStyle, { buttonStyle } from './index.css'
 import { IType } from './global/index'
-import { formatNumber } from './utils/index'
+import { formatNumber, getTokenInfo } from './utils/index'
 import { ChainNativeTokenByChainId, tokenStore, assets, DefaultERC20Tokens, ITokenObject } from '@scom/scom-token-list'
 import { TokenSelect } from './tokenSelect'
 import ScomTokenModal from '@scom/scom-token-modal'
@@ -108,6 +108,7 @@ export default class ScomTokenInput extends Module {
 
   private _type: IType
   private _token: ITokenObject;
+  private _address: string;
   private _title: string | Control
   private _isCommonShown: boolean = false
   private _isSortBalanceShown: boolean = true
@@ -277,20 +278,26 @@ export default class ScomTokenInput extends Module {
     this.updateTokenUI();
   }
 
+  get address() {
+    return this._address;
+  }
+
   set address(value: string) {
+    this._address = value;
     if (!value) {
       this.token = null;
       return;
     }
     const tokenAddress = value.toLowerCase();
     let tokenObj = null;
-    if (tokenAddress.startsWith('0x')) {
+    if (tokenAddress.startsWith('0x') && tokenAddress !== nullAddress) {
       tokenObj = DefaultERC20Tokens[this.chainId]?.find(v => v.address?.toLowerCase() === tokenAddress);
     } else {
       const nativeToken = ChainNativeTokenByChainId[this.chainId];
-      tokenObj = nativeToken?.symbol?.toLowerCase() === tokenAddress ? nativeToken : null;
+      tokenObj = (tokenAddress === nullAddress || nativeToken?.symbol?.toLowerCase() === tokenAddress) ? nativeToken : null;
     }
     this.token = tokenObj;
+    if (!tokenObj) this.updateCustomToken();
   }
 
   get chainId() {
@@ -458,8 +465,8 @@ export default class ScomTokenInput extends Module {
     let tokenBalances = tokenStore?.getTokenBalancesByChainId(this._chainId)
     if (token && tokenBalances && Object.keys(tokenBalances).length) {
       const address = (token.address || '').toLowerCase();
-      let balance = address ? (tokenBalances[address] ?? 0) : (tokenBalances[token.symbol] || 0);
-      return balance
+      let balance = address ? (tokenBalances[address] ?? (token.balance || 0)) : (tokenBalances[token.symbol] || 0);
+      return balance;
     }
     return 0;
   }
@@ -483,6 +490,17 @@ export default class ScomTokenInput extends Module {
   _handleFocus(event: Event) {
     this.onToggleFocus(true)
     return super._handleFocus(event)
+  }
+
+  private async updateCustomToken() {
+    if (this.token || !this._address || !this.supportValidAddress || !this.chainId) return;
+    const token = await getTokenInfo(this._address, this.chainId);
+    if (token) {
+      if (this.type === 'combobox' && this.cbToken && !this.cbToken.chainId) {
+        this.cbToken.chainId = this.chainId;
+      }
+      this.token = token;
+    }
   }
 
   private async renderTokenList(init?: boolean) {
