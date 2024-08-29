@@ -44,6 +44,7 @@ export class TokenSelect extends Module {
   private filterValue: string = '';
   private _supportValidAddress: boolean = false;
   private _isCustomTokenShown: boolean = false;
+  private isFirstShown: boolean = true;
 
   private mdCbToken: Modal
   private edtSearch: Input;
@@ -199,6 +200,13 @@ export class TokenSelect extends Module {
     this.pnlList.maxHeight = !this.maxHeight ? '300px' : this.maxHeight;
     if (this.background?.color) this.mdCbToken.background.color = this.background.color;
     this.mdCbToken.visible = !this.mdCbToken.visible;
+    if (this.isFirstShown) {
+      this.isFirstShown = false;
+      this.mdCbToken.visible = false;
+      setTimeout(() => {
+          this.mdCbToken.visible = true;
+      });
+    }
   }
 
   hideModal() {

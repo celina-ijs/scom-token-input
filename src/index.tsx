@@ -311,6 +311,9 @@ export default class ScomTokenInput extends Module {
 
   set chainId(value: number | undefined) {
     this._chainId = value;
+    if (this.cbToken) {
+      this.cbToken.chainId = value;
+    }
   }
 
   get isCommonShown(): boolean {
