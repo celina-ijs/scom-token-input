@@ -55,6 +55,7 @@ declare module "@scom/scom-token-input/tokenSelect.tsx" {
         private filterValue;
         private _supportValidAddress;
         private _isCustomTokenShown;
+        private isFirstShown;
         private mdCbToken;
         private edtSearch;
         private gridTokenList;

@@ -139,6 +139,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             this.filterValue = '';
             this._supportValidAddress = false;
             this._isCustomTokenShown = false;
+            this.isFirstShown = true;
         }
         get token() {
             return this._token;
@@ -245,6 +246,13 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             if (this.background?.color)
                 this.mdCbToken.background.color = this.background.color;
             this.mdCbToken.visible = !this.mdCbToken.visible;
+            if (this.isFirstShown) {
+                this.isFirstShown = false;
+                this.mdCbToken.visible = false;
+                setTimeout(() => {
+                    this.mdCbToken.visible = true;
+                });
+            }
         }
         hideModal() {
             this.mdCbToken.visible = false;
@@ -510,6 +518,9 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         set chainId(value) {
             this._chainId = value;
+            if (this.cbToken) {
+                this.cbToken.chainId = value;
+            }
         }
         get isCommonShown() {
             return this._isCommonShown;
