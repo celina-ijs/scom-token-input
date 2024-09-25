@@ -202,10 +202,9 @@ export class TokenSelect extends Module {
     this.mdCbToken.visible = !this.mdCbToken.visible;
     if (this.isFirstShown) {
       this.isFirstShown = false;
-      this.mdCbToken.visible = false;
       setTimeout(() => {
-          this.mdCbToken.visible = true;
-      });
+          this.mdCbToken.refresh();
+      }, 1);
     }
   }
 
