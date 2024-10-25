@@ -713,6 +713,7 @@ export default class ScomTokenInput extends Module {
           <i-grid-layout
             id='gridTokenInput'
             templateColumns={['50%', 'auto']}
+            templateRows={['100%']}
             background={{ color: Theme.input.background }}
             font={{ color: Theme.input.fontColor }}
             border={{radius: 'inherit', style: 'none'}}
