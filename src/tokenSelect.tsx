@@ -16,6 +16,7 @@ import customStyle, {
   scrollbarStyle
 } from './tokenSelect.css'
 import { CUSTOM_TOKEN, getTokenInfo } from './utils';
+import translations from './translations.json';
 
 const Theme = Styles.Theme.ThemeVars;
 
@@ -153,7 +154,7 @@ export class TokenSelect extends Module {
     this.gridTokenList.append(
       <i-label
         class='text-center'
-        caption='No tokens found'
+        caption='$no_tokens_found'
         margin={{ top: '1rem', bottom: '1rem' }}
       />
     )
@@ -241,6 +242,7 @@ export class TokenSelect extends Module {
   }
 
   init() {
+    this.i18n.init({...translations});
     this.classList.add(customStyle)
     super.init()
     this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken
@@ -276,7 +278,7 @@ export class TokenSelect extends Module {
                 border={{ width: 0 }}
                 padding={{top: '0.25rem', right: '0.75rem', bottom: '0.25rem', left: '1.9375rem'}}
                 background={{ color: 'transparent' }}
-                placeholder='Search name or paste address'
+                placeholder='$search_name_or_paste_address'
                 onKeyUp={this.onSearch.bind(this)}
               ></i-input>
             </i-panel>

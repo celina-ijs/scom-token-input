@@ -126,7 +126,31 @@ define("@scom/scom-token-input/tokenSelect.css.ts", ["require", "exports", "@ijs
         }
     });
 });
-define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-token-list", "@scom/scom-token-input/tokenSelect.css.ts", "@scom/scom-token-input/utils/index.ts"], function (require, exports, components_4, scom_token_list_2, tokenSelect_css_1, utils_1) {
+define("@scom/scom-token-input/translations.json.ts", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    ///<amd-module name='@scom/scom-token-input/translations.json.ts'/> 
+    exports.default = {
+        "en": {
+            "no_tokens_found": "No tokens found",
+            "select_token": "Select Token",
+            "max": "Max",
+            "enter_an_amount": "Enter an amount",
+            "balance": "Balance:",
+            "search_name_or_paste_address": "Search name or paste address"
+        },
+        "zh-hant": {},
+        "vi": {
+            "no_tokens_found": "Không tìm thấy token",
+            "select_token": "Chọn Token",
+            "max": "Tối đa",
+            "enter_an_amount": "Nhập số tiền",
+            "balance": "Số dư:",
+            "search_name_or_paste_address": "Tìm kiếm tên hoặc địa chỉ"
+        }
+    };
+});
+define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-token-list", "@scom/scom-token-input/tokenSelect.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-input/translations.json.ts"], function (require, exports, components_4, scom_token_list_2, tokenSelect_css_1, utils_1, translations_json_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.TokenSelect = void 0;
@@ -201,7 +225,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
         }
         clearTokenList() {
             this.gridTokenList.clearInnerHTML();
-            this.gridTokenList.append(this.$render("i-label", { class: 'text-center', caption: 'No tokens found', margin: { top: '1rem', bottom: '1rem' } }));
+            this.gridTokenList.append(this.$render("i-label", { class: 'text-center', caption: '$no_tokens_found', margin: { top: '1rem', bottom: '1rem' } }));
         }
         async renderTokenList(isSearch = false) {
             if (!this.gridTokenList)
@@ -284,6 +308,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
             this.edtSearch.value = this.filterValue = '';
         }
         init() {
+            this.i18n.init({ ...translations_json_1.default });
             this.classList.add(tokenSelect_css_1.default);
             super.init();
             this.onSelectToken = this.getAttribute('onSelectToken', true) || this.onSelectToken;
@@ -300,7 +325,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
                         this.$render("i-panel", { position: 'relative', stack: { grow: '1' }, border: { bottom: { width: 1, style: 'solid', color: Theme.divider } } },
                             this.$render("i-hstack", { position: 'absolute', height: "100%", verticalAlignment: 'center', padding: { left: '0.5rem' } },
                                 this.$render("i-icon", { width: 14, height: 14, name: "search", fill: Theme.text.primary })),
-                            this.$render("i-input", { id: "edtSearch", width: "100%", height: 40, border: { width: 0 }, padding: { top: '0.25rem', right: '0.75rem', bottom: '0.25rem', left: '1.9375rem' }, background: { color: 'transparent' }, placeholder: 'Search name or paste address', onKeyUp: this.onSearch.bind(this) })),
+                            this.$render("i-input", { id: "edtSearch", width: "100%", height: 40, border: { width: 0 }, padding: { top: '0.25rem', right: '0.75rem', bottom: '0.25rem', left: '1.9375rem' }, background: { color: 'transparent' }, placeholder: '$search_name_or_paste_address', onKeyUp: this.onSearch.bind(this) })),
                         this.$render("i-panel", { id: "pnlList", margin: { top: '0.25rem' }, padding: { top: 5, bottom: 5 }, overflow: { y: 'auto', x: 'hidden' }, maxWidth: '100%', border: { radius: 2 }, class: tokenSelect_css_1.scrollbarStyle },
                             this.$render("i-grid-layout", { id: 'gridTokenList', width: '100%', columnsPerRow: 1, templateRows: ['max-content'], class: 'is-combobox' }))))));
         }
@@ -310,7 +335,7 @@ define("@scom/scom-token-input/tokenSelect.tsx", ["require", "exports", "@ijstec
     ], TokenSelect);
     exports.TokenSelect = TokenSelect;
 });
-define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "@ijstech/eth-contract", "@scom/scom-token-input/index.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-list", "@ijstech/eth-wallet"], function (require, exports, components_5, eth_contract_1, index_css_1, index_1, scom_token_list_3, eth_wallet_2) {
+define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "@ijstech/eth-contract", "@scom/scom-token-input/index.css.ts", "@scom/scom-token-input/utils/index.ts", "@scom/scom-token-list", "@ijstech/eth-wallet", "@scom/scom-token-input/translations.json.ts"], function (require, exports, components_5, eth_contract_1, index_css_1, index_1, scom_token_list_3, eth_wallet_2, translations_json_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.CUSTOM_TOKEN = void 0;
@@ -626,10 +651,10 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             return this.inputAmount.value;
         }
         get placeholder() {
-            return this.inputAmount?.placeholder ?? 'Enter an amount';
+            return this.inputAmount?.placeholder ?? '$enter_an_amount';
         }
         set placeholder(value) {
-            this.inputAmount.placeholder = value ?? 'Enter an amount';
+            this.inputAmount.placeholder = value ?? '$enter_an_amount';
         }
         get value() {
             return this.inputAmount.value;
@@ -799,7 +824,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                 this.btnMax.visible = this.isBtnMaxShown;
             }
             else {
-                this.btnToken.caption = 'Select Token';
+                this.btnToken.caption = '$select_token';
                 this.btnMax.visible = false;
             }
         }
@@ -829,6 +854,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         }
         init() {
             this.classList.add(index_css_1.default);
+            this.i18n.init({ ...translations_json_2.default });
             super.init();
             const tokenButtonStyles = this.getAttribute('tokenButtonStyles', true);
             if (tokenButtonStyles)
@@ -893,13 +919,13 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                     this.$render("i-hstack", { id: "pnlTopSection", horizontalAlignment: 'space-between', verticalAlignment: 'center', width: '100%' },
                         this.$render("i-hstack", { id: "pnlTitle", gap: "4px" }),
                         this.$render("i-hstack", { id: "pnlBalance", horizontalAlignment: 'end', verticalAlignment: 'center', gap: '0.5rem', margin: { bottom: '0.5rem' }, opacity: 0.6 },
-                            this.$render("i-label", { caption: 'Balance:', font: { size: '0.875rem' } }),
+                            this.$render("i-label", { caption: '$balance', font: { size: '0.875rem' } }),
                             this.$render("i-label", { id: 'lbBalance', font: { size: '0.875rem' }, caption: "0" }))),
                     this.$render("i-grid-layout", { id: 'gridTokenInput', templateColumns: ['50%', 'auto'], templateRows: ['100%'], background: { color: Theme.input.background }, font: { color: Theme.input.fontColor }, border: { radius: 'inherit', style: 'none' }, verticalAlignment: 'center', lineHeight: 1.5715, width: '100%', gap: { column: '0.5rem' } },
-                        this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', font: { size: 'inherit' }, inputType: 'number', padding: { left: 0, right: 0, top: 0, bottom: 0 }, border: { style: 'none' }, placeholder: 'Enter an amount', onChanged: this.onAmountChanged }),
+                        this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', font: { size: 'inherit' }, inputType: 'number', padding: { left: 0, right: 0, top: 0, bottom: 0 }, border: { style: 'none' }, placeholder: '$enter_an_amount', onChanged: this.onAmountChanged }),
                         this.$render("i-panel", { id: "pnlSelection", width: '100%' },
                             this.$render("i-hstack", { id: "pnlTokenBtn", verticalAlignment: "center", gap: "0.25rem" },
-                                this.$render("i-button", { id: 'btnMax', visible: false, caption: 'Max', height: '100%', background: { color: Theme.colors.success.main }, font: { color: Theme.colors.success.contrastText }, padding: {
+                                this.$render("i-button", { id: 'btnMax', visible: false, caption: '$max', height: '100%', background: { color: Theme.colors.success.main }, font: { color: Theme.colors.success.contrastText }, padding: {
                                         top: '0.25rem',
                                         bottom: '0.25rem',
                                         left: '0.5rem',

@@ -22,6 +22,8 @@ import { ChainNativeTokenByChainId, tokenStore, assets, DefaultERC20Tokens, ITok
 import { TokenSelect } from './tokenSelect'
 import ScomTokenModal from '@scom/scom-token-modal'
 import { Wallet } from '@ijstech/eth-wallet'
+import translations from './translations.json'
+
 export { CUSTOM_TOKEN };
 
 const Theme = Styles.Theme.ThemeVars;
@@ -429,10 +431,10 @@ export default class ScomTokenInput extends Module {
   }
 
   get placeholder() {
-    return this.inputAmount?.placeholder ?? 'Enter an amount'
+    return this.inputAmount?.placeholder ?? '$enter_an_amount'
   }
   set placeholder(value: string) {
-    this.inputAmount.placeholder = value ?? 'Enter an amount'
+    this.inputAmount.placeholder = value ?? '$enter_an_amount'
   }
 
   get value() {
@@ -596,7 +598,7 @@ export default class ScomTokenInput extends Module {
         </i-hstack>`
       this.btnMax.visible = this.isBtnMaxShown
     } else {
-      this.btnToken.caption = 'Select Token'
+      this.btnToken.caption = '$select_token'
       this.btnMax.visible = false
     }
   }
@@ -627,6 +629,7 @@ export default class ScomTokenInput extends Module {
 
   init() {
     this.classList.add(customStyle)
+    this.i18n.init({...translations})
     super.init()
     const tokenButtonStyles = this.getAttribute('tokenButtonStyles', true);
     if (tokenButtonStyles) this._tokenButtonStyles = tokenButtonStyles;
@@ -706,7 +709,7 @@ export default class ScomTokenInput extends Module {
               margin={{bottom: '0.5rem'}}
               opacity={0.6}
             >
-              <i-label caption='Balance:' font={{ size: '0.875rem' }}></i-label>
+              <i-label caption='$balance' font={{ size: '0.875rem' }}></i-label>
               <i-label id='lbBalance' font={{ size: '0.875rem' }} caption="0"></i-label>
             </i-hstack>
           </i-hstack>
@@ -730,7 +733,7 @@ export default class ScomTokenInput extends Module {
               inputType='number'
               padding={{left: 0, right: 0, top: 0, bottom: 0}}
               border={{style: 'none'}}
-              placeholder='Enter an amount'
+              placeholder='$enter_an_amount'
               onChanged={this.onAmountChanged}
             ></i-input>
             <i-panel id="pnlSelection" width='100%'>
@@ -738,7 +741,7 @@ export default class ScomTokenInput extends Module {
                 <i-button
                   id='btnMax'
                   visible={false}
-                  caption='Max'
+                  caption='$max'
                   height='100%'
                   background={{ color: Theme.colors.success.main }}
                   font={{ color: Theme.colors.success.contrastText }}
