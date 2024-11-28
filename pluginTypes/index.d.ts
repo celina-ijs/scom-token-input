@@ -29,6 +29,29 @@ declare module "@scom/scom-token-input/tokenSelect.css.ts" {
     const _default_1: string;
     export default _default_1;
 }
+/// <amd-module name="@scom/scom-token-input/translations.json.ts" />
+declare module "@scom/scom-token-input/translations.json.ts" {
+    const _default_2: {
+        en: {
+            no_tokens_found: string;
+            select_token: string;
+            max: string;
+            enter_an_amount: string;
+            balance: string;
+            search_name_or_paste_address: string;
+        };
+        "zh-hant": {};
+        vi: {
+            no_tokens_found: string;
+            select_token: string;
+            max: string;
+            enter_an_amount: string;
+            balance: string;
+            search_name_or_paste_address: string;
+        };
+    };
+    export default _default_2;
+}
 /// <amd-module name="@scom/scom-token-input/tokenSelect.tsx" />
 declare module "@scom/scom-token-input/tokenSelect.tsx" {
     import { Module, ControlElement, Container } from '@ijstech/components';
