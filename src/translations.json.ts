@@ -1,21 +1,26 @@
 export default {
   "en": {
-    "no_tokens_found": "No tokens found",
-    "select_token": "Select Token",
-    "max": "Max",
-    "enter_an_amount": "Enter an amount",
     "balance": "Balance:",
-    "search_name_or_paste_address": "Search name or paste address"
+    "enter_an_amount": "Enter an amount",
+    "max": "Max",
+    "no_tokens_found": "No tokens found",
+    "search_name_or_paste_address": "Search name or paste address",
+    "select_token": "Select Token"
   },
   "zh-hant": {
-
+    "balance": "餘額：",
+    "enter_an_amount": "輸入金額",
+    "max": "最大",
+    "no_tokens_found": "找不到代幣",
+    "search_name_or_paste_address": "搜索名稱或粘貼地址",
+    "select_token": "選擇代幣"
   },
   "vi": {
-    "no_tokens_found": "Không tìm thấy token",
-    "select_token": "Chọn Token",
-    "max": "Tối đa",
-    "enter_an_amount": "Nhập số tiền",
     "balance": "Số dư:",
-    "search_name_or_paste_address": "Tìm kiếm tên hoặc địa chỉ"
+    "enter_an_amount": "Nhập số tiền",
+    "max": "Tối đa",
+    "no_tokens_found": "Không tìm thấy token",
+    "search_name_or_paste_address": "Tìm kiếm tên hoặc địa chỉ",
+    "select_token": "Chọn Token"
   }
 }

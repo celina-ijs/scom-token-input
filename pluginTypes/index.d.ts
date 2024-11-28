@@ -33,21 +33,28 @@ declare module "@scom/scom-token-input/tokenSelect.css.ts" {
 declare module "@scom/scom-token-input/translations.json.ts" {
     const _default_2: {
         en: {
-            no_tokens_found: string;
-            select_token: string;
-            max: string;
-            enter_an_amount: string;
             balance: string;
+            enter_an_amount: string;
+            max: string;
+            no_tokens_found: string;
             search_name_or_paste_address: string;
+            select_token: string;
         };
-        "zh-hant": {};
-        vi: {
-            no_tokens_found: string;
-            select_token: string;
-            max: string;
-            enter_an_amount: string;
+        "zh-hant": {
             balance: string;
+            enter_an_amount: string;
+            max: string;
+            no_tokens_found: string;
             search_name_or_paste_address: string;
+            select_token: string;
+        };
+        vi: {
+            balance: string;
+            enter_an_amount: string;
+            max: string;
+            no_tokens_found: string;
+            search_name_or_paste_address: string;
+            select_token: string;
         };
     };
     export default _default_2;
