@@ -3,6 +3,7 @@ import { getMulticallInfoList } from '@scom/scom-multicall';
 import { INetwork, Wallet } from '@ijstech/eth-wallet';
 import getNetworkList from '@scom/scom-network-list';
 import ScomTokenInput from '@scom/scom-token-input'
+import { tokenStore } from '@scom/scom-token-list';
 @customModule
 export default class Module1 extends Module {
     private picker1: ScomTokenInput;
@@ -57,18 +58,27 @@ export default class Module1 extends Module {
             multicalls: application.store?.multicalls
         });
 
+        let wallet = Wallet.getClientInstance();
+        let chainId = await wallet.getChainId();
+        const tokenList = tokenStore.getTokenList(chainId);
+        console.log("init", chainId, tokenList);
+        
+        this.picker0.tokenDataListProp = tokenList;
+
         this.picker1 = new ScomTokenInput(undefined, {
             type: "combobox",
             title: 'Add funds',
             isBtnMaxShown: false,
             onSetMaxBalance: () => console.log('onSetMaxBalance'),
-            onSelectToken: (token: any) => console.log('on select token', token)
+            onSelectToken: (token: any) => console.log('on select token', token),
+            tokenDataListProp: tokenList
         })
         this.mainStack.appendChild(this.picker1);
 
         this.picker2 = await ScomTokenInput.create({
             type: 'combobox',
-            onSelectToken: (token: any) => console.log('on select token', token)
+            onSelectToken: (token: any) => console.log('on select token', token),
+            tokenDataListProp: tokenList
         })
         this.mainStack.appendChild(this.picker2);
 
