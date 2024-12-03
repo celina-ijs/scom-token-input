@@ -182,6 +182,7 @@ export default class ScomTokenInput extends Module {
     const propList = this.tokenDataListProp.filter(f => !f.chainId || f.chainId === this.chainId);
     const nativeToken = ChainNativeTokenByChainId[this.chainId];
     const tokens = DefaultERC20Tokens[this.chainId];
+    if (!tokens) return list;
     for (const token of propList) {
       const tokenAddress = token.address?.toLowerCase();
       if (!tokenAddress || tokenAddress === nativeToken?.symbol?.toLowerCase()) {
