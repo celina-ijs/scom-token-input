@@ -429,6 +429,8 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
             const propList = this.tokenDataListProp.filter(f => !f.chainId || f.chainId === this.chainId);
             const nativeToken = scom_token_list_3.ChainNativeTokenByChainId[this.chainId];
             const tokens = scom_token_list_3.DefaultERC20Tokens[this.chainId];
+            if (!tokens)
+                return list;
             for (const token of propList) {
                 const tokenAddress = token.address?.toLowerCase();
                 if (!tokenAddress || tokenAddress === nativeToken?.symbol?.toLowerCase()) {
