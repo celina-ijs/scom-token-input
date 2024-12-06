@@ -3,7 +3,14 @@ import { Styles } from '@ijstech/components';
 export const buttonStyle = Styles.style({
   boxShadow: 'none',
   whiteSpace: 'nowrap',
-  gap: '0.5rem'
+  gap: '0.5rem',
+  $nest: {
+    'span': {
+      display: 'inline-block',
+      marginRight: 'auto',
+      marginLeft: '0.5rem'
+    }
+  }
 })
 
 export default Styles.style({

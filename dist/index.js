@@ -11,7 +11,14 @@ define("@scom/scom-token-input/index.css.ts", ["require", "exports", "@ijstech/c
     exports.buttonStyle = components_1.Styles.style({
         boxShadow: 'none',
         whiteSpace: 'nowrap',
-        gap: '0.5rem'
+        gap: '0.5rem',
+        $nest: {
+            'span': {
+                display: 'inline-block',
+                marginRight: 'auto',
+                marginLeft: '0.5rem'
+            }
+        }
     });
     exports.default = components_1.Styles.style({
         $nest: {
@@ -352,7 +359,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
         id: 'btnToken',
         height: '100%',
         caption: 'Select Token',
-        rightIcon: { width: 14, height: 14, name: 'angle-down' },
+        rightIcon: { width: 14, height: 14, name: 'angle-down', margin: { left: 'auto' } },
         border: { radius: 0 },
         background: { color: 'transparent' },
         font: { color: Theme.input.fontColor },
@@ -824,12 +831,10 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                     v.symbol == this.token?.symbol);
             if (token) {
                 const tokenIconPath = token.logoURI || scom_token_list_3.assets.tokenPath(token, this.chainId);
-                this.btnToken.caption = `<i-hstack verticalAlignment="center" gap="0.5rem">
-          <i-panel>
-            <i-image width=${24} height=${24} url="${tokenIconPath}" fallbackUrl="${scom_token_list_3.assets.fallbackUrl}"></i-image>
-          </i-panel>
-          <i-label caption="${token?.symbol || ''}"></i-label>
-        </i-hstack>`;
+                this.btnToken.caption = token?.symbol || '';
+                this.btnToken.icon = new components_5.Icon(this.btnToken, {
+                    image: { url: tokenIconPath, fallbackUrl: scom_token_list_3.assets.fallbackUrl, width: 24, height: 24, margin: { right: 'auto' } }
+                });
                 this.btnMax.visible = this.isBtnMaxShown;
             }
             else {
