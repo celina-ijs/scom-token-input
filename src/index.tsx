@@ -12,7 +12,8 @@ import {
   Panel,
   Button,
   HStack,
-  IconName
+  IconName,
+  Icon
 } from '@ijstech/components'
 import { BigNumber, nullAddress } from '@ijstech/eth-contract'
 import customStyle, { buttonStyle } from './index.css'
@@ -46,7 +47,7 @@ const defaultTokenProps = {
   id: 'btnToken',
   height: '100%',
   caption: 'Select Token',
-  rightIcon: {width: 14, height: 14, name: 'angle-down' as IconName},
+  rightIcon: {width: 14, height: 14, name: 'angle-down' as IconName, margin: {left: 'auto'}},
   border: {radius: 0},
   background: {color: 'transparent'},
   font: {color: Theme.input.fontColor},
@@ -591,12 +592,10 @@ export default class ScomTokenInput extends Module {
       )
     if (token) {
       const tokenIconPath = token.logoURI ||assets.tokenPath(token, this.chainId)
-      this.btnToken.caption = `<i-hstack verticalAlignment="center" gap="0.5rem">
-          <i-panel>
-            <i-image width=${24} height=${24} url="${tokenIconPath}" fallbackUrl="${assets.fallbackUrl}"></i-image>
-          </i-panel>
-          <i-label caption="${token?.symbol || ''}"></i-label>
-        </i-hstack>`
+      this.btnToken.caption = token?.symbol || '';
+      this.btnToken.icon = new Icon(this.btnToken, {
+        image: {url: tokenIconPath, fallbackUrl: assets.fallbackUrl, width: 24, height: 24, margin: {right: 'auto'}}
+      });
       this.btnMax.visible = this.isBtnMaxShown
     } else {
       this.btnToken.caption = '$select_token'
