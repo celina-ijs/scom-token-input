@@ -935,7 +935,7 @@ define("@scom/scom-token-input", ["require", "exports", "@ijstech/components", "
                         this.$render("i-hstack", { id: "pnlBalance", horizontalAlignment: 'end', verticalAlignment: 'center', gap: '0.5rem', margin: { bottom: '0.5rem' }, opacity: 0.6 },
                             this.$render("i-label", { caption: '$balance', font: { size: '0.875rem' } }),
                             this.$render("i-label", { id: 'lbBalance', font: { size: '0.875rem' }, caption: "0" }))),
-                    this.$render("i-grid-layout", { id: 'gridTokenInput', templateColumns: ['50%', 'auto'], templateRows: ['100%'], background: { color: Theme.input.background }, font: { color: Theme.input.fontColor }, border: { radius: 'inherit', style: 'none' }, verticalAlignment: 'center', lineHeight: 1.5715, width: '100%', gap: { column: '0.5rem' } },
+                    this.$render("i-grid-layout", { id: 'gridTokenInput', templateColumns: ['auto', 'minmax(auto, 130px)'], templateRows: ['100%'], background: { color: Theme.input.background }, font: { color: Theme.input.fontColor }, border: { radius: 'inherit', style: 'none' }, verticalAlignment: 'center', lineHeight: 1.5715, width: '100%', gap: { column: '0.5rem' } },
                         this.$render("i-input", { id: 'inputAmount', width: '100%', height: '100%', font: { size: 'inherit' }, inputType: 'number', padding: { left: 0, right: 0, top: 0, bottom: 0 }, border: { style: 'none' }, placeholder: '$enter_an_amount', onChanged: this.onAmountChanged }),
                         this.$render("i-panel", { id: "pnlSelection", width: '100%' },
                             this.$render("i-hstack", { id: "pnlTokenBtn", verticalAlignment: "center", gap: "0.25rem" },
